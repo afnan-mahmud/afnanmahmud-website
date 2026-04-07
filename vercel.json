@@ -1,0 +1,23 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "env": [
+    "MONGODB_URI",
+    "NEXTAUTH_SECRET",
+    "NEXTAUTH_URL",
+    "BULKSMS_API_KEY",
+    "BULKSMS_SENDER_ID",
+    "EPS_MERCHANT_ID",
+    "EPS_API_KEY",
+    "EPS_BASE_URL",
+    "EPS_SUCCESS_URL",
+    "EPS_FAIL_URL",
+    "EPS_CANCEL_URL",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
+    "RESEND_API_KEY"
+  ]
+}

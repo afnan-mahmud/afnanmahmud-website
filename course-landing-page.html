@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI দিয়ে Full-Stack Developer হও — Afnan Mahmud</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white: #ffffff;
+  --off-white: #fafaf8;
+  --surface: #f4f3ef;
+  --border: #e8e6e0;
+  --border-dark: #d0cdc4;
+  --text-primary: #1a1814;
+  --text-secondary: #4a4740;
+  --text-muted: #8c8880;
+  --accent: #ff4d00;
+  --accent-light: #fff0eb;
+  --accent-mid: #ffcfbe;
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --amber: #d97706;
+  --amber-light: #fffbeb;
+  --purple: #7c3aed;
+  --purple-light: #f5f3ff;
+  --pink: #db2777;
+  --pink-light: #fdf2f8;
+  --cyan: #0891b2;
+  --cyan-light: #ecfeff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--white);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--accent); }
+.nav-cta {
+  background: var(--accent); color: white;
+  border: none; border-radius: 50px;
+  padding: 10px 24px; font-size: 14px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none; display: inline-block;
+}
+.nav-cta:hover { background: #e03d00; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,77,0,0.3); }
+
+/* ─── HERO ─── */
+.hero {
+  background: var(--off-white);
+  padding: 80px 24px 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 400px;
+  background: radial-gradient(ellipse at center, rgba(255,77,0,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-size: 13px; font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 32px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
+.hero-badge::before {
+  content: ''; width: 7px; height: 7px;
+  background: var(--accent); border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(34px, 5.5vw, 68px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  color: var(--text-primary);
+  max-width: 900px;
+  margin: 0 auto 12px;
+}
+.hero h1 .accent { color: var(--accent); }
+.hero h1 .underline {
+  position: relative; display: inline-block;
+}
+.hero h1 .underline::after {
+  content: '';
+  position: absolute; bottom: 2px; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), #ff9500);
+  border-radius: 2px;
+}
+.hero-sub {
+  font-size: clamp(16px, 2vw, 19px);
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 20px auto 40px;
+  font-weight: 500;
+  line-height: 1.65;
+}
+.hero-sub strong { color: var(--text-primary); font-weight: 800; }
+
+.hero-actions {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 14px;
+  margin-bottom: 48px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none; border-radius: 50px;
+  padding: 16px 36px;
+  font-size: 16px; font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(255,77,0,0.25);
+}
+.btn-primary:hover { background: #e03d00; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,77,0,0.35); }
+.btn-outline {
+  background: transparent; color: var(--text-primary);
+  border: 1.5px solid var(--border-dark);
+  border-radius: 50px; padding: 15px 32px;
+  font-size: 16px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none; display: inline-block;
+}
+.btn-outline:hover { border-color: var(--text-primary); background: var(--surface); }
+
+/* Offer bar */
+.offer-bar {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #fff8f0;
+  border: 1px solid #ffd0aa;
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 48px;
+}
+.offer-bar .price-old { text-decoration: line-through; color: var(--text-muted); font-weight: 500; }
+.offer-bar .price-new { color: var(--accent); font-size: 18px; }
+.offer-bar .timer { 
+  background: var(--accent); color: white;
+  border-radius: 50px; padding: 3px 12px;
+  font-size: 12px; font-family: 'JetBrains Mono', monospace;
+}
+
+/* Stats row */
+.hero-stats {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 0;
+  border-top: 1px solid var(--border);
+  background: white;
+  margin: 0 -24px;
+}
+.stat-item {
+  flex: 1; min-width: 130px;
+  padding: 24px 20px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.stat-val span { color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
+
+/* ─── INSTRUCTOR ─── */
+.instructor-section {
+  padding: 80px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+.instructor-img-wrap {
+  position: relative;
+}
+.instructor-img {
+  width: 100%; aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f0ede8, #e8e4dd);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px;
+  overflow: hidden;
+}
+.instructor-img-placeholder {
+  width: 100%; aspect-ratio: 4/5;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f0ede8, #e0dbd3);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  color: var(--text-muted);
+  font-size: 14px; font-weight: 600;
+  border: 2px dashed var(--border-dark);
+  position: relative;
+  overflow: hidden;
+}
+.instructor-img-placeholder::before {
+  content: '';
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: var(--border);
+  margin-bottom: 8px;
+}
+.instructor-badge-float {
+  position: absolute;
+  bottom: 20px; right: -16px;
+  background: white;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-lg);
+  font-size: 13px; font-weight: 700;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.instructor-badge-float .badge-val { font-size: 22px; font-weight: 900; color: var(--accent); display: block; }
+
+.instructor-content {}
+.section-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 16px;
+}
+.section-eyebrow::before {
+  content: ''; width: 24px; height: 2px; background: var(--accent); border-radius: 1px;
+}
+.instructor-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; font-weight: 900;
+  line-height: 1.1; letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.instructor-title {
+  font-size: 15px; color: var(--text-muted); font-weight: 600;
+  margin-bottom: 24px;
+}
+.instructor-bio {
+  font-size: 16px; color: var(--text-secondary);
+  line-height: 1.75; margin-bottom: 28px;
+}
+.instructor-bio strong { color: var(--text-primary); font-weight: 800; }
+.instructor-tags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.itag {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ─── SECTION WRAPPER ─── */
+.section { padding: 80px 24px; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-header { text-align: center; margin-bottom: 56px; }
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 900; letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.section-title .accent { color: var(--accent); }
+.section-desc {
+  font-size: 17px; color: var(--text-secondary);
+  max-width: 560px; margin: 0 auto;
+  font-weight: 500; line-height: 1.65;
+}
+
+/* ─── FOR WHOM ─── */
+.for-whom-section { background: var(--off-white); }
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.audience-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: all 0.25s;
+  position: relative; overflow: hidden;
+}
+.audience-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s;
+}
+.audience-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.audience-card:hover::before { transform: scaleX(1); }
+.audience-num {
+  width: 36px; height: 36px;
+  background: var(--accent-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900;
+  color: var(--accent); margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.audience-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.audience-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ─── TECH STACK ─── */
+.stack-row {
+  display: flex; flex-wrap: wrap;
+  gap: 10px; justify-content: center;
+  margin-top: 40px;
+}
+.stack-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: 1.5px solid;
+  font-size: 14px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  transition: transform 0.2s;
+}
+.stack-pill:hover { transform: translateY(-2px); }
+
+/* ─── CURRICULUM ─── */
+.curriculum-section { background: white; }
+
+.phase-nav {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+.phase-btn {
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 13px; font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Nunito', sans-serif;
+}
+.phase-btn:hover, .phase-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.phase-block { margin-bottom: 64px; }
+.phase-header-row {
+  display: flex; align-items: flex-start; gap: 20px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.phase-num-badge {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px; font-weight: 700;
+  color: white;
+}
+.phase-header-text {}
+.phase-label {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.phase-title-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; font-weight: 900;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+.phase-desc-text {
+  font-size: 14px; color: var(--text-secondary);
+  max-width: 680px; line-height: 1.65;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.module-card {
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  position: relative; overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.module-card:hover {
+  background: white;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.module-card .top-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+.module-num-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-muted);
+  font-weight: 500; margin-bottom: 8px;
+}
+.module-title-text {
+  font-size: 15px; font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.4; margin-bottom: 6px;
+}
+.module-subtitle {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.55; margin-bottom: 14px;
+  font-style: italic;
+}
+.module-topics-list {
+  list-style: none; display: flex; flex-direction: column; gap: 5px;
+  margin-bottom: 14px;
+}
+.module-topics-list li {
+  font-size: 13px; color: var(--text-secondary);
+  padding-left: 16px; position: relative; line-height: 1.5;
+}
+.module-topics-list li::before {
+  content: '›';
+  position: absolute; left: 0;
+  font-size: 15px; line-height: 1.35;
+}
+.mod-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 11px; font-weight: 700;
+  border: 1px solid;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.03em;
+}
+
+/* ─── WHY AI ─── */
+.why-section { background: var(--off-white); }
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.why-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: box-shadow 0.2s;
+}
+.why-card:hover { box-shadow: var(--shadow-md); }
+.why-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.why-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.why-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+
+/* ─── SUPPORT ─── */
+.support-section { background: white; }
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+.support-card {
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.support-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.support-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.support-icon { font-size: 24px; margin-bottom: 12px; }
+
+/* ─── CAPSTONE ─── */
+.capstone-section { background: var(--text-primary); color: white; }
+.capstone-inner {
+  max-width: 900px; margin: 0 auto;
+  text-align: center; padding: 80px 24px;
+}
+.capstone-section .section-title { color: white; }
+.capstone-section .section-title .accent { color: #ff7a40; }
+.capstone-section .section-desc { color: rgba(255,255,255,0.65); }
+.capstone-tags {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center;
+  margin-top: 40px;
+}
+.cap-tag {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 14px; font-weight: 600;
+  color: rgba(255,255,255,0.85);
+}
+
+/* ─── PRICING ─── */
+.pricing-section { background: var(--off-white); padding: 80px 24px; }
+.pricing-inner { max-width: 900px; margin: 0 auto; }
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 48px;
+}
+.pricing-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 36px 32px;
+  position: relative; overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.pricing-card:hover { box-shadow: var(--shadow-lg); }
+.pricing-card.featured {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow-lg);
+}
+.pricing-badge {
+  position: absolute; top: 20px; right: 20px;
+  background: var(--accent); color: white;
+  font-size: 11px; font-weight: 800;
+  padding: 4px 12px; border-radius: 50px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+.pricing-type {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 12px;
+}
+.pricing-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px; font-weight: 900;
+  letter-spacing: -2px; line-height: 1;
+  margin-bottom: 4px;
+}
+.pricing-price .currency { font-size: 24px; vertical-align: super; letter-spacing: 0; }
+.pricing-price.accent-price { color: var(--accent); }
+.pricing-original {
+  font-size: 14px; color: var(--text-muted);
+  text-decoration: line-through; margin-bottom: 16px;
+  font-weight: 600;
+}
+.pricing-deadline {
+  background: var(--amber-light);
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px; font-weight: 700;
+  color: var(--amber);
+  margin-bottom: 24px;
+  display: inline-block;
+}
+.pricing-features { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+.pricing-features li {
+  font-size: 14px; color: var(--text-secondary);
+  display: flex; align-items: flex-start; gap: 10px;
+  line-height: 1.5;
+}
+.pricing-features li::before {
+  content: '✓';
+  color: var(--green); font-weight: 800; font-size: 15px;
+  flex-shrink: 0;
+}
+.btn-pricing {
+  width: 100%;
+  padding: 16px;
+  border-radius: 50px;
+  font-size: 16px; font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  border: none;
+}
+.btn-pricing-primary { background: var(--accent); color: white; box-shadow: 0 4px 16px rgba(255,77,0,0.25); }
+.btn-pricing-primary:hover { background: #e03d00; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,77,0,0.35); }
+.btn-pricing-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border-dark) !important; }
+.btn-pricing-outline:hover { background: var(--surface); }
+
+/* ─── FAQ ─── */
+.faq-section { background: white; }
+.faq-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.faq-item:hover { box-shadow: var(--shadow-sm); }
+.faq-question {
+  width: 100%; padding: 20px 24px;
+  background: none; border: none;
+  text-align: left;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  transition: background 0.15s;
+}
+.faq-question:hover { background: var(--off-white); }
+.faq-arrow {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  background: var(--surface);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  transition: transform 0.3s, background 0.2s;
+}
+.faq-item.open .faq-arrow { transform: rotate(180deg); background: var(--accent); color: white; }
+.faq-answer {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.3s;
+  padding: 0 24px;
+  font-size: 14px; color: var(--text-secondary); line-height: 1.75;
+}
+.faq-item.open .faq-answer { max-height: 400px; padding: 0 24px 20px; }
+
+/* ─── CTA FOOTER ─── */
+.cta-section {
+  background: linear-gradient(135deg, #fff8f5, #fff0e8);
+  border-top: 1px solid #ffe0cc;
+  padding: 80px 24px;
+  text-align: center;
+}
+.cta-section .section-title { max-width: 700px; margin: 0 auto 24px; }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--text-primary); color: rgba(255,255,255,0.5);
+  padding: 32px 24px;
+  text-align: center; font-size: 13px;
+}
+footer strong { color: rgba(255,255,255,0.8); }
+
+/* ─── COUNTDOWN ─── */
+#countdown { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+/* ─── ANIMATIONS ─── */
+.fade-up {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 768px) {
+  .instructor-section { grid-template-columns: 1fr; gap: 40px; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .hero-stats { overflow-x: auto; }
+  .stat-item { min-width: 110px; }
+  .instructor-badge-float { right: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">dev<span>AI</span></div>
+  <a href="#pricing" class="nav-cta">এখনই Enroll করো →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🚀 Bangladesh's First AI-First Dev Course</div>
+  <h1>
+    Custom Website &amp; Mobile App<br>
+    বানাও <span class="accent">সম্পূর্ণ AI দিয়ে</span>
+  </h1>
+  <p class="hero-sub">
+    তুমি কি জানো, যে developer AI ব্যবহার করতে পারে — সে একাই <strong>একটা পুরো team-এর কাজ</strong> করে?<br>
+    MERN Stack + React Native দিয়ে শেখো, AI দিয়ে build করো, আর নিজেই deploy করো।
+  </p>
+
+  <div class="offer-bar">
+    <span>🔥 Early Bird অফার:</span>
+    <span class="price-old">৳৫,০০০</span>
+    <span class="price-new">৳৯৯০</span>
+    <span class="timer" id="countdown">লোড হচ্ছে...</span>
+    <span>পর্যন্ত</span>
+  </div>
+
+  <div class="hero-actions">
+    <a href="#pricing" class="btn-primary">Early Bird এ Enroll করো ৳৯৯০ →</a>
+    <a href="#curriculum" class="btn-outline">Course দেখো</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-val">28<span>+</span></div>
+      <div class="stat-label">Modules</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">6</div>
+      <div class="stat-label">Phases</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">5<span>+</span></div>
+      <div class="stat-label">Live Projects</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">2</div>
+      <div class="stat-label">Platforms (Web + Mobile)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">∞</div>
+      <div class="stat-label">Lifetime Access</div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTRUCTOR -->
+<section style="padding:80px 24px; background:white;">
+  <div class="instructor-section" style="padding:0;">
+    <div class="instructor-img-wrap fade-up">
+      <div class="instructor-img-placeholder">
+        <div style="font-size:64px;">👤</div>
+        <span>Afnan Mahmud</span>
+        <span style="font-size:12px; font-weight:500;">Photo আসছে শীঘ্রই</span>
+      </div>
+      <div class="instructor-badge-float">
+        <span class="badge-val">৳৯৯০</span>
+        Early Bird Price
+      </div>
+    </div>
+    <div class="instructor-content fade-up" style="transition-delay:0.15s;">
+      <div class="section-eyebrow">তোমার Instructor</div>
+      <h2 class="instructor-name">Afnan Mahmud</h2>
+      <p class="instructor-title">Full-Stack Developer · Meta Ads Specialist · Entrepreneur</p>
+      <p class="instructor-bio">
+        আমি নিজে এই exact workflow দিয়ে <strong>production app বানাই</strong> — আমার Gowaay (Bangladesh-focused travel booking platform) আর Launchpad (international clients-এর জন্য web + mobile agency) দুটোই এই AI-first approach দিয়ে build করেছি।<br><br>
+        শুধু theory না — আমি প্রতিদিন এই tools দিয়ে কাজ করি। তাই যা শেখাবো, সেটা real-world-এ কাজ করে বলে নিজে জানি।
+      </p>
+      <div class="instructor-tags">
+        <span class="itag">React / Next.js</span>
+        <span class="itag">Node.js</span>
+        <span class="itag">React Native</span>
+        <span class="itag">MongoDB</span>
+        <span class="itag">Meta Ads</span>
+        <span class="itag">AI-Powered Dev</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHOM -->
+<section class="section for-whom-section">
+  <div class="section-inner">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">এই Course কাদের জন্য</div>
+      <h2 class="section-title">তুমি কি এদের <span class="accent">একজন?</span></h2>
+      <p class="section-desc">JavaScript বা basic programming জানলেই এই course করতে পারবে। "Hello World" থেকে শুরু হবে না।</p>
+    </div>
+    <div class="audience-grid fade-up">
+      <div class="audience-card">
+        <div class="audience-num">01</div>
+        <h3>নতুন Developer</h3>
+        <p>Basic JavaScript জানো কিন্তু real project কীভাবে বানাবে বুঝছো না — এই course তোমার জন্য perfect।</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-num">02</div>
+        <h3>Freelancer</h3>
+        <p>International client নিতে চাও? AI workflow জানলে অন্যদের চেয়ে দ্রুত deliver করতে পারবে, বেশি charge করতে পারবে।</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-num">03</div>
+        <h3>Job Seeker</h3>
+        <p>Web + Mobile + AI — তিনটা একসাথে জানা developer এখন market-এ সবচেয়ে বেশি demand-এ। Interview-এ এগিয়ে থাকবে।</p>
+      </div>
+      <div class="audience-card">
+        <div class="audience-num">04</div>
+        <h3>Product Builder</h3>
+        <p>নিজের startup বা product idea আছে? এই course করলে তুমি নিজেই তোমার product build করতে পারবে — team hire করতে হবে না।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section" style="background:white; padding-top:56px; padding-bottom:56px;">
+  <div class="section-inner">
+    <div class="section-header fade-up" style="margin-bottom:32px;">
+      <div class="section-eyebrow" style="justify-content:center;">Tech Stack</div>
+      <h2 class="section-title" style="font-size:28px;">এই technologies শিখবে</h2>
+    </div>
+    <div class="stack-row fade-up">
+      <span class="stack-pill" style="background:rgba(0,237,100,0.08);color:#059669;border-color:rgba(0,237,100,0.25);">MongoDB</span>
+      <span class="stack-pill" style="background:#f8f7f4;color:#374151;border-color:#e0ddd6;">Express.js</span>
+      <span class="stack-pill" style="background:rgba(6,182,212,0.08);color:#0891b2;border-color:rgba(6,182,212,0.25);">React / Next.js</span>
+      <span class="stack-pill" style="background:rgba(34,197,94,0.08);color:#16a34a;border-color:rgba(34,197,94,0.25);">Node.js</span>
+      <span class="stack-pill" style="background:rgba(124,58,237,0.08);color:#7c3aed;border-color:rgba(124,58,237,0.2);">React Native</span>
+      <span class="stack-pill" style="background:rgba(236,72,153,0.08);color:#db2777;border-color:rgba(236,72,153,0.2);">Claude · GPT-4o · Gemini</span>
+      <span class="stack-pill" style="background:rgba(245,158,11,0.08);color:#d97706;border-color:rgba(245,158,11,0.2);">TypeScript</span>
+      <span class="stack-pill" style="background:rgba(37,99,235,0.08);color:#2563eb;border-color:rgba(37,99,235,0.2);">Docker · CI/CD</span>
+    </div>
+  </div>
+</section>
+
+<!-- CURRICULUM -->
+<section class="section curriculum-section" id="curriculum">
+  <div class="section-inner">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">Course Curriculum</div>
+      <h2 class="section-title">২৮টা Module, <span class="accent">৬টা Phase</span></h2>
+      <p class="section-desc">JavaScript দিয়ে শুরু, TypeScript-এ upgrade, তারপর Web + Mobile দুটোই AI দিয়ে build।</p>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);">01</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Phase 01 · 4 Modules</div>
+          <div class="phase-title-text">AI Developer Mindset &amp; Tooling</div>
+          <div class="phase-desc-text">কোড লেখার আগে AI কে সঠিকভাবে use করতে শেখো। সঠিক tools + সঠিক prompt + সঠিক plan — এই তিনটা দিয়েই বাকি ৯৯% developer-দের চেয়ে এগিয়ে থাকবে।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#7c3aed,#4f46e5);"></div>
+          <div class="module-num-label">Module 01</div>
+          <div class="module-title-text">AI IDE — শূন্য থেকে Power User</div>
+          <div class="module-subtitle">ঠিকমতো ব্যবহার না করলে অর্ধেক সুবিধা নষ্ট হয়।</div>
+          <ul class="module-topics-list">
+            <li>AI IDE আর normal IDE-এর আসল পার্থক্য</li>
+            <li>Autocomplete, Inline Edit, AI Chat — কোনটা কখন</li>
+            <li>Agent mode — কখন চালু, কখন বন্ধ</li>
+            <li>AI-কে সঠিক context দেওয়ার technique</li>
+            <li>Project-specific AI rules set করা</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#7c3aed,#4f46e5);"></div>
+          <div class="module-num-label">Module 02</div>
+          <div class="module-title-text">কোন AI Model কখন ব্যবহার করবে?</div>
+          <div class="module-subtitle">সব কাজে একই model = টাকা নষ্ট + সময় নষ্ট।</div>
+          <ul class="module-topics-list">
+            <li>Claude, GPT-4o, Gemini — কে কোন কাজে সেরা</li>
+            <li>Reasoning model কখন দরকার পড়ে</li>
+            <li>Cost আর quality-র মধ্যে balance</li>
+            <li>Code লেখা, debug, plan — আলাদা model কেন?</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#7c3aed,#4f46e5);"></div>
+          <div class="module-num-label">Module 03</div>
+          <div class="module-title-text">Developer-এর জন্য Prompt Engineering</div>
+          <div class="module-subtitle">ভালো prompt মানে ভালো code — এটা একটা skill।</div>
+          <ul class="module-topics-list">
+            <li>ভালো prompt আর খারাপ prompt-এর real examples</li>
+            <li>Stack, pattern, constraint দিয়ে context-rich prompt</li>
+            <li>বড় feature-কে ছোট step-এ ভাঙা</li>
+            <li>Iterative refinement loop</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#7c3aed,#4f46e5);"></div>
+          <div class="module-num-label">Module 04</div>
+          <div class="module-title-text">AI দিয়ে Project Architecture Plan করা</div>
+          <div class="module-subtitle">Code লেখার আগে plan করা — এটাই professional developers করে।</div>
+          <ul class="module-topics-list">
+            <li>PRD (Product Requirement Doc) AI দিয়ে তৈরি</li>
+            <li>Database schema AI দিয়ে design করানো</li>
+            <li>Tech stack decision — কী নেব, কেন নেব</li>
+            <li>AI দিয়ে পুরো project scaffold করা</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRIDGE -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#38bdf8,#0ea5e9); font-size:20px;">🔗</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Bridge · 1 Module</div>
+          <div class="phase-title-text">TypeScript — JavaScript থেকে TS-এ</div>
+          <div class="phase-desc-text">JS জানলে TS শেখা কঠিন না। এই bridge module-এ JS developer-দের জন্য TS শেখানো হবে — AI দিয়ে type error fix করতে করতে।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card" style="border-color:#bae6fd;">
+          <div class="top-bar" style="background:linear-gradient(90deg,#38bdf8,#0ea5e9);"></div>
+          <div class="module-num-label">Module 05</div>
+          <div class="module-title-text">TypeScript — JS Developer-এর জন্য</div>
+          <div class="module-subtitle">Industry-standard — না জানলে বড় project-এ কাজ করা কঠিন।</div>
+          <ul class="module-topics-list">
+            <li>Types, Interfaces, Generics — AI দিয়ে বোঝা</li>
+            <li>পুরনো JS codebase TypeScript-এ migrate করা</li>
+            <li>Node + Express + React + React Native সবগুলোতে TS</li>
+            <li>AI দিয়ে type error fix — "any" trap এড়ানো</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(56,189,248,0.1);color:#0891b2;border-color:rgba(56,189,248,0.25);">🔗 JS → TS Bridge</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#06b6d4,#0284c7);">02</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Phase 02 · 5 Modules</div>
+          <div class="phase-title-text">Backend — Node.js, Express আর MongoDB</div>
+          <div class="phase-desc-text">Frontend সুন্দর হলেই হয় না — backend না জানলে real app বানানো সম্ভব না। এই phase-এ পুরো server-side শিখবে — database থেকে real-time পর্যন্ত।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#06b6d4,#0284c7);"></div>
+          <div class="module-num-label">Module 06</div>
+          <div class="module-title-text">REST API তৈরি করা — AI দিয়ে</div>
+          <div class="module-subtitle">প্রতিটা app-এর পেছনে একটা API থাকে — সেটা বানাতে শেখো।</div>
+          <ul class="module-topics-list">
+            <li>Express.js setup, Route, Controller, Service layer</li>
+            <li>Mongoose schema + validation AI দিয়ে লেখা</li>
+            <li>CRUD endpoints — AI generate করবে, তুমি review করবে</li>
+            <li>Error handling middleware সাজানো</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border-color:rgba(34,197,94,0.2);">🔨 Mini Project</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#06b6d4,#0284c7);"></div>
+          <div class="module-num-label">Module 07</div>
+          <div class="module-title-text">Auth System — JWT + Refresh Token</div>
+          <div class="module-subtitle">Login, logout, role — এগুলো ছাড়া কোনো real app চলে না।</div>
+          <ul class="module-topics-list">
+            <li>Register, Login, Logout-এর পুরো flow</li>
+            <li>JWT access token + refresh token strategy</li>
+            <li>Role-based access control (RBAC)</li>
+            <li>Google OAuth দিয়ে social login</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#06b6d4,#0284c7);"></div>
+          <div class="module-num-label">Module 08</div>
+          <div class="module-title-text">Advanced MongoDB + Aggregation</div>
+          <div class="module-subtitle">Simple find() জানলে হবে না — complex data-এ aggregation লাগে।</div>
+          <ul class="module-topics-list">
+            <li>Complex query AI দিয়ে লেখা আর বোঝা</li>
+            <li>Aggregation pipeline — AI বুঝিয়ে দেবে, তুমি debug করবে</li>
+            <li>Indexing দিয়ে database speed বাড়ানো</li>
+            <li>Population vs Lookup — কোথায় কোনটা</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#06b6d4,#0284c7);"></div>
+          <div class="module-num-label">Module 09</div>
+          <div class="module-title-text">File Upload, Email আর Payment</div>
+          <div class="module-subtitle">Real app-এ photo upload, email, payment — সব লাগে।</div>
+          <ul class="module-topics-list">
+            <li>Multer + Cloudinary দিয়ে image upload</li>
+            <li>Email পাঠানো — Nodemailer / SendGrid</li>
+            <li>Payment gateway — SSLCommerz / Stripe</li>
+            <li>Webhook handle করা</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border-color:rgba(34,197,94,0.2);">🔨 Mini Project</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#06b6d4,#0284c7);"></div>
+          <div class="module-num-label">Module 10</div>
+          <div class="module-title-text">Real-time Features — Socket.io</div>
+          <div class="module-subtitle">Chat app, live notification — এগুলো কীভাবে কাজ করে জানবে।</div>
+          <ul class="module-topics-list">
+            <li>WebSocket vs HTTP — কোথায় কোনটা</li>
+            <li>Real-time notification আর live update</li>
+            <li>Chat feature-এর architecture</li>
+            <li>Redis Pub/Sub — scaling-এর basic</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(245,158,11,0.1);color:#d97706;border-color:rgba(245,158,11,0.2);">⚡ Advanced</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#22c55e,#16a34a);">03</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Phase 03 · 4 Modules</div>
+          <div class="phase-title-text">Frontend — React আর Next.js</div>
+          <div class="phase-desc-text">UI বানানো আর্ট — AI দিয়ে করলে সেটা দ্রুত হয়। React, Next.js, state management, আর modern UI — সব AI-assisted।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#22c55e,#16a34a);"></div>
+          <div class="module-num-label">Module 11</div>
+          <div class="module-title-text">AI দিয়ে React Component বানানো</div>
+          <div class="module-subtitle">Component-driven development — ছোট piece দিয়ে বড় app।</div>
+          <ul class="module-topics-list">
+            <li>AI দিয়ে component তৈরির সঠিক workflow</li>
+            <li>Custom hooks — AI লিখবে, তুমি বুঝবে</li>
+            <li>Screenshot বা Figma থেকে component বানানো</li>
+            <li>Component library দিয়ে দ্রুত UI</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#22c55e,#16a34a);"></div>
+          <div class="module-num-label">Module 12</div>
+          <div class="module-title-text">State Management — Zustand + React Query</div>
+          <div class="module-subtitle">Data কোথায় রাখবে — এটা বুঝলেই app structure clear।</div>
+          <ul class="module-topics-list">
+            <li>Global vs local state — কখন কোনটা</li>
+            <li>Zustand store design with AI</li>
+            <li>React Query দিয়ে server data manage</li>
+            <li>Optimistic update, caching, auto-refetch</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#22c55e,#16a34a);"></div>
+          <div class="module-num-label">Module 13</div>
+          <div class="module-title-text">Next.js — App Router আর Server Components</div>
+          <div class="module-subtitle">একাই frontend + backend সামলাও।</div>
+          <ul class="module-topics-list">
+            <li>App Router vs Pages Router</li>
+            <li>Server Component vs Client Component</li>
+            <li>Server Actions দিয়ে backend logic</li>
+            <li>SEO, metadata, OG image</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border-color:rgba(34,197,94,0.2);">🔨 Mini Project</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#22c55e,#16a34a);"></div>
+          <div class="module-num-label">Module 14</div>
+          <div class="module-title-text">UI/UX — Tailwind, shadcn আর Animations</div>
+          <div class="module-subtitle">Designer না হলেও সুন্দর UI বানানো যায়।</div>
+          <ul class="module-topics-list">
+            <li>Screenshot → AI → Component workflow</li>
+            <li>shadcn/ui দিয়ে professional UI দ্রুত</li>
+            <li>Framer Motion দিয়ে smooth animation</li>
+            <li>Dark mode + Responsive design</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#f59e0b,#d97706);">04</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Phase 04 · 3 Modules</div>
+          <div class="phase-title-text">Mobile App — React Native + Expo</div>
+          <div class="phase-desc-text">React জানো? তাহলে React Native শেখা তোমার জন্য অনেক সহজ। একটাই code দিয়ে Android আর iOS দুটোতেই app।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#f59e0b,#d97706);"></div>
+          <div class="module-num-label">Module 15</div>
+          <div class="module-title-text">React Native-এর শুরু — AI দিয়ে</div>
+          <div class="module-subtitle">পার্থক্যটুকু বুঝলেই React Native শেখা সহজ।</div>
+          <ul class="module-topics-list">
+            <li>Expo setup + AI দিয়ে project scaffold</li>
+            <li>React Native vs React — পার্থক্য বোঝা</li>
+            <li>NativeWind দিয়ে Tailwind-এর মতো styling</li>
+            <li>Expo Router দিয়ে navigation</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#f59e0b,#d97706);"></div>
+          <div class="module-num-label">Module 16</div>
+          <div class="module-title-text">Mobile UI Pattern আর Native Features</div>
+          <div class="module-subtitle">Mobile মানে শুধু ছোট screen না — camera, notification, offline।</div>
+          <ul class="module-topics-list">
+            <li>Bottom tab, drawer, modal navigation</li>
+            <li>Camera, gallery, file picker</li>
+            <li>Push notification — Expo দিয়ে</li>
+            <li>Offline-first — AsyncStorage / MMKV</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border-color:rgba(34,197,94,0.2);">🔨 Mini Project</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#f59e0b,#d97706);"></div>
+          <div class="module-num-label">Module 17</div>
+          <div class="module-title-text">Web + Mobile একসাথে — Monorepo</div>
+          <div class="module-subtitle">একই backend, একই types — code duplication শূন্য।</div>
+          <ul class="module-topics-list">
+            <li>Turborepo দিয়ে monorepo setup</li>
+            <li>Shared API layer, types, utility</li>
+            <li>Business logic share — শুধু UI আলাদা</li>
+            <li>Cross-platform refactoring with AI</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(245,158,11,0.1);color:#d97706;border-color:rgba(245,158,11,0.2);">⚡ Advanced</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#ec4899,#be185d);">05</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Phase 05 · 7 Modules</div>
+          <div class="phase-title-text">AI Features + DevOps + Deployment</div>
+          <div class="phase-desc-text">Code করা শিখলে — এবার সেটা deploy করো, publish করো, আর app-এর ভেতরেই AI বসাও।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#ec4899,#be185d);"></div>
+          <div class="module-num-label">Module 18</div>
+          <div class="module-title-text">App-এর ভেতরে AI বসানো</div>
+          <div class="module-subtitle">ChatGPT use করা আর app-এ AI integrate করা আলাদা জিনিস।</div>
+          <ul class="module-topics-list">
+            <li>Claude, OpenAI, Gemini API integrate করা</li>
+            <li>Streaming response — typewriter effect</li>
+            <li>RAG system basic</li>
+            <li>AI chatbot feature — backend + frontend</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#ec4899,#be185d);"></div>
+          <div class="module-num-label">Module 19</div>
+          <div class="module-title-text">AI দিয়ে Testing করা</div>
+          <div class="module-subtitle">Test লেখা boring? AI দিয়ে auto-generate করো।</div>
+          <ul class="module-topics-list">
+            <li>Unit test AI দিয়ে auto-generate</li>
+            <li>Jest + React Testing Library</li>
+            <li>API test — Supertest</li>
+            <li>Test coverage বাড়ানোর strategy</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#ec4899,#be185d);"></div>
+          <div class="module-num-label">Module 20–21</div>
+          <div class="module-title-text">GitHub — Solo + Team Workflow</div>
+          <div class="module-subtitle">একা কাজ করলেও, team-এও — Git discipline লাগে।</div>
+          <ul class="module-topics-list">
+            <li>Solo: feature branch, commit, push</li>
+            <li>Team: PR, review, protected branch</li>
+            <li>AI দিয়ে commit message + PR description</li>
+            <li>Merge conflict resolve করা AI দিয়ে</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(236,72,153,0.1);color:#db2777;border-color:rgba(236,72,153,0.2);">🤖 AI-Powered</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#ec4899,#be185d);"></div>
+          <div class="module-num-label">Module 22</div>
+          <div class="module-title-text">Deployment — VPS, Docker আর CI/CD</div>
+          <div class="module-subtitle">Local-এ কাজ করে তো সবাই — deploy করতে পারাটাই skill।</div>
+          <ul class="module-topics-list">
+            <li>VPS setup — Nginx, PM2, SSL</li>
+            <li>Docker + docker-compose</li>
+            <li>GitHub Actions CI/CD pipeline</li>
+            <li>Environment variable + secrets management</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(245,158,11,0.1);color:#d97706;border-color:rgba(245,158,11,0.2);">⚡ Advanced</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#ec4899,#be185d);"></div>
+          <div class="module-num-label">Module 23</div>
+          <div class="module-title-text">Play Store + App Store-এ App Publish</div>
+          <div class="module-subtitle">App বানানো শেষ — এবার store-এ দাও।</div>
+          <ul class="module-topics-list">
+            <li>EAS Build, keystore, AAB vs APK</li>
+            <li>Play Console — listing থেকে production</li>
+            <li>App Store Connect + TestFlight</li>
+            <li>OTA update — review ছাড়াই push</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(6,182,212,0.1);color:#0891b2;border-color:rgba(6,182,212,0.2);">🚀 Ship It</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#ec4899,#be185d);"></div>
+          <div class="module-num-label">Module 24</div>
+          <div class="module-title-text">Performance আর Security Audit</div>
+          <div class="module-subtitle">App slow হলে user যায়, secure না হলে data যায়।</div>
+          <ul class="module-topics-list">
+            <li>AI দিয়ে security vulnerability scan</li>
+            <li>Rate limiting, CORS, Helmet.js</li>
+            <li>Lighthouse audit + AI fix</li>
+            <li>Sentry, Logtail দিয়ে monitoring</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(245,158,11,0.1);color:#d97706;border-color:rgba(245,158,11,0.2);">⚡ Advanced</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="phase-block fade-up">
+      <div class="phase-header-row">
+        <div class="phase-num-badge" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4);">06</div>
+        <div class="phase-header-text">
+          <div class="phase-label">Phase 06 · 4 Modules</div>
+          <div class="phase-title-text">Professional AI Developer Workflow</div>
+          <div class="phase-desc-text">Technical skill শেখা হয়ে গেছে — এবার professional হিসেবে কাজ করার workflow। Freelancer থেকে expert developer।</div>
+        </div>
+      </div>
+      <div class="modules-grid">
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#8b5cf6,#06b6d4);"></div>
+          <div class="module-num-label">Module 25</div>
+          <div class="module-title-text">বড় Codebase Navigate করা — AI দিয়ে</div>
+          <div class="module-subtitle">Job করলে অন্যের code পড়তেই হবে।</div>
+          <ul class="module-topics-list">
+            <li>Legacy code AI দিয়ে বোঝা</li>
+            <li>Large file safely refactor করা</li>
+            <li>Advanced AI context — @codebase, @docs</li>
+            <li>Documentation auto-generate করা</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(245,158,11,0.1);color:#d97706;border-color:rgba(245,158,11,0.2);">⚡ Advanced</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#8b5cf6,#06b6d4);"></div>
+          <div class="module-num-label">Module 26</div>
+          <div class="module-title-text">Debugging Mastery — AI দিয়ে</div>
+          <div class="module-subtitle">Bug fix করতে পারা মানে তুমি সত্যিকারের developer।</div>
+          <ul class="module-topics-list">
+            <li>Error → AI diagnosis → fix loop</li>
+            <li>Console, Network, Breakpoints + AI</li>
+            <li>Stack trace AI দিয়ে পড়া</li>
+            <li>Production bug hunt strategy</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(124,58,237,0.1);color:#7c3aed;border-color:rgba(124,58,237,0.2);">💡 Concept</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#8b5cf6,#06b6d4);"></div>
+          <div class="module-num-label">Module 27</div>
+          <div class="module-title-text">Multi-Agent আর MCP Tools</div>
+          <div class="module-subtitle">Future of development — AI agent দিয়ে কাজ করানো।</div>
+          <ul class="module-topics-list">
+            <li>MCP (Model Context Protocol) কী ও কেন</li>
+            <li>Browser, Database, API — MCP দিয়ে access</li>
+            <li>AI agent দিয়ে task automate করা</li>
+            <li>Agentic development কোথায় যাচ্ছে</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(245,158,11,0.1);color:#d97706;border-color:rgba(245,158,11,0.2);">⚡ Advanced</span>
+        </div>
+        <div class="module-card">
+          <div class="top-bar" style="background:linear-gradient(90deg,#8b5cf6,#06b6d4);"></div>
+          <div class="module-num-label">Module 28</div>
+          <div class="module-title-text">Freelancing আর Client Delivery — AI দিয়ে</div>
+          <div class="module-subtitle">Skill আছে কিন্তু client নেই? এটাও শেখানো হবে।</div>
+          <ul class="module-topics-list">
+            <li>AI দিয়ে project estimate করা</li>
+            <li>Client requirement → technical spec</li>
+            <li>AI দিয়ে delivery speed বাড়ানো</li>
+            <li>Pricing strategy — AI productivity factor</li>
+          </ul>
+          <span class="mod-tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border-color:rgba(34,197,94,0.2);">💼 Business</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPSTONE -->
+<section class="capstone-section">
+  <div class="capstone-inner fade-up">
+    <div class="section-eyebrow" style="justify-content:center; color:#ff7a40;">
+      <span style="width:24px;height:2px;background:#ff7a40;border-radius:1px;display:inline-block;"></span>
+      Final Capstone Project
+    </div>
+    <h2 class="section-title">Course শেষে তুমি একটি <span class="accent">Real SaaS App</span> deliver করবে</h2>
+    <p class="section-desc">Web (Next.js) + Mobile (React Native) + Backend (Node/Express/MongoDB) — সব মিলিয়ে একটা deployable product। শুধু শেখা না — তুমি actually কিছু একটা বানাবে।</p>
+    <div class="capstone-tags">
+      <span class="cap-tag">Auth + Subscription</span>
+      <span class="cap-tag">Dashboard (Next.js)</span>
+      <span class="cap-tag">Mobile App (RN)</span>
+      <span class="cap-tag">AI Feature Built-in</span>
+      <span class="cap-tag">Real-time Updates</span>
+      <span class="cap-tag">VPS-এ Deploy</span>
+      <span class="cap-tag">Play Store + App Store</span>
+    </div>
+  </div>
+</section>
+
+<!-- WHY AI -->
+<section class="section why-section">
+  <div class="section-inner">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">কেন এই Course আলাদা</div>
+      <h2 class="section-title">AI ছাড়া Code করা মানে <span class="accent">পিছিয়ে থাকা</span></h2>
+    </div>
+    <div class="why-grid fade-up">
+      <div class="why-card">
+        <div class="why-icon" style="background:#fff0eb;">⚡</div>
+        <h3>৫ গুণ দ্রুত কাজ</h3>
+        <p>AI workflow জানলে একা একটা পুরো team-এর কাজ করা সম্ভব। Client-এ fast delivery, বেশি income।</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon" style="background:#f0fdf4;">🏗️</div>
+        <h3>শুধু Job না — Product Build করো</h3>
+        <p>এই course শেষে তুমি নিজেই তোমার startup idea-র product build করতে পারবে। Team hire করতে হবে না।</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon" style="background:#eff6ff;">📱</div>
+        <h3>Web + Mobile — দুটোই</h3>
+        <p>Bangladesh-এ Web + Mobile দুটো জানা developer বিরল। এই combination দিয়ে তুমি সত্যিই আলাদা হবে।</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon" style="background:#f5f3ff;">🎯</div>
+        <h3>Real Instructor, Real Projects</h3>
+        <p>আমি নিজে এই workflow দিয়ে production app বানাই। Theory না — real experience থেকে শেখানো হবে।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUPPORT -->
+<section class="section support-section">
+  <div class="section-inner">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">Support System</div>
+      <h2 class="section-title">তুমি কখনো <span class="accent">একা পাবে না</span></h2>
+    </div>
+    <div class="support-grid fade-up">
+      <div class="support-card">
+        <div class="support-icon">💬</div>
+        <h3>Community Group</h3>
+        <p>Private Facebook/Discord group-এ যেকোনো সময় প্রশ্ন করো। আমি নিজে active থাকব।</p>
+      </div>
+      <div class="support-card">
+        <div class="support-icon">🔴</div>
+        <h3>Live Q&amp;A Sessions</h3>
+        <p>Regular live session-এ সরাসরি প্রশ্ন করো। Code-এর problem, concept confusion — সব clear করা হবে।</p>
+      </div>
+      <div class="support-card">
+        <div class="support-icon">♾️</div>
+        <h3>Lifetime Access</h3>
+        <p>একবার enroll করলে সব content সারাজীবন। নতুন module add হলেও free-তে পাবে।</p>
+      </div>
+      <div class="support-card">
+        <div class="support-icon">📁</div>
+        <h3>Source Code + Resources</h3>
+        <p>প্রতিটা project-এর source code, AI prompt templates, .cursorrules files — সব পাবে।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-header fade-up" style="text-align:center; margin-bottom:0;">
+      <div class="section-eyebrow" style="justify-content:center;">Pricing</div>
+      <h2 class="section-title">এখনই শুরু করো</h2>
+      <p class="section-desc">Early Bird অফার শেষ হলে price বেড়ে যাবে — দেরি করলে বেশি দিতে হবে।</p>
+    </div>
+    <div class="pricing-grid fade-up">
+      <!-- Early Bird -->
+      <div class="pricing-card featured">
+        <span class="pricing-badge">🔥 EARLY BIRD</span>
+        <div class="pricing-type">Early Bird Price</div>
+        <div class="pricing-price accent-price"><span class="currency">৳</span>990</div>
+        <div class="pricing-original">Regular price: ৳৫,০০০</div>
+        <div class="pricing-deadline">⏰ অফার শেষ: ২৫ এপ্রিল, ২০২৫</div>
+        <ul class="pricing-features">
+          <li>সব ২৮টা Module-এর Lifetime Access</li>
+          <li>প্রতিটা project-এর Source Code</li>
+          <li>AI Prompt Templates + .cursorrules files</li>
+          <li>Private Community Group Access</li>
+          <li>Regular Live Q&amp;A Sessions</li>
+          <li>নতুন Module যোগ হলে Free-তে পাবে</li>
+          <li>Certificate of Completion</li>
+        </ul>
+        <button class="btn-pricing btn-pricing-primary">Early Bird-এ Enroll করো →</button>
+      </div>
+      <!-- Regular -->
+      <div class="pricing-card">
+        <div class="pricing-type">Regular Price</div>
+        <div class="pricing-price"><span class="currency">৳</span>5,000</div>
+        <div style="height:44px; margin-bottom:16px;"></div>
+        <ul class="pricing-features">
+          <li>সব ২৮টা Module-এর Lifetime Access</li>
+          <li>প্রতিটা project-এর Source Code</li>
+          <li>AI Prompt Templates + .cursorrules files</li>
+          <li>Private Community Group Access</li>
+          <li>Regular Live Q&amp;A Sessions</li>
+          <li>নতুন Module যোগ হলে Free-তে পাবে</li>
+          <li>Certificate of Completion</li>
+        </ul>
+        <button class="btn-pricing btn-pricing-outline">Regular Price-এ Enroll করো</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq-section">
+  <div class="section-inner">
+    <div class="section-header fade-up">
+      <div class="section-eyebrow" style="justify-content:center;">FAQ</div>
+      <h2 class="section-title">সাধারণ <span class="accent">প্রশ্ন-উত্তর</span></h2>
+    </div>
+    <div class="faq-list fade-up">
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          এই course করতে কী কী আগে জানা লাগবে?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Basic JavaScript জানলেই হবে। HTML, CSS-ও যদি জানো তাহলে আরো ভালো। একদম শূন্য থেকে শুরু হবে না — তবে intermediate বা advanced হতে হবে না।</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          AI tools use করতে কি extra টাকা লাগবে?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">অনেক AI tool-এ free tier আছে যেটা দিয়ে পুরো course করা সম্ভব। কিছু paid tools থাকবে যেগুলোর cost খুবই কম — মাসে $5-10 এর মধ্যে। Course-এ বিস্তারিত জানানো হবে কোনটা free-তে করা যায়।</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Job-এর পাশাপাশি কি এই course করা যাবে?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">হ্যাঁ। Course-এ lifetime access আছে — তোমার নিজের সময় অনুযায়ী করতে পারবে। প্রতিদিন ২-৩ ঘণ্টা দিলে সুন্দরভাবে শেষ করা সম্ভব।</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Mobile development-এর জন্য আলাদা MacBook লাগবে?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Android development Windows বা Mac যেকোনো কিছুতে করা যাবে। iOS development-এর জন্য Mac লাগে — তবে Expo Go app ব্যবহার করে যেকোনো device-এ test করা যায়। Course-এ এই বিষয়ে বিস্তারিত guide থাকবে।</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Early Bird অফার কি সত্যিই ২৫ এপ্রিলে শেষ হবে?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">হ্যাঁ, ২৫ এপ্রিলের পরে price ৳৫,০০০ হয়ে যাবে। Early Bird price আর extend হবে না।</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Refund policy কী?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-answer">Enroll করার ৭ দিনের মধ্যে যদি মনে হয় এই course তোমার জন্য না, তাহলে full refund দেওয়া হবে। No questions asked।</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section fade-up">
+  <div class="section-eyebrow" style="justify-content:center; margin-bottom:20px;">এখনই সুযোগ নাও</div>
+  <h2 class="section-title">AI Revolution-এ <span class="accent">পিছিয়ে থাকার</span><br>সময় নেই</h2>
+  <p class="section-desc" style="margin:0 auto 36px;">৳৯৯০-তে শুরু করো। ২৫ এপ্রিলের পরে price বেড়ে যাবে।</p>
+  <a href="#pricing" class="btn-primary" style="font-size:18px; padding:18px 44px;">Early Bird-এ Enroll করো — ৳৯৯০ →</a>
+  <p style="margin-top:16px; font-size:13px; color:var(--text-muted);">৭ দিনের মধ্যে ভালো না লাগলে Full Refund</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>devAI</strong> — Afnan Mahmud এর সাথে AI-Powered Development শেখো<br>
+  <span style="margin-top:8px; display:block;">© 2025 All rights reserved</span>
+</footer>
+
+<script>
+// Countdown timer to April 25
+function updateCountdown() {
+  const deadline = new Date('2025-04-25T23:59:59');
+  const now = new Date();
+  const diff = deadline - now;
+  if (diff <= 0) { document.getElementById('countdown').textContent = 'শেষ!'; return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('countdown').textContent = `${d}d ${h}h ${m}m ${s}s`;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// FAQ toggle
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
