@@ -261,47 +261,16 @@ export default function Hero() {
               overflow: 'hidden',
             }}
           >
-            {/* Avatar fallback — replace src with actual photo */}
-            <div
+            {/* Instructor photo */}
+            <img
+              src="/mentor.jpeg"
+              alt="Afnan Mahmud"
               style={{
                 width: '100%',
                 height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(34,211,238,0.1) 100%)',
+                objectFit: 'cover',
               }}
-            >
-              <div
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #6366f1, #22d3ee)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '3rem',
-                  fontWeight: 800,
-                  color: 'white',
-                  fontFamily: sg.style.fontFamily,
-                  boxShadow: '0 0 40px rgba(99,102,241,0.4)',
-                }}
-              >
-                AM
-              </div>
-              <p
-                style={{
-                  color: 'rgba(165,180,252,0.7)',
-                  fontSize: '0.875rem',
-                  marginTop: '16px',
-                  fontFamily: inter.style.fontFamily,
-                }}
-              >
-                Afnan Mahmud
-              </p>
-            </div>
+            />
           </div>
 
           {/* Floating tech badges */}

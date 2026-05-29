@@ -3,8 +3,9 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Space_Grotesk, Inter } from 'next/font/google';
+import { trackPixel } from '@/lib/meta-pixel';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -13,6 +14,27 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const courseSlug = searchParams.get('course') ?? '';
   const courseTitle = searchParams.get('title') ? decodeURIComponent(searchParams.get('title')!) : 'your course';
+
+  const eid = searchParams.get('eid');
+  const value = searchParams.get('value');
+  const currency = searchParams.get('currency') ?? 'BDT';
+
+  useEffect(() => {
+    // Meta Purchase — same eventId as the server CAPI call (dedup).
+    if (!eid) return;
+    trackPixel(
+      'Purchase',
+      {
+        value: value ? Number(value) : undefined,
+        currency,
+        content_ids: courseSlug ? [courseSlug] : undefined,
+        content_name: courseTitle,
+        content_type: 'product',
+      },
+      eid
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eid]);
 
   return (
     <div

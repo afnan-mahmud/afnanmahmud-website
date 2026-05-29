@@ -4,14 +4,22 @@ import { initiatePayment } from '@/lib/eps';
 import { Course } from '@/models/Course';
 import { Order } from '@/models/Order';
 import { User } from '@/models/User';
+import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
 
-const COURSE_SLUG = 'complete-website-and-mobile-application-development-course-by-ai';
+const DEFAULT_COURSE_SLUG = 'complete-website-and-mobile-application-development-course-by-ai';
+// Slugs the landing-enroll flow is allowed to enroll into.
+const ALLOWED_SLUGS = new Set([
+  DEFAULT_COURSE_SLUG,
+  'ai-for-developers',
+]);
 const isDev = process.env.NODE_ENV !== 'production';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { name?: string; phone?: string };
+    const body = await req.json() as { name?: string; phone?: string; slug?: string };
     const { name, phone } = body;
+
+    const COURSE_SLUG = body.slug && ALLOWED_SLUGS.has(body.slug) ? body.slug : DEFAULT_COURSE_SLUG;
 
     if (!name || !phone) {
       return NextResponse.json({ error: 'নাম ও ফোন নম্বর দিতে হবে।' }, { status: 400 });
@@ -70,6 +78,29 @@ export async function POST(req: NextRequest) {
       status: 'pending',
     });
 
+    // Meta InitiateCheckout — shared event id for browser/CAPI deduplication.
+    const eventId = newEventId();
+    const tracking = {
+      eventId,
+      value: course.price,
+      currency: 'BDT',
+      contentId: COURSE_SLUG,
+      contentName: course.title as string,
+    };
+    await sendCapiEvent({
+      eventName: 'InitiateCheckout',
+      eventId,
+      user: { phone: user.phone, name: user.name, externalId: String(user._id) },
+      signals: capiSignalsFromRequest(req),
+      customData: {
+        value: course.price,
+        currency: 'BDT',
+        content_ids: [COURSE_SLUG],
+        content_name: course.title,
+        content_type: 'product',
+      },
+    });
+
     const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
     const successUrl = `${baseUrl}/api/payment/success?orderId=${order._id}`;
     const failUrl = `${baseUrl}/api/payment/fail?orderId=${order._id}`;
@@ -83,7 +114,7 @@ export async function POST(req: NextRequest) {
     if (!epsConfigured) {
       if (isDev) {
         // In development, simulate payment success directly
-        return NextResponse.json({ paymentUrl: successUrl });
+        return NextResponse.json({ paymentUrl: successUrl, ...tracking });
       }
       return NextResponse.json(
         { error: 'Payment gateway এখনো configure করা হয়নি। পরে চেষ্টা করো।' },
@@ -103,7 +134,7 @@ export async function POST(req: NextRequest) {
       product_name: course.title,
     });
 
-    return NextResponse.json({ paymentUrl });
+    return NextResponse.json({ paymentUrl, ...tracking });
   } catch (err) {
     console.error('[enroll/landing]', err);
     return NextResponse.json(

@@ -9,21 +9,32 @@ export async function sendOtp(phone: string, code: string): Promise<boolean> {
 
   const message = `Your Afnan Mahmud OTP is: ${code}. Valid for 5 minutes.`;
 
+  // BulkSMSBD expects a number with the 88 country code, e.g. 8801XXXXXXXXX.
+  const number = phone.startsWith('88') ? phone : `88${phone}`;
+
+  // BulkSMSBD expects form-encoded params (not JSON) and a `type` field.
+  const params = new URLSearchParams({
+    api_key: apiKey,
+    type: 'text',
+    senderid: senderId,
+    number,
+    message,
+  });
+
   try {
     const res = await fetch('https://bulksmsbd.net/api/smsapi', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        api_key: apiKey,
-        senderid: senderId,
-        number: phone,
-        message,
-      }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
     });
 
     const data = await res.json();
     // BulkSMSBD returns response_code 202 on success
-    return data.response_code === 202;
+    if (data.response_code !== 202) {
+      console.error('BulkSMSBD send failed:', data);
+      return false;
+    }
+    return true;
   } catch (err) {
     console.error('SMS send error:', err);
     return false;

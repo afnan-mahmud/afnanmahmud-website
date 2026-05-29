@@ -4,6 +4,7 @@ import { verifyPayment } from '@/lib/eps';
 import { Order } from '@/models/Order';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
+import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -48,18 +49,45 @@ export async function GET(req: NextRequest) {
     }
 
     // Add course to user's purchasedCourses
-    await User.findByIdAndUpdate(order.student, {
-      $addToSet: { purchasedCourses: order.course._id },
-    });
+    const purchaser = await User.findByIdAndUpdate(
+      order.student,
+      { $addToSet: { purchasedCourses: order.course._id } },
+      { new: false }
+    ).select('phone name');
 
     // Increment enrolled count
     await Course.findByIdAndUpdate(order.course._id, {
       $inc: { enrolledCount: 1 },
     });
 
-    return NextResponse.redirect(
-      `${baseUrl}/payment/success?course=${order.course.slug}&title=${encodeURIComponent(order.course.title)}`
-    );
+    // Meta Purchase — shared event id for browser/CAPI deduplication.
+    const eventId = newEventId();
+    await sendCapiEvent({
+      eventName: 'Purchase',
+      eventId,
+      user: {
+        phone: purchaser?.phone,
+        name: purchaser?.name,
+        externalId: String(order.student),
+      },
+      signals: capiSignalsFromRequest(req),
+      customData: {
+        value: order.amount,
+        currency: order.currency ?? 'BDT',
+        content_ids: [order.course.slug],
+        content_name: order.course.title,
+        content_type: 'product',
+      },
+    });
+
+    const successParams = new URLSearchParams({
+      course: order.course.slug,
+      title: order.course.title,
+      eid: eventId,
+      value: String(order.amount),
+      currency: order.currency ?? 'BDT',
+    });
+    return NextResponse.redirect(`${baseUrl}/payment/success?${successParams.toString()}`);
   } catch (err) {
     console.error('[payment/success]', err);
     return NextResponse.redirect(`${baseUrl}/payment/failed?reason=server_error`);

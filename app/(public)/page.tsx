@@ -3,6 +3,8 @@ import FeaturedCourse from '@/components/home/FeaturedCourse';
 import WhyAfnan from '@/components/home/WhyAfnan';
 import Testimonials from '@/components/home/Testimonials';
 import CtaBanner from '@/components/home/CtaBanner';
+import { connectDB } from '@/lib/db';
+import { Course } from '@/models/Course';
 
 export const metadata = {
   title: 'Afnan Mahmud — Learn MERN & Mobile App Development',
@@ -15,11 +17,16 @@ export const metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  await connectDB();
+  const featured = await Course.findOne({ slug: 'ai-for-developers' })
+    .select('thumbnail')
+    .lean<{ thumbnail?: string }>();
+
   return (
     <>
       <Hero />
-      <FeaturedCourse />
+      <FeaturedCourse thumbnail={featured?.thumbnail} />
       <WhyAfnan />
       <Testimonials />
       <CtaBanner />

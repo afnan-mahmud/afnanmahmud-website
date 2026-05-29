@@ -235,6 +235,7 @@ export default function CourseForm({ initial, mode }: { initial?: CourseFormInit
       if (thumbnailFile) {
         const fd = new FormData();
         fd.append('file', thumbnailFile);
+        fd.append('folder', 'thumbnails');
         const up = await fetch('/api/upload', { method: 'POST', body: fd });
         const upData = await up.json();
         if (!up.ok) throw new Error(upData.error ?? 'Thumbnail upload failed');

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Space_Grotesk } from 'next/font/google';
 import OtpInput from '@/components/shared/OtpInput';
+import { trackPixel } from '@/lib/meta-pixel';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
@@ -77,6 +78,20 @@ function OtpPageContent() {
         redirect: false,
       });
       if (res?.error) throw new Error('Wrong OTP or OTP expired');
+
+      // Meta CompleteRegistration — fire browser pixel + server CAPI with a
+      // shared eventId so the two deduplicate.
+      const eventId =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : String(Date.now());
+      trackPixel('CompleteRegistration', { status: true }, eventId);
+      void fetch('/api/track/complete-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
+      }).catch(() => {});
+
       toast.success('Verified! Redirecting…');
       router.push(returnUrl);
     } catch (err: unknown) {

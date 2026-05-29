@@ -5,6 +5,7 @@ import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import CourseTabs from '@/components/course/CourseTabs';
 import EnrollButton from '@/components/course/EnrollButton';
+import TrackEvent from '@/components/tracking/TrackEvent';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { Users, BookOpen, BarChart2, Play } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -102,6 +103,16 @@ export default async function CourseDetailPage({
 
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+      <TrackEvent
+        event="ViewContent"
+        params={{
+          value: course.price,
+          currency: 'BDT',
+          content_ids: [course.slug],
+          content_name: course.title,
+          content_type: 'product',
+        }}
+      />
       {/* ── HERO ── */}
       <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '64px' }}>
         {/* Blurred thumbnail background */}

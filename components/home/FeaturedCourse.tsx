@@ -11,15 +11,15 @@ const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
 
 const BULLETS = [
-  'Build full-stack web apps from scratch',
-  'REST API with Node.js & Express',
-  'MongoDB database design & optimization',
-  'React Native mobile apps for iOS & Android',
-  'Deploy to production (VPS, Vercel, Render)',
-  'Real projects for your portfolio',
+  'Build custom websites & mobile apps using AI',
+  'Master AntiGravity, Gemini & Claude Code — all free tools',
+  'Production-grade architecture & system design',
+  'Backend, database & business logic with AI',
+  'Deploy a real production SaaS to live servers',
+  'Portfolio + job-ready as a Software Engineer',
 ];
 
-export default function FeaturedCourse() {
+export default function FeaturedCourse({ thumbnail }: { thumbnail?: string }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
@@ -93,9 +93,9 @@ export default function FeaturedCourse() {
               marginBottom: '28px',
             }}
           >
-            Complete MERN Stack{' '}
-            <span style={{ color: '#6366f1' }}>+</span>{' '}
-            React Native
+            Custom Web & Mobile Apps{' '}
+            <span style={{ color: '#6366f1' }}>with</span>{' '}
+            AI
           </h2>
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -115,7 +115,7 @@ export default function FeaturedCourse() {
           </ul>
 
           <Link
-            href="/courses"
+            href="/ai-for-developers"
             className={sg.className}
             style={{
               display: 'inline-flex',
@@ -166,27 +166,37 @@ export default function FeaturedCourse() {
                 overflow: 'hidden',
               }}
             >
-              <div
-                style={{
-                  position: 'absolute', inset: 0,
-                  backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-                  backgroundSize: '30px 30px',
-                }}
-              />
-              <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-                <div
-                  style={{
-                    fontSize: '3.5rem',
-                    marginBottom: '8px',
-                    filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.5))',
-                  }}
-                >
-                  ⚡
-                </div>
-                <span className={sg.className} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                  Full-Stack Bootcamp
-                </span>
-              </div>
+              {thumbnail ? (
+                <img
+                  src={thumbnail}
+                  alt="AI for Developers"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <>
+                  <div
+                    style={{
+                      position: 'absolute', inset: 0,
+                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+                      backgroundSize: '30px 30px',
+                    }}
+                  />
+                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                    <div
+                      style={{
+                        fontSize: '3.5rem',
+                        marginBottom: '8px',
+                        filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.5))',
+                      }}
+                    >
+                      🤖
+                    </div>
+                    <span className={sg.className} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                      AI Dev Masterclass
+                    </span>
+                  </div>
+                </>
+              )}
 
               {/* Price badge */}
               <div
@@ -208,7 +218,7 @@ export default function FeaturedCourse() {
                 }}
               >
                 <Tag size={12} />
-                ৳2,499
+                ৳990
               </div>
             </div>
 
@@ -224,17 +234,17 @@ export default function FeaturedCourse() {
                   letterSpacing: '-0.01em',
                 }}
               >
-                Complete MERN Stack + React Native
+                AI for Developers
               </h3>
               <p
                 className={inter.className}
                 style={{ color: '#71717a', fontSize: '0.875rem', marginBottom: '20px', lineHeight: 1.6 }}
               >
-                From zero to job-ready developer. 200+ hours of Bangla content.
+                Build production-grade websites & mobile apps from zero using free AI tools. Bangla content.
               </p>
 
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {['MERN', 'React Native', 'REST API', 'MongoDB'].map((tag) => (
+                {['AntiGravity', 'Gemini', 'Claude Code', 'Cursor'].map((tag) => (
                   <span
                     key={tag}
                     className={sg.className}
