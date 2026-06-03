@@ -21,7 +21,7 @@ There is **no test framework** configured. Standalone scripts (e.g. `scripts/see
 node --env-file=.env.local --env-file=.env scripts/seed-ai-for-developers.ts
 ```
 
-Env is split across `.env.local` (real secrets, gitignored) and `.env`; `.env.example` lists the keys. Required/used vars: `MONGODB_URI`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `BULKSMS_API_KEY`/`BULKSMS_SENDER_ID`, `EPS_BASE_URL`/`EPS_MERCHANT_ID`/`EPS_API_KEY` (+ `EPS_*_URL`), `NEXT_PUBLIC_META_PIXEL_ID`/`META_CAPI_ACCESS_TOKEN`/`META_TEST_EVENT_CODE`, `RESEND_API_KEY`, `CLOUDINARY_*` (unused — see Uploads).
+Env is split across `.env.local` (real secrets, gitignored) and `.env`; `.env.example` lists the keys. Required/used vars: `MONGODB_URI`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `BULKSMS_API_KEY`/`BULKSMS_SENDER_ID`, `EPS_BASE_URL`/`EPS_USERNAME`/`EPS_PASSWORD`/`EPS_HASH_KEY`/`EPS_MERCHANT_ID`/`EPS_STORE_ID` (+ optional `EPS_TRANSACTION_TYPE_ID`, `EPS_CANCEL_URL`), `NEXT_PUBLIC_META_PIXEL_ID`/`META_CAPI_ACCESS_TOKEN`/`META_TEST_EVENT_CODE`, `RESEND_API_KEY`, `CLOUDINARY_*` (unused — see Uploads).
 
 **Dev server gotcha:** the Next 16 dev server intermittently serves stale compiled output — an edit on disk doesn't reflect in the browser even though the file is correct. When that happens, don't re-edit: `pkill -f "next dev"; rm -rf .next/dev .next/cache; npm run dev`.
 
@@ -48,7 +48,9 @@ Passwordless phone OTP. Flow: `POST /api/auth/send-otp` generates a code, stores
 - `OtpCode` — short-lived codes for sign-in.
 
 ### Payments (EPS gateway, `lib/eps.ts`)
-Purchase funnel: the landing `EnrollModal` (name + phone) → `POST /api/enroll/landing`, which finds/creates the `User`, creates a `pending` `Order`, and calls `initiatePayment` to get a redirect URL. EPS redirects back to `GET /api/payment/success`, which calls `verifyPayment`, marks the order `success`, adds the course to `purchasedCourses`, increments `enrolledCount`, and redirects to the `/payment/success` page. **Dev bypass:** when EPS env vars are unset and `NODE_ENV !== 'production'`, the enroll route skips the gateway and returns the success URL directly.
+Implements the EPS (Easy Payment System) V5 merchant API: `GetToken` (bearer auth, cached) → `InitializeEPS` (returns the hosted-page `RedirectURL`) → `CheckMerchantTransactionStatus` (server-side verify). Every request carries an `x-hash` header = `base64(HMAC-SHA512(key=utf8(EPS_HASH_KEY), msg=data))`, where `data` is the `userName` (GetToken) or the `merchantTransactionId` (initialize/verify). Endpoints are `EPS_BASE_URL` + `/v1/Auth/GetToken` | `/v1/EPSEngine/InitializeEPS` | `/v1/EPSEngine/CheckMerchantTransactionStatus`.
+
+Purchase funnel: the landing `EnrollModal` (name + phone) → `POST /api/enroll/landing`, which finds/creates the `User`, generates a unique `merchantTransactionId` (`newMerchantTransactionId()`), creates a `pending` `Order` storing it, and calls `initiatePayment` to get the redirect URL. EPS redirects back to `GET /api/payment/success?orderId=...`, which calls `verifyPayment(order.merchantTransactionId)`, checks the returned `Status === 'Success'` **and** that the verified amount matches the order (anti-tampering), then marks the order `success` (saving the EPS `transactionId`), adds the course to `purchasedCourses`, increments `enrolledCount`, and redirects to `/payment/success`. **Dev bypass:** when `epsConfigured()` is false and `NODE_ENV !== 'production'`, the enroll route returns the success URL directly and the success route accepts without calling EPS.
 
 ### File uploads (`/api/upload`)
 Saves files to the **local filesystem** under `public/uploads/<folder>/` (gitignored) and returns a `/uploads/...` URL — it does **not** use Cloudinary (`lib/cloudinary.ts` is dead code). The `folder` form field is whitelisted to `avatars` | `thumbnails`; only `avatars` uploads update `User.avatar`. This will not persist on serverless hosts (e.g. Vercel) — swap to object storage there.

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
-import { initiatePayment } from '@/lib/eps';
+import { initiatePayment, newMerchantTransactionId, epsConfigured } from '@/lib/eps';
 import { Course } from '@/models/Course';
 import { Order } from '@/models/Order';
 import { User } from '@/models/User';
@@ -49,28 +49,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ alreadyPurchased: true });
     }
 
+    const merchantTransactionId = newMerchantTransactionId();
     const order = await Order.create({
       student: session.user.id,
       course: course._id,
       amount: course.price,
       currency: 'BDT',
       paymentGateway: 'eps',
+      merchantTransactionId,
       status: 'pending',
     });
 
     const slug = courseSlug ?? course.slug;
     const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
 
+    if (!epsConfigured()) {
+      return NextResponse.json(
+        { error: 'Payment gateway is not configured.' },
+        { status: 503 }
+      );
+    }
+
     const { paymentUrl } = await initiatePayment({
-      amount: course.price,
-      currency: 'BDT',
-      order_id: order._id.toString(),
-      success_url: `${baseUrl}/api/payment/success?orderId=${order._id}`,
-      fail_url: `${baseUrl}/api/payment/fail?orderId=${order._id}`,
-      cancel_url: process.env.EPS_CANCEL_URL ?? `${baseUrl}/courses/${slug}`,
-      customer_name: user.name,
-      customer_phone: user.phone,
-      product_name: course.title,
+      merchantTransactionId,
+      customerOrderId: order._id.toString(),
+      totalAmount: course.price,
+      successUrl: `${baseUrl}/api/payment/success?orderId=${order._id}`,
+      failUrl: `${baseUrl}/api/payment/fail?orderId=${order._id}`,
+      cancelUrl: process.env.EPS_CANCEL_URL ?? `${baseUrl}/courses/${slug}`,
+      customerName: user.name,
+      customerPhone: user.phone,
+      customerEmail: user.email,
+      productName: course.title,
+      ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim(),
     });
 
     return NextResponse.json({ paymentUrl });

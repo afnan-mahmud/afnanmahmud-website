@@ -21,6 +21,10 @@ declare module '@auth/core/jwt' {
 
 export const authConfig: NextAuthConfig = {
   providers: [],
+  // Self-hosted behind a reverse proxy (Nginx on the VPS): Auth.js otherwise
+  // defaults trustHost to false in production and throws `UntrustedHost` on
+  // every auth request. We terminate TLS at our own proxy, so trust the host.
+  trustHost: true,
   session: { strategy: 'jwt' },
   callbacks: {
     async jwt({ token, user }) {

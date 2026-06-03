@@ -6,6 +6,9 @@ export interface IOrder extends Document {
   amount: number;
   currency: string;
   paymentGateway: string;
+  /** Unique min-10-digit id we generate and send to EPS; used for verification. */
+  merchantTransactionId?: string;
+  /** EPS-side transaction id returned on success. */
   transactionId?: string;
   epsOrderId?: string;
   status: 'pending' | 'success' | 'failed';
@@ -20,6 +23,7 @@ const OrderSchema = new Schema<IOrder>(
     amount: { type: Number, required: true },
     currency: { type: String, default: 'BDT' },
     paymentGateway: { type: String, default: 'eps' },
+    merchantTransactionId: { type: String, index: true },
     transactionId: { type: String },
     epsOrderId: { type: String },
     status: {

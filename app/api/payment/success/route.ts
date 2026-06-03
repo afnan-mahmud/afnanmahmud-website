@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { verifyPayment } from '@/lib/eps';
+import { verifyPayment, epsConfigured } from '@/lib/eps';
 import { Order } from '@/models/Order';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
@@ -9,7 +9,6 @@ import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-ca
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const orderId = searchParams.get('orderId');
-  const transactionId = searchParams.get('transaction_id') ?? searchParams.get('tran_id');
 
   const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
 
@@ -25,14 +24,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/payment/failed?reason=invalid_order`);
     }
 
-    // Verify payment with EPS if transactionId provided
-    const txId = transactionId ?? order.transactionId;
+    // Verify the payment server-side via EPS CheckMerchantTransactionStatus,
+    // keyed by the merchantTransactionId we stored when the order was created.
     let isVerified = false;
+    let epsTransactionId: string | undefined;
 
-    if (txId) {
-      isVerified = await verifyPayment(txId);
+    if (epsConfigured() && order.merchantTransactionId) {
+      const result = await verifyPayment(order.merchantTransactionId);
+      isVerified = result.verified;
+      epsTransactionId = result.epsTransactionId;
+
+      // Guard against amount tampering: the verified amount must match the order.
+      if (
+        isVerified &&
+        result.totalAmount != null &&
+        Math.abs(result.totalAmount - order.amount) > 0.01
+      ) {
+        isVerified = false;
+      }
     } else {
-      // No transactionId from EPS callback — treat as verified for sandbox/testing
+      // No live gateway configured — accept only outside production (dev bypass).
       isVerified = process.env.NODE_ENV !== 'production';
     }
 
@@ -42,11 +53,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Mark order success
-    if (txId) {
-      await Order.findByIdAndUpdate(orderId, { status: 'success', transactionId: txId });
-    } else {
-      await Order.findByIdAndUpdate(orderId, { status: 'success' });
-    }
+    await Order.findByIdAndUpdate(orderId, {
+      status: 'success',
+      ...(epsTransactionId ? { transactionId: epsTransactionId } : {}),
+    });
 
     // Add course to user's purchasedCourses
     const purchaser = await User.findByIdAndUpdate(

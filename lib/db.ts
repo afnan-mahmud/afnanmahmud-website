@@ -28,9 +28,23 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
+      // Cap the pool so multiple PM2 instances don't exhaust the DB's
+      // connection limit (e.g. Atlas free tier ~500).
+      maxPoolSize: 10,
+      // Fail fast instead of hanging the request if the DB is unreachable.
+      serverSelectionTimeoutMS: 10_000,
     });
   }
 
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    // A failed connection attempt leaves a rejected promise cached; reset it so
+    // the next request can retry instead of re-awaiting the same rejection
+    // forever (which would keep the app down until a process restart).
+    cached.promise = null;
+    throw err;
+  }
+
   return cached.conn;
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { initiatePayment } from '@/lib/eps';
+import { initiatePayment, newMerchantTransactionId, epsConfigured } from '@/lib/eps';
 import { Course } from '@/models/Course';
 import { Order } from '@/models/Order';
 import { User } from '@/models/User';
@@ -68,13 +68,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create pending order
+    // Create pending order with a unique EPS merchant transaction id.
+    const merchantTransactionId = newMerchantTransactionId();
     const order = await Order.create({
       student: user._id,
       course: course._id,
       amount: course.price,
       currency: 'BDT',
       paymentGateway: 'eps',
+      merchantTransactionId,
       status: 'pending',
     });
 
@@ -106,12 +108,7 @@ export async function POST(req: NextRequest) {
     const failUrl = `${baseUrl}/api/payment/fail?orderId=${order._id}`;
 
     // Dev mode: if EPS credentials not set, bypass payment and go straight to success
-    const epsConfigured =
-      process.env.EPS_BASE_URL &&
-      process.env.EPS_MERCHANT_ID &&
-      process.env.EPS_API_KEY;
-
-    if (!epsConfigured) {
+    if (!epsConfigured()) {
       if (isDev) {
         // In development, simulate payment success directly
         return NextResponse.json({ paymentUrl: successUrl, ...tracking });
@@ -123,15 +120,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { paymentUrl } = await initiatePayment({
-      amount: course.price,
-      currency: 'BDT',
-      order_id: order._id.toString(),
-      success_url: successUrl,
-      fail_url: failUrl,
-      cancel_url: `${baseUrl}/courses/${COURSE_SLUG}`,
-      customer_name: user.name,
-      customer_phone: user.phone,
-      product_name: course.title,
+      merchantTransactionId,
+      customerOrderId: order._id.toString(),
+      totalAmount: course.price,
+      successUrl,
+      failUrl,
+      cancelUrl: `${baseUrl}/courses/${COURSE_SLUG}`,
+      customerName: user.name,
+      customerPhone: user.phone,
+      customerEmail: user.email,
+      productName: course.title,
+      ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim(),
     });
 
     return NextResponse.json({ paymentUrl, ...tracking });
