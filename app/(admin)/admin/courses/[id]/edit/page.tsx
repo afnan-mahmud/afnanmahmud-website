@@ -25,7 +25,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
     thumbnail?: string;
     curriculum?: Array<{
       sectionTitle: string;
-      lessons?: Array<{ _id?: string; title: string; videoId?: string; duration?: string; isPreview?: boolean }>;
+      lessons?: Array<{ _id?: string; title: string; videoId?: string; duration?: string; isPreview?: boolean; note?: string }>;
     }>;
   };
 
@@ -53,6 +53,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
         videoId: l.videoId ?? '',
         duration: l.duration ?? '',
         isPreview: l.isPreview ?? false,
+        note: l.note ?? '',
       })),
     })),
   };

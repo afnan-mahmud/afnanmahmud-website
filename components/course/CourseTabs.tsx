@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle, Lock, Play, ChevronDown, ChevronUp, BookOpen, User } from 'lucide-react';
+import { CheckCircle, BookOpen, User } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import type { ISection } from '@/models/Course';
 
@@ -72,152 +72,33 @@ function OverviewTab({ longDescription, whatYouLearn }: { longDescription?: stri
 }
 
 function CurriculumTab({ curriculum }: { curriculum: ISection[] }) {
-  const [openSections, setOpenSections] = useState<Set<number>>(new Set([0]));
-  const [playingLesson, setPlayingLesson] = useState<string | null>(null);
-
-  const toggleSection = (i: number) => {
-    setOpenSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
-  };
-
+  // Section names are shown, but individual lesson names are intentionally
+  // hidden on the public course page — only the section title and lesson count.
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {curriculum.map((section, si) => (
         <div
           key={si}
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '16px 20px',
             border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: '12px',
-            overflow: 'hidden',
+            background: 'rgba(255,255,255,0.04)',
           }}
         >
-          {/* Section header */}
-          <button
-            onClick={() => toggleSection(si)}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '16px 20px',
-              background: 'rgba(255,255,255,0.04)',
-              border: 'none',
-              cursor: 'pointer',
-              textAlign: 'left',
-              gap: '12px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-              <BookOpen size={16} color="#6366f1" style={{ flexShrink: 0 }} />
-              <span className={sg.className} style={{ color: '#f1f5f9', fontWeight: 600, fontSize: '0.9375rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {section.sectionTitle}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-              <span className={inter.className} style={{ color: '#52525b', fontSize: '0.8125rem' }}>
-                {section.lessons.length} lessons
-              </span>
-              {openSections.has(si) ? <ChevronUp size={16} color="#6366f1" /> : <ChevronDown size={16} color="#52525b" />}
-            </div>
-          </button>
-
-          {/* Lessons */}
-          {openSections.has(si) && (
-            <div>
-              {section.lessons.map((lesson, li) => (
-                <div key={lesson._id ?? li}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 20px 12px 44px',
-                      borderTop: '1px solid rgba(255,255,255,0.04)',
-                      background: playingLesson === lesson._id ? 'rgba(99,102,241,0.06)' : 'transparent',
-                    }}
-                  >
-                    {lesson.isPreview ? (
-                      <button
-                        onClick={() => setPlayingLesson(playingLesson === lesson._id ? null : lesson._id)}
-                        style={{
-                          background: 'rgba(99,102,241,0.15)',
-                          border: '1px solid rgba(99,102,241,0.3)',
-                          borderRadius: '50%',
-                          width: 28,
-                          height: 28,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          flexShrink: 0,
-                        }}
-                        aria-label="Play preview"
-                      >
-                        <Play size={12} color="#6366f1" fill="#6366f1" />
-                      </button>
-                    ) : (
-                      <div style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Lock size={14} color="#3f3f46" />
-                      </div>
-                    )}
-
-                    <span
-                      className={inter.className}
-                      style={{ color: lesson.isPreview ? '#cbd5e1' : '#71717a', fontSize: '0.875rem', flex: 1 }}
-                    >
-                      {lesson.title}
-                    </span>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                      {lesson.isPreview && (
-                        <span
-                          className={sg.className}
-                          style={{
-                            padding: '2px 8px',
-                            background: 'rgba(34,211,238,0.1)',
-                            border: '1px solid rgba(34,211,238,0.25)',
-                            borderRadius: '100px',
-                            color: '#22d3ee',
-                            fontSize: '0.6875rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.04em',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Free Preview
-                        </span>
-                      )}
-                      {lesson.duration && (
-                        <span className={inter.className} style={{ color: '#52525b', fontSize: '0.75rem' }}>
-                          {lesson.duration}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Inline video player */}
-                  {lesson.isPreview && playingLesson === lesson._id && lesson.videoId && (
-                    <div style={{ padding: '0 20px 16px 44px' }}>
-                      <div style={{ position: 'relative', paddingBottom: '56.25%', borderRadius: '10px', overflow: 'hidden', background: '#000' }}>
-                        <iframe
-                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-                          src={`https://www.youtube.com/embed/${lesson.videoId}?autoplay=1`}
-                          title={lesson.title}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+            <BookOpen size={16} color="#6366f1" style={{ flexShrink: 0 }} />
+            <span className={sg.className} style={{ color: '#f1f5f9', fontWeight: 600, fontSize: '0.9375rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {section.sectionTitle}
+            </span>
+          </div>
+          <span className={inter.className} style={{ color: '#52525b', fontSize: '0.8125rem', flexShrink: 0 }}>
+            {section.lessons.length} {section.lessons.length === 1 ? 'lesson' : 'lessons'}
+          </span>
         </div>
       ))}
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Space_Grotesk } from 'next/font/google';
@@ -12,10 +12,24 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
 const RESEND_SECONDS = 120;
 
+// Decide where to land after sign-in. Admins go to the admin portal, everyone
+// else to the student dashboard. A `returnUrl` is honoured only when it's a
+// safe same-origin path AND it belongs to the user's own portal — this stops
+// open redirects and stops a student ever being routed into /admin.
+function resolvePostLoginTarget(role: string | undefined, returnUrl: string | null): string {
+  const home = role === 'admin' ? '/admin' : '/dashboard';
+  if (!returnUrl) return home;
+  const isSafeRelative = returnUrl.startsWith('/') && !returnUrl.startsWith('//');
+  if (!isSafeRelative) return home;
+  if (returnUrl.startsWith('/admin') && role !== 'admin') return '/dashboard';
+  if (returnUrl.startsWith('/dashboard') && role === 'admin') return '/admin';
+  return returnUrl;
+}
+
 function OtpPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get('returnUrl') ?? '/dashboard';
+  const returnUrl = searchParams.get('returnUrl');
 
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');
@@ -92,8 +106,12 @@ function OtpPageContent() {
         body: JSON.stringify({ eventId }),
       }).catch(() => {});
 
+      // Pull the freshly-issued session so we know the role, then route the
+      // user to their own portal (admin → /admin, student → /dashboard).
+      const session = await getSession();
+      const role = (session?.user as { role?: string } | undefined)?.role;
       toast.success('Verified! Redirecting…');
-      router.push(returnUrl);
+      router.push(resolvePostLoginTarget(role, returnUrl));
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Verification failed');
     } finally {

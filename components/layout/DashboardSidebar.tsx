@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { BookOpen, User, LogOut, LayoutDashboard, X, Shield } from 'lucide-react';
+import { BookOpen, User, LogOut, LayoutDashboard, X } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
@@ -171,35 +171,6 @@ export default function DashboardSidebar({ open, onClose }: DashboardSidebarProp
           );
         })}
       </nav>
-
-      {/* Admin link */}
-      {role === 'admin' && (
-        <div style={{ padding: '0 12px' }}>
-          <Link
-            href="/admin"
-            onClick={onClose}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '10px 12px',
-              borderRadius: '8px',
-              background: 'rgba(99,102,241,0.08)',
-              border: '1px solid rgba(99,102,241,0.15)',
-              textDecoration: 'none',
-              transition: 'background 0.15s',
-            }}
-          >
-            <Shield size={16} color="#6366f1" />
-            <span
-              className={sg.className}
-              style={{ color: '#a5b4fc', fontWeight: 600, fontSize: '0.875rem' }}
-            >
-              Admin Panel
-            </span>
-          </Link>
-        </div>
-      )}
 
       {/* Logout */}
       <div style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>

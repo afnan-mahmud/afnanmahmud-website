@@ -56,11 +56,18 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const DROPDOWN_ITEMS = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/profile', label: 'Profile', icon: User },
-    { href: '/dashboard/my-courses', label: 'My Courses', icon: GraduationCap },
-  ];
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const isAdmin = role === 'admin';
+
+  // Admins and students live in separate portals, so the account menu points
+  // each to their own home rather than always to the student dashboard.
+  const DROPDOWN_ITEMS = isAdmin
+    ? [{ href: '/admin', label: 'Admin Panel', icon: LayoutDashboard }]
+    : [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/dashboard/profile', label: 'Profile', icon: User },
+        { href: '/dashboard/my-courses', label: 'My Courses', icon: GraduationCap },
+      ];
 
   return (
     <nav
@@ -202,20 +209,32 @@ export default function Navbar() {
           <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {session ? (
               <>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMenuOpen(false)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '8px', color: 'white', fontWeight: 600, textDecoration: 'none', fontSize: '0.9375rem' }}
-                >
-                  <LayoutDashboard size={16} /> Dashboard
-                </Link>
-                <Link
-                  href="/dashboard/profile"
-                  onClick={() => setMenuOpen(false)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#a1a1aa', fontWeight: 500, textDecoration: 'none', fontSize: '0.9375rem' }}
-                >
-                  <User size={16} /> Profile
-                </Link>
+                {isAdmin ? (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '8px', color: 'white', fontWeight: 600, textDecoration: 'none', fontSize: '0.9375rem' }}
+                  >
+                    <LayoutDashboard size={16} /> Admin Panel
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMenuOpen(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '8px', color: 'white', fontWeight: 600, textDecoration: 'none', fontSize: '0.9375rem' }}
+                    >
+                      <LayoutDashboard size={16} /> Dashboard
+                    </Link>
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setMenuOpen(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#a1a1aa', fontWeight: 500, textDecoration: 'none', fontSize: '0.9375rem' }}
+                    >
+                      <User size={16} /> Profile
+                    </Link>
+                  </>
+                )}
                 <button
                   onClick={() => { setMenuOpen(false); signOut({ callbackUrl: '/' }); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px', color: '#f87171', fontWeight: 600, cursor: 'pointer', fontSize: '0.9375rem', fontFamily: 'inherit' }}

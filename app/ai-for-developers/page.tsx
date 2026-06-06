@@ -5,7 +5,8 @@ import {
   CheckCircle2, XCircle, ChevronDown, Play, Code, Code2, Sparkles, Cpu, Layers, Zap,
   Star, Brain, Terminal, Rocket, Check,
   Briefcase, Globe, Lock, Target, Trophy, MonitorPlay,
-  Send, AtSign, Mail, Layout, Smartphone, Server
+  Send, AtSign, Mail, Layout, Smartphone, Server,
+  Volume2, VolumeX, X
 } from 'lucide-react';
 import EnrollModal from './EnrollModal';
 import { trackPixel } from '@/lib/meta-pixel';
@@ -14,6 +15,7 @@ type IconType = ComponentType<{ size?: number | string; className?: string }>;
 
 const COURSE_SLUG = 'ai-for-developers';
 const COURSE_PRICE = 990;
+const DEMO_VIDEO_SRC = '/course-demo.mp4';
 
 const globalStyles = `
   html {
@@ -63,6 +65,11 @@ const globalStyles = `
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 `;
 
@@ -174,6 +181,8 @@ const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false }: 
 export default function AiForDevelopersPage() {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const openEnroll = () => setEnrollOpen(true);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const openDemo = () => setDemoOpen(true);
 
   useEffect(() => {
     // Meta ViewContent for the landing course.
@@ -191,6 +200,7 @@ export default function AiForDevelopersPage() {
       <style>{globalStyles}</style>
 
       <EnrollModal open={enrollOpen} onClose={() => setEnrollOpen(false)} />
+      <VideoDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
 
       {/* Dark Cyber Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -201,7 +211,7 @@ export default function AiForDevelopersPage() {
       <Navbar onEnroll={openEnroll} />
 
       <main className="relative z-10">
-        <HeroSection onEnroll={openEnroll} />
+        <HeroSection onEnroll={openEnroll} onWatchDemo={openDemo} />
         <TechStackStrip />
         <GamifiedStats />
         <PainPointSection />
@@ -253,7 +263,7 @@ function Navbar({ onEnroll }: { onEnroll: () => void }) {
   );
 }
 
-function HeroSection({ onEnroll }: { onEnroll: () => void }) {
+function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchDemo: () => void }) {
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 overflow-hidden border-b border-slate-800/50 min-h-[90vh] flex items-center">
       {/* Cyberpunk Glow Effects */}
@@ -286,15 +296,21 @@ function HeroSection({ onEnroll }: { onEnroll: () => void }) {
             </Reveal>
 
             <Reveal delay={400} direction="right">
+              {/* Mobile/tablet: inline auto-playing demo video above the Enroll button */}
+              <div className="lg:hidden mb-6">
+                <MobileDemoVideo />
+              </div>
+
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 <button onClick={onEnroll} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
                   <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20}/>
                   Enroll Now - ৳990
                 </button>
-                <a href="#journey" className="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group border-slate-700">
+                {/* Desktop only: opens the demo video in a modal */}
+                <button onClick={onWatchDemo} className="hidden lg:flex w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 hover:-translate-y-1 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700 cursor-pointer">
                   <Play size={20} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
                   Watch Demo
-                </a>
+                </button>
               </div>
             </Reveal>
           </div>
@@ -387,6 +403,153 @@ function HeroSection({ onEnroll }: { onEnroll: () => void }) {
         </div>
       </div>
     </section>
+  );
+}
+
+// Mobile/tablet inline demo: starts playing when scrolled into view.
+// Tries to play WITH sound first; if the browser blocks autoplay-with-sound,
+// it falls back to muted playback and shows a "tap for sound" overlay.
+function MobileDemoVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const triedAutoplay = useRef(false);
+  const [muted, setMuted] = useState(true);
+  const [needsTap, setNeedsTap] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!triedAutoplay.current) {
+            triedAutoplay.current = true;
+            // First attempt: play with sound.
+            video.muted = false;
+            video.play().then(() => {
+              setMuted(false);
+              setNeedsTap(false);
+            }).catch(() => {
+              // Browser blocked autoplay with sound — fall back to muted.
+              video.muted = true;
+              setMuted(true);
+              setNeedsTap(true);
+              video.play().catch(() => {});
+            });
+          } else {
+            // Resume on re-entry, respecting the current mute state.
+            video.play().catch(() => {});
+          }
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.muted) {
+      video.muted = false;
+      setMuted(false);
+      setNeedsTap(false);
+      video.play().catch(() => {});
+    } else {
+      video.muted = true;
+      setMuted(true);
+    }
+  };
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-slate-700 neon-border bg-black shadow-2xl">
+      <video
+        ref={videoRef}
+        src={DEMO_VIDEO_SRC}
+        className="w-full h-auto block"
+        playsInline
+        loop
+        controls
+        preload="metadata"
+      />
+
+      {/* Always-visible sound toggle */}
+      <button
+        onClick={toggleSound}
+        aria-label={muted ? 'Unmute' : 'Mute'}
+        className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur border border-white/15 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+      >
+        {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+      </button>
+
+      {/* "Tap for sound" prompt when autoplay-with-sound was blocked */}
+      {needsTap && muted && (
+        <button
+          onClick={toggleSound}
+          className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-indigo-600 text-white text-sm font-bold shadow-[0_0_20px_rgba(99,102,241,0.5)] animate-pulse"
+        >
+          <Volume2 size={16} /> Tap for sound
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Desktop demo: video plays inside a modal opened by the "Watch Demo" button.
+// Because it's opened by a click (a user gesture), it plays with sound.
+function VideoDemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (open) {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-5 bg-black/80 backdrop-blur-sm"
+      style={{ animation: 'modalFade 0.2s ease' }}
+    >
+      <div
+        className="relative w-full max-w-4xl"
+        style={{ animation: 'modalSlideIn 0.22s ease' }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center hover:bg-slate-700 hover:text-white transition-colors"
+        >
+          <X size={18} />
+        </button>
+        <video
+          ref={videoRef}
+          src={DEMO_VIDEO_SRC}
+          className="w-full h-auto rounded-2xl border border-slate-700 neon-border bg-black"
+          controls
+          playsInline
+          preload="auto"
+        />
+      </div>
+    </div>
   );
 }
 

@@ -6,6 +6,7 @@ export interface ILesson {
   videoId: string;
   duration: string;
   isPreview: boolean;
+  note?: string;
 }
 
 export interface ISection {
@@ -37,6 +38,7 @@ const LessonSchema = new Schema<ILesson>(
     videoId: { type: String, required: true },
     duration: { type: String },
     isPreview: { type: Boolean, default: false },
+    note: { type: String },
   },
   { _id: false }
 );

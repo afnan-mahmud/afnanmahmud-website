@@ -5,6 +5,7 @@ import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import CourseTabs from '@/components/course/CourseTabs';
 import EnrollButton from '@/components/course/EnrollButton';
+import { stripLessonNotes } from '@/lib/course';
 import TrackEvent from '@/components/tracking/TrackEvent';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { Users, BookOpen, BarChart2, Play } from 'lucide-react';
@@ -100,6 +101,10 @@ export default async function CourseDetailPage({
 
   const totalLessons = countLessons(course.curriculum);
   const whatYouLearn = deriveWhatYouLearn(course.curriculum);
+
+  // Lesson notes are for enrolled students only — strip them before the
+  // curriculum is handed to the public client component.
+  const publicCurriculum = stripLessonNotes(course.curriculum);
 
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
@@ -242,7 +247,7 @@ export default async function CourseDetailPage({
         {/* ── TABS ── */}
         <CourseTabs
           longDescription={course.longDescription}
-          curriculum={course.curriculum}
+          curriculum={publicCurriculum}
           whatYouLearn={whatYouLearn}
         />
 

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { CheckCircle, Play, ChevronRight, ChevronDown, BookOpen } from 'lucide-react';
+import { CheckCircle, Play, ChevronRight, ChevronDown, BookOpen, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import type { ISection, ILesson } from '@/models/Course';
+import LessonNote from './LessonNote';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -363,6 +364,27 @@ export default function VideoPlayer({
               </button>
             )}
           </div>
+
+          {/* Lesson notes (admin-authored, enrolled students only) */}
+          {activeLesson?.note?.trim() && (
+            <div
+              style={{
+                marginTop: 28,
+                padding: '20px 22px',
+                background: 'rgba(255,255,255,0.025)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 14,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <FileText size={16} color="#a5b4fc" />
+                <h3 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '0.9375rem', margin: 0, letterSpacing: '-0.01em' }}>
+                  Lesson Notes
+                </h3>
+              </div>
+              <LessonNote note={activeLesson.note} />
+            </div>
+          )}
         </div>
       </div>
 
