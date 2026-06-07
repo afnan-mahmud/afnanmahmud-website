@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .superpowers/
+
+# large media assets (too big for GitHub's 100MB limit)
+/public/course-demo.mp4
