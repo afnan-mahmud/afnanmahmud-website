@@ -160,7 +160,14 @@ export async function initiatePayment(params: EpsInitParams): Promise<EpsInitRes
     ProductCategory: 'Online Course',
   };
 
-  const res = await fetch(`${baseUrl()}/v1/EPSEngine/InitializeEPS`, {
+  const initUrl = `${baseUrl()}/v1/EPSEngine/InitializeEPS`;
+  // TEMP DEBUG — remove after diagnosing the production 404.
+  console.log('[eps:init] EPS_BASE_URL=', JSON.stringify(process.env.EPS_BASE_URL),
+    'initUrl=', JSON.stringify(initUrl),
+    'tokenLen=', token?.length, 'amount=', params.totalAmount,
+    'node=', process.version);
+
+  const res = await fetch(initUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -172,6 +179,13 @@ export async function initiatePayment(params: EpsInitParams): Promise<EpsInitRes
 
   if (!res.ok) {
     const text = await res.text();
+    // TEMP DEBUG
+    console.error('[eps:init] FAIL status=', res.status,
+      'url=', initUrl,
+      'content-type=', res.headers.get('content-type'),
+      'location=', res.headers.get('location'),
+      'www-authenticate=', res.headers.get('www-authenticate'),
+      'bodyLen=', text.length, 'body=', JSON.stringify(text.slice(0, 500)));
     throw new Error(`EPS InitializeEPS failed: ${res.status} — ${text}`);
   }
 
