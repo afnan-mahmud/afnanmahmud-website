@@ -122,7 +122,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
         <div className="mb-7">
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-4 bg-cyan-500/10 border border-cyan-500/30">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse inline-block" />
-            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Early Bird — ৳599</span>
+            <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Early Bird — ৳990</span>
           </div>
           <h2 className="text-2xl font-black text-white mb-2 leading-tight">Mission শুরু করো 🚀</h2>
           <p className="text-sm text-slate-400 leading-relaxed">
