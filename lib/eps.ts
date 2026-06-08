@@ -45,12 +45,16 @@ function makeHash(data: string): string {
 
 // Cache the bearer token across calls until shortly before it expires.
 let tokenCache: { token: string; expiresAt: number } | null = null;
+// TEMP DEBUG — whether the last getToken() served a cached or fresh token.
+let lastTokenSource: 'cache' | 'fresh' = 'fresh';
 
 /** API No. 01 — GetToken. Returns a bearer token for the other endpoints. */
 async function getToken(): Promise<string> {
   if (tokenCache && Date.now() < tokenCache.expiresAt) {
+    lastTokenSource = 'cache';
     return tokenCache.token;
   }
+  lastTokenSource = 'fresh';
 
   const userName = process.env.EPS_USERNAME;
   const password = process.env.EPS_PASSWORD;
@@ -160,7 +164,11 @@ export async function initiatePayment(params: EpsInitParams): Promise<EpsInitRes
     ProductCategory: 'Online Course',
   };
 
-  const res = await fetch(`${baseUrl()}/v1/EPSEngine/InitializeEPS`, {
+  const initUrl = `${baseUrl()}/v1/EPSEngine/InitializeEPS`;
+  // TEMP DEBUG — diagnosing intermittent prod 404.
+  console.log('[eps:init] try', { initUrl, tokenSource: lastTokenSource, mtx: params.merchantTransactionId, amount: params.totalAmount });
+
+  const res = await fetch(initUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -172,8 +180,16 @@ export async function initiatePayment(params: EpsInitParams): Promise<EpsInitRes
 
   if (!res.ok) {
     const text = await res.text();
+    // TEMP DEBUG — full failure detail.
+    console.error('[eps:init] FAIL', {
+      status: res.status,
+      tokenSource: lastTokenSource,
+      headers: Object.fromEntries(res.headers.entries()),
+      body: text.slice(0, 800),
+    });
     throw new Error(`EPS InitializeEPS failed: ${res.status} — ${text}`);
   }
+  console.log('[eps:init] OK', res.status);
 
   const data = (await res.json()) as {
     TransactionId?: string;
