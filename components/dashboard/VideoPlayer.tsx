@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import type { ISection, ILesson } from '@/models/Course';
 import LessonNote from './LessonNote';
+import VdoPlayer from '@/components/VdoPlayer';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -253,15 +254,7 @@ export default function VideoPlayer({
         {/* Video */}
         <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#000', flexShrink: 0 }}>
           {activeLesson?.videoId ? (
-            <iframe
-              key={activeLesson._id}
-              src={`https://www.youtube.com/embed/${activeLesson.videoId}?rel=0&modestbranding=1&autoplay=1`}
-              title={activeLesson.title}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            <VdoPlayer key={activeLesson._id} videoId={activeLesson.videoId} title={activeLesson.title} />
           ) : (
             <div
               style={{

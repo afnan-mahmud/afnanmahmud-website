@@ -55,18 +55,20 @@ export default function MediaTab({
 
       {/* Preview video */}
       <div>
-        <Label>Preview Video ID (YouTube)</Label>
-        <Input value={form.previewVideoId} onChange={(v) => setField('previewVideoId', v)} placeholder="dQw4w9WgXcQ" />
-        {form.previewVideoId ? (
-          <div style={{ marginTop: 10, borderRadius: 8, overflow: 'hidden', position: 'relative', paddingBottom: '56.25%', background: '#000' }}>
-            <iframe src={`https://www.youtube.com/embed/${form.previewVideoId}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} frameBorder="0" allowFullScreen title="Preview" />
-          </div>
-        ) : (
-          <div style={{ marginTop: 10, height: 120, borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Play size={18} color="#3f3f46" />
-            <span className={inter.className} style={{ color: '#3f3f46', fontSize: '0.8125rem' }}>Enter Video ID to preview</span>
-          </div>
-        )}
+        <Label>Preview Video ID (VdoCipher)</Label>
+        <Input value={form.previewVideoId} onChange={(v) => setField('previewVideoId', v)} placeholder="VdoCipher Video ID" />
+        <div style={{ marginTop: 10, minHeight: 120, padding: '14px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center' }}>
+          <Play size={18} color="#3f3f46" />
+          {form.previewVideoId ? (
+            <span className={inter.className} style={{ color: '#71717a', fontSize: '0.8125rem' }}>
+              Plays securely on the course page once the course is saved &amp; published.
+            </span>
+          ) : (
+            <span className={inter.className} style={{ color: '#3f3f46', fontSize: '0.8125rem' }}>
+              Paste a VdoCipher Video ID (upload in the VdoCipher dashboard first).
+            </span>
+          )}
+        </div>
       </div>
 
       <style>{`

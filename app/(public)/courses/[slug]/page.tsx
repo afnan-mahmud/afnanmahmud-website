@@ -7,6 +7,7 @@ import CourseTabs from '@/components/course/CourseTabs';
 import EnrollButton from '@/components/course/EnrollButton';
 import { stripLessonNotes } from '@/lib/course';
 import TrackEvent from '@/components/tracking/TrackEvent';
+import VdoPlayer from '@/components/VdoPlayer';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { Users, BookOpen, BarChart2, Play } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -270,14 +271,7 @@ export default async function CourseDetailPage({
                 background: '#000',
               }}
             >
-              <iframe
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-                src={`https://www.youtube.com/embed/${course.previewVideoId}`}
-                title={`${course.title} Preview`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <VdoPlayer videoId={course.previewVideoId} title={`${course.title} Preview`} />
             </div>
           </div>
         )}

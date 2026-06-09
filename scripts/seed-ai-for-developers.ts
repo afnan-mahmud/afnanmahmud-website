@@ -62,7 +62,7 @@ async function main() {
       'AntiGravity, Gemini এবং Claude Code দিয়ে জিরো থেকে প্রোডাকশন গ্রেড Website ও Mobile App বানানো শেখো।',
     longDescription:
       'সম্পূর্ণ ফ্রি AI টুলস ব্যবহার করে Tutorial Hell থেকে বেরিয়ে এসে real, production-grade application বানানোর কমপ্লিট মাস্টারক্লাস। ৭টি লেভেল পার করে জিরো থেকে লাইভ সার্ভার পর্যন্ত।',
-    price: 599,
+    price: 990,
     isFree: false,
     isPublished: true,
     category: 'AI Development',

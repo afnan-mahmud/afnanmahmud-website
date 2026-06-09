@@ -59,8 +59,8 @@ export default function LessonRow({
           <input value={lesson.title} onChange={(e) => onChange('title', e.target.value)} placeholder="Lesson title" className={inter.className} style={lessonInput} />
         </div>
         <div style={{ flex: '1 1 110px', minWidth: 0 }}>
-          <label style={fieldLabel}>YouTube ID</label>
-          <input value={lesson.videoId} onChange={(e) => onChange('videoId', e.target.value)} placeholder="dQw4w9WgXcQ" className={inter.className} style={lessonInput} />
+          <label style={fieldLabel}>VdoCipher Video ID</label>
+          <input value={lesson.videoId} onChange={(e) => onChange('videoId', e.target.value)} placeholder="VdoCipher Video ID" className={inter.className} style={lessonInput} />
         </div>
         <div style={{ flex: '0 1 80px', minWidth: 0 }}>
           <label style={fieldLabel}>Duration</label>
