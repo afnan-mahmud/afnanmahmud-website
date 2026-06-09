@@ -27,48 +27,69 @@ function Avatar({ name, avatar }: { name: string; avatar?: string }) {
   );
 }
 
-export default function StudentsTable({ students }: { students: StudentRow[] }) {
+interface StudentsTableProps {
+  students: StudentRow[];
+  /** Heading shown above the table. */
+  title?: string;
+  /** Message shown when the list is empty. */
+  emptyMessage?: string;
+  /** Show the expandable "Enrolled" courses column (off for abandoned students). */
+  showEnrolled?: boolean;
+}
+
+export default function StudentsTable({
+  students,
+  title = 'Students',
+  emptyMessage = 'No students yet',
+  showEnrolled = true,
+}: StudentsTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) =>
     setExpanded((p) => { const n = new Set(p); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
 
+  const headers = showEnrolled ? ['', 'Name', 'Phone', 'Enrolled', 'Joined'] : ['Name', 'Phone', 'Joined'];
+  const colCount = headers.length;
+
   return (
     <div style={{ padding: '36px 32px', maxWidth: 1100 }} className="admin-content">
-      <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', marginBottom: 28 }}>Students</h1>
+      <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', marginBottom: 28 }}>{title}</h1>
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                {['', 'Name', 'Phone', 'Enrolled', 'Joined'].map((h) => (
-                  <th key={h} className={sg.className} style={{ padding: '10px 16px', textAlign: 'left', color: '#52525b', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
+                {headers.map((h, hi) => (
+                  <th key={h || `col-${hi}`} className={sg.className} style={{ padding: '10px 16px', textAlign: 'left', color: '#52525b', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {students.length === 0 ? (
-                <tr><td colSpan={5} className={inter.className} style={{ padding: '48px 16px', textAlign: 'center', color: '#52525b' }}>No students yet</td></tr>
+                <tr><td colSpan={colCount} className={inter.className} style={{ padding: '48px 16px', textAlign: 'center', color: '#52525b' }}>{emptyMessage}</td></tr>
               ) : students.map((s, i) => {
+                const canExpand = showEnrolled && s.enrolledCount > 0;
                 const isExpanded = expanded.has(s._id);
                 const isLast = i === students.length - 1;
                 return (
                   <>
                     <tr
                       key={s._id}
-                      onClick={() => s.enrolledCount > 0 && toggle(s._id)}
+                      onClick={() => canExpand && toggle(s._id)}
                       style={{
                         borderBottom: isExpanded || !isLast ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                        cursor: s.enrolledCount > 0 ? 'pointer' : 'default',
+                        cursor: canExpand ? 'pointer' : 'default',
                         background: isExpanded ? 'rgba(99,102,241,0.04)' : 'transparent',
                         transition: 'background 0.15s',
                       }}
                     >
-                      <td style={{ padding: '12px 16px', width: 36 }}>
-                        {s.enrolledCount > 0 && (
-                          isExpanded ? <ChevronDown size={15} color="#6366f1" /> : <ChevronRight size={15} color="#52525b" />
-                        )}
-                      </td>
+                      {showEnrolled && (
+                        <td style={{ padding: '12px 16px', width: 36 }}>
+                          {canExpand && (
+                            isExpanded ? <ChevronDown size={15} color="#6366f1" /> : <ChevronRight size={15} color="#52525b" />
+                          )}
+                        </td>
+                      )}
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <Avatar name={s.name} avatar={s.avatar} />
@@ -76,11 +97,13 @@ export default function StudentsTable({ students }: { students: StudentRow[] }) 
                         </div>
                       </td>
                       <td className={inter.className} style={{ padding: '12px 16px', color: '#71717a', fontSize: '0.8125rem' }}>{s.phone}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span className={sg.className} style={{ padding: '2px 8px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '100px', color: '#a5b4fc', fontSize: '0.6875rem', fontWeight: 700 }}>
-                          {s.enrolledCount} courses
-                        </span>
-                      </td>
+                      {showEnrolled && (
+                        <td style={{ padding: '12px 16px' }}>
+                          <span className={sg.className} style={{ padding: '2px 8px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '100px', color: '#a5b4fc', fontSize: '0.6875rem', fontWeight: 700 }}>
+                            {s.enrolledCount} courses
+                          </span>
+                        </td>
+                      )}
                       <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                         {new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>

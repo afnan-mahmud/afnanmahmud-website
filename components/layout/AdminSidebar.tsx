@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, BookOpen, Users, ShoppingCart, LogOut, X,
+  LayoutDashboard, BookOpen, Users, UserX, ShoppingCart, Wallet, LogOut, X,
 } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
 
@@ -13,8 +13,10 @@ const sg = Space_Grotesk({ subsets: ['latin'] });
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/courses', label: 'Courses', icon: BookOpen },
-  { href: '/admin/students', label: 'Students', icon: Users },
+  { href: '/admin/students', label: 'Students', icon: Users, exact: true },
+  { href: '/admin/abandoned-students', label: 'Abandoned Students', icon: UserX },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/accounts', label: 'Accounts', icon: Wallet },
 ];
 
 interface AdminSidebarProps {
