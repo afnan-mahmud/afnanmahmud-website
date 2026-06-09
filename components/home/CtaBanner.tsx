@@ -1,171 +1,46 @@
+// components/home/CtaBanner.tsx
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { useInView } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { GraduationCap, Briefcase, ArrowRight } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
 
+const PANELS = [
+  { icon: GraduationCap, title: 'Learn with me', desc: 'Job-ready full-stack skills, explained in Bangla with real projects.', cta: 'Explore Courses', href: '/courses', accent: '#6366f1' },
+  { icon: Briefcase, title: 'Hire me', desc: "Need a web or mobile product built right? Let's talk about your project.", cta: 'Work With Me', href: '/contact', accent: '#22d3ee' },
+];
+
 export default function CtaBanner() {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-
+  const inView = useInView(ref, { once: true, margin: '-80px' });
   return (
-    <section
-      ref={ref}
-      style={{
-        background: '#0a0a0a',
-        padding: '80px 24px',
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-        style={{
-          maxWidth: '900px',
-          margin: '0 auto',
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '24px',
-          padding: 'clamp(40px, 6vw, 72px)',
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Background glow */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at 50% 120%, rgba(99,102,241,0.15) 0%, transparent 60%)',
-        }} />
-
-        {/* Top sparkle badge */}
-        <div
-          className={sg.className}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '5px 14px',
-            background: 'rgba(99,102,241,0.12)',
-            border: '1px solid rgba(99,102,241,0.3)',
-            borderRadius: '100px',
-            color: '#a5b4fc',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            marginBottom: '24px',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          <Sparkles size={12} />
-          Limited Time Offer
-        </div>
-
-        <h2
-          className={sg.className}
-          style={{
-            fontSize: 'clamp(1.875rem, 4vw, 2.75rem)',
-            fontWeight: 800,
-            color: '#f1f5f9',
-            letterSpacing: '-0.025em',
-            lineHeight: 1.15,
-            marginBottom: '16px',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          Ready to{' '}
-          <span style={{
-            background: 'linear-gradient(135deg, #6366f1, #22d3ee)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            level up
-          </span>
-          {' '}your skills?
-        </h2>
-
-        <p
-          className={inter.className}
-          style={{
-            color: '#71717a',
-            fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-            lineHeight: 1.7,
-            maxWidth: '520px',
-            margin: '0 auto 36px',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          Join hundreds of students already learning with Afnan. Start today and get lifetime access to all course materials.
-        </p>
-
-        <div
-          style={{
-            display: 'flex',
-            gap: '14px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          <Link
-            href="/auth/otp"
-            className={sg.className}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '14px 32px',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              borderRadius: '10px',
-              color: 'white',
-              fontWeight: 700,
-              fontSize: '1rem',
-              textDecoration: 'none',
-              boxShadow: '0 0 40px rgba(99,102,241,0.35)',
-              transition: 'box-shadow 0.2s, transform 0.2s',
-              letterSpacing: '0.01em',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 60px rgba(99,102,241,0.55)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 40px rgba(99,102,241,0.35)'; e.currentTarget.style.transform = 'none'; }}
+    <section ref={ref} style={{ background: '#0a0a0a', padding: '110px 0' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+        {PANELS.map((p, i) => (
+          <motion.div
+            key={p.title}
+            initial={{ opacity: 0, y: 32 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: i * 0.12 }}
+            style={{ background: `linear-gradient(135deg, ${p.accent}1a, ${p.accent}05)`, border: `1px solid ${p.accent}40`, borderRadius: 24, padding: 44, position: 'relative', overflow: 'hidden' }}
           >
-            Start Learning Today
-            <ArrowRight size={16} />
-          </Link>
-          <Link
-            href="/courses"
-            className={sg.className}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '14px 28px',
-              background: 'transparent',
-              border: '1.5px solid rgba(255,255,255,0.12)',
-              borderRadius: '10px',
-              color: '#a1a1aa',
-              fontWeight: 600,
-              fontSize: '1rem',
-              textDecoration: 'none',
-              transition: 'border-color 0.2s, color 0.2s',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; e.currentTarget.style.color = '#a5b4fc'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#a1a1aa'; }}
-          >
-            Browse Courses
-          </Link>
-        </div>
-      </motion.div>
+            <div aria-hidden style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle, ${p.accent}26 0%, transparent 70%)` }} />
+            <div style={{ width: 54, height: 54, borderRadius: 14, background: `${p.accent}1f`, border: `1px solid ${p.accent}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 22 }}>
+              <p.icon size={26} color={p.accent} />
+            </div>
+            <h3 className={sg.className} style={{ color: '#f8fafc', fontSize: '1.5rem', fontWeight: 800, margin: '0 0 12px' }}>{p.title}</h3>
+            <p className={inter.className} style={{ color: '#94a3b8', fontSize: '0.9375rem', lineHeight: 1.7, margin: '0 0 26px' }}>{p.desc}</p>
+            <Link href={p.href} className={sg.className} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: p.accent, borderRadius: 10, color: '#0a0a0a', fontWeight: 700, fontSize: '0.9375rem', textDecoration: 'none' }}>
+              {p.cta} <ArrowRight size={16} />
+            </Link>
+          </motion.div>
+        ))}
+      </div>
     </section>
   );
 }
