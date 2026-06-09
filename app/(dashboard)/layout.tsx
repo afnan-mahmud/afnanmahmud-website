@@ -1,56 +1,25 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { isSessionActive } from '@/lib/auth-device';
+import DashboardShell from '@/components/layout/DashboardShell';
 
-import { useState } from 'react';
-import DashboardSidebar from '@/components/layout/DashboardSidebar';
-import { Menu } from 'lucide-react';
-import { Space_Grotesk } from 'next/font/google';
+/**
+ * Server-side guard for the whole student area. Enforces the device limit: if a
+ * student's session has been superseded by a login on another device of the same
+ * class, its sessionId is no longer active and we send them back to sign in with a
+ * reason flag. Admins are exempt (and are bounced out of /dashboard by middleware).
+ */
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
 
-const sg = Space_Grotesk({ subsets: ['latin'] });
+  if (session?.user?.role === 'student') {
+    const active = await isSessionActive(
+      session.user.id,
+      session.user.role,
+      session.user.sessionId
+    );
+    if (!active) redirect('/auth/otp?reason=other_device');
+  }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a' }}>
-      <DashboardSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Mobile top bar */}
-        <header
-          className="dash-mobile-header"
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '14px 20px',
-            background: 'rgba(10,10,10,0.95)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(16px)',
-            position: 'sticky',
-            top: 0,
-            zIndex: 40,
-          }}
-        >
-          <button
-            onClick={() => setSidebarOpen(true)}
-            style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', padding: '2px' }}
-            aria-label="Open menu"
-          >
-            <Menu size={22} />
-          </button>
-          <span className={sg.className} style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '1rem' }}>
-            Dev<span style={{ color: '#6366f1' }}>Courses</span>
-          </span>
-        </header>
-
-        <main style={{ flex: 1, overflowY: 'auto' }}>{children}</main>
-      </div>
-
-      <style>{`
-        @media (max-width: 767px) {
-          .dash-mobile-header { display: flex !important; }
-        }
-      `}</style>
-    </div>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

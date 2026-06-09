@@ -5,6 +5,13 @@ export interface IProgress {
   completedLessons: string[];
 }
 
+export interface IDeviceSession {
+  deviceClass: 'mobile' | 'desktop';
+  sessionId: string;
+  userAgent?: string;
+  lastLogin: Date;
+}
+
 export interface IUser extends Document {
   name: string;
   phone: string;
@@ -13,6 +20,7 @@ export interface IUser extends Document {
   role: 'student' | 'admin';
   purchasedCourses: Types.ObjectId[];
   progress: IProgress[];
+  deviceSessions: IDeviceSession[];
   createdAt: Date;
 }
 
@@ -20,6 +28,16 @@ const ProgressSchema = new Schema<IProgress>(
   {
     courseId: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     completedLessons: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
+const DeviceSessionSchema = new Schema<IDeviceSession>(
+  {
+    deviceClass: { type: String, enum: ['mobile', 'desktop'], required: true },
+    sessionId: { type: String, required: true },
+    userAgent: { type: String },
+    lastLogin: { type: Date, default: Date.now },
   },
   { _id: false }
 );
@@ -33,6 +51,7 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, enum: ['student', 'admin'], default: 'student' },
     purchasedCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
     progress: { type: [ProgressSchema], default: [] },
+    deviceSessions: { type: [DeviceSessionSchema], default: [] },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import { vdocipherConfigured, getOtp, buildWatermark } from '@/lib/vdocipher';
+import { isSessionActive } from '@/lib/auth-device';
 import type { ICourse } from '@/models/Course';
 
 interface LeanCourse {
@@ -59,6 +60,19 @@ export async function POST(req: NextRequest) {
     const isPublic = isCoursePreview || Boolean(matchedLesson?.isPreview);
 
     const session = await auth();
+
+    // Enforce the device limit: a kicked student session can't mint OTPs even if
+    // it still holds a (stale) JWT cookie. Admins are exempt inside isSessionActive.
+    if (session?.user?.id) {
+      const active = await isSessionActive(
+        session.user.id,
+        session.user.role,
+        session.user.sessionId
+      );
+      if (!active) {
+        return NextResponse.json({ error: 'Session expired' }, { status: 401 });
+      }
+    }
 
     let watermarkLabel = 'protected';
 

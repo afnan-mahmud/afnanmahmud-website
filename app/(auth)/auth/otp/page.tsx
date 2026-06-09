@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn, signOut, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Space_Grotesk } from 'next/font/google';
@@ -30,6 +30,15 @@ function OtpPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
+  const reason = searchParams.get('reason');
+
+  // Arrived here because the account was used on another device of the same class:
+  // clear the now-stale cookie and explain why they were signed out.
+  useEffect(() => {
+    if (reason !== 'other_device') return;
+    signOut({ redirect: false });
+    toast.error('Apnar account onno device e login kora hoyeche, tai ei device theke logout kora holo.');
+  }, [reason]);
 
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');

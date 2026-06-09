@@ -5,6 +5,7 @@ import { Order } from '@/models/Order';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
+import { sendPurchaseConfirmation } from '@/lib/sms';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -23,6 +24,11 @@ export async function GET(req: NextRequest) {
     if (!order) {
       return NextResponse.redirect(`${baseUrl}/payment/failed?reason=invalid_order`);
     }
+
+    // Was this order already completed? Side-effects (enrolledCount, CAPI, SMS)
+    // must run only on the first transition to success, so a page refresh or a
+    // duplicate EPS redirect doesn't double-count, re-fire Purchase, or re-send SMS.
+    const alreadyProcessed = order.status === 'success';
 
     // Verify the payment server-side via EPS CheckMerchantTransactionStatus,
     // keyed by the merchantTransactionId we stored when the order was created.
@@ -58,37 +64,51 @@ export async function GET(req: NextRequest) {
       ...(epsTransactionId ? { transactionId: epsTransactionId } : {}),
     });
 
-    // Add course to user's purchasedCourses
+    // Add course to user's purchasedCourses (idempotent)
     const purchaser = await User.findByIdAndUpdate(
       order.student,
       { $addToSet: { purchasedCourses: order.course._id } },
       { new: false }
     ).select('phone name');
 
-    // Increment enrolled count
-    await Course.findByIdAndUpdate(order.course._id, {
-      $inc: { enrolledCount: 1 },
-    });
-
     // Meta Purchase — shared event id for browser/CAPI deduplication.
     const eventId = newEventId();
-    await sendCapiEvent({
-      eventName: 'Purchase',
-      eventId,
-      user: {
-        phone: purchaser?.phone,
-        name: purchaser?.name,
-        externalId: String(order.student),
-      },
-      signals: capiSignalsFromRequest(req),
-      customData: {
-        value: order.amount,
-        currency: order.currency ?? 'BDT',
-        content_ids: [order.course.slug],
-        content_name: order.course.title,
-        content_type: 'product',
-      },
-    });
+
+    // One-time side-effects on the first transition to success.
+    if (!alreadyProcessed) {
+      // Increment enrolled count
+      await Course.findByIdAndUpdate(order.course._id, {
+        $inc: { enrolledCount: 1 },
+      });
+
+      await sendCapiEvent({
+        eventName: 'Purchase',
+        eventId,
+        user: {
+          phone: purchaser?.phone,
+          name: purchaser?.name,
+          externalId: String(order.student),
+        },
+        signals: capiSignalsFromRequest(req),
+        customData: {
+          value: order.amount,
+          currency: order.currency ?? 'BDT',
+          content_ids: [order.course.slug],
+          content_name: order.course.title,
+          content_type: 'product',
+        },
+      });
+
+      // Confirmation SMS — best-effort; a failure must not affect enrollment or
+      // the redirect.
+      if (purchaser?.phone) {
+        try {
+          await sendPurchaseConfirmation(purchaser.phone, order.course.title);
+        } catch (smsErr) {
+          console.error('[payment/success] confirmation SMS failed', smsErr);
+        }
+      }
+    }
 
     const successParams = new URLSearchParams({
       course: order.course.slug,
