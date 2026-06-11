@@ -138,40 +138,26 @@ function PaymentSuccessContent() {
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {courseSlug && (
-              <Link
-                href={`/dashboard/my-courses/${courseSlug}`}
-                className={sg.className}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  padding: '14px 28px',
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                  borderRadius: '10px',
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  textDecoration: 'none',
-                  boxShadow: '0 0 30px rgba(34,197,94,0.3)',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                Start Learning Now →
-              </Link>
-            )}
             <Link
-              href="/dashboard"
-              className={inter.className}
+              href={courseSlug ? `/dashboard/my-courses/${courseSlug}` : '/dashboard'}
+              className={sg.className}
               style={{
-                color: '#52525b',
-                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '14px 28px',
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                borderRadius: '10px',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '1rem',
                 textDecoration: 'none',
-                transition: 'color 0.2s',
+                boxShadow: '0 0 30px rgba(34,197,94,0.3)',
+                letterSpacing: '0.01em',
               }}
             >
-              Go to Dashboard
+              Start Learning Now →
             </Link>
           </div>
         </motion.div>
