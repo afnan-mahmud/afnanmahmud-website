@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
+import AddStudentModal, { type CourseOption } from './AddStudentModal';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -35,6 +36,8 @@ interface StudentsTableProps {
   emptyMessage?: string;
   /** Show the expandable "Enrolled" courses column (off for abandoned students). */
   showEnrolled?: boolean;
+  /** When provided, renders an "Add Student" button + modal next to the title. */
+  addStudentCourses?: CourseOption[];
 }
 
 export default function StudentsTable({
@@ -42,6 +45,7 @@ export default function StudentsTable({
   title = 'Students',
   emptyMessage = 'No students yet',
   showEnrolled = true,
+  addStudentCourses,
 }: StudentsTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -53,7 +57,10 @@ export default function StudentsTable({
 
   return (
     <div style={{ padding: '36px 32px', maxWidth: 1100 }} className="admin-content">
-      <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', marginBottom: 28 }}>{title}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
+        <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', margin: 0 }}>{title}</h1>
+        {addStudentCourses && <AddStudentModal courses={addStudentCourses} />}
+      </div>
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -72,9 +79,8 @@ export default function StudentsTable({
                 const isExpanded = expanded.has(s._id);
                 const isLast = i === students.length - 1;
                 return (
-                  <>
+                  <Fragment key={s._id}>
                     <tr
-                      key={s._id}
                       onClick={() => canExpand && toggle(s._id)}
                       style={{
                         borderBottom: isExpanded || !isLast ? '1px solid rgba(255,255,255,0.04)' : 'none',
@@ -121,7 +127,7 @@ export default function StudentsTable({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
