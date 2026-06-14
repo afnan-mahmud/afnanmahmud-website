@@ -216,7 +216,18 @@ export default function AiForDevelopersPage() {
         <GamifiedStats />
         <PainPointSection />
         <WhyAIWorkflow />
+        <CtaBanner
+          onEnroll={openEnroll}
+          headline={<>পুরোনো নিয়মে আর কত? <GradientText>Smart way</GradientText>-তে শুরু করুন।</>}
+          sub="একটাবার AI-first ওয়েতে কাজ করা শিখে গেলে আর পিছনে তাকাতে হবে না। আজই জার্নিটা শুরু করুন।"
+        />
         <CurriculumJourney />
+        <DevStack />
+        <CtaBanner
+          onEnroll={openEnroll}
+          headline={<>জিরো থেকে <GradientText>লাইভ অ্যাপ</GradientText> — পুরোটা একসাথে।</>}
+          sub="৮টি মডিউল, একটা রিয়েল প্রজেক্ট, ওয়েবসাইট থেকে মোবাইল অ্যাপ পর্যন্ত। লাইফটাইম এক্সেস, একবারের পেমেন্টে।"
+        />
         <TargetAudience />
         <InstructorProfile />
         <PricingNeon onEnroll={openEnroll} />
@@ -640,10 +651,10 @@ function PainPointSection() {
         <Reveal>
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
-              <span className="text-red-500">কেন</span> আপনি আটকে আছেন?
+              <span className="text-red-500">কেন</span> আপনি আটকে যাচ্ছেন?
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              কোর্স কিনছেন, ভিডিও দেখছেন, কিন্তু নিজে কিছু বানাতে গেলেই Blank হয়ে যাচ্ছেন। কারণ আপনি এখনও Old School নিয়মে কোড করার চেষ্টা করছেন।
+              কোর্স কিনছেন, ঘণ্টার পর ঘণ্টা ভিডিও দেখছেন — কিন্তু নিজে বানাতে গেলেই মাথা ফাঁকা। দোষটা আপনার না, দোষটা পুরোনো নিয়মে শেখার।
             </p>
           </div>
         </Reveal>
@@ -659,10 +670,10 @@ function PainPointSection() {
                 <XCircle size={24} /> The Old Way (Tutorial Hell)
               </h3>
               <ul className="space-y-4 text-slate-300">
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> ঘণ্টার পর ঘণ্টা টিউটোরিয়াল দেখা।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> সিনট্যাক্স মুখস্থ করতে গিয়ে লজিক ভুলে যাওয়া।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> Error আসলে StackOverflow তে সল্যুশন খুঁজতে গিয়ে দিন পার।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> প্রোজেক্ট শেষ করার আগেই মোটিভেশন হারিয়ে ফেলা।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> ঘণ্টার পর ঘণ্টা টিউটোরিয়াল দেখেও মনে কিছুই থাকে না।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> সিনট্যাক্স মুখস্থ করতে গিয়ে আসল লজিকটাই ভুলে যাওয়া।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> একটা Error-এর সমাধান খুঁজতে গিয়ে পুরো দিন শেষ।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> প্রজেক্ট শেষ হওয়ার আগেই আগ্রহটা হারিয়ে ফেলা।</li>
               </ul>
             </div>
           </Reveal>
@@ -679,10 +690,10 @@ function PainPointSection() {
                 <CheckCircle2 size={24} /> The Modern AI Way
               </h3>
               <ul className="space-y-4 text-slate-200">
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> AI-কে পেয়ার প্রোগ্রামার (Pair Programmer) হিসেবে ইউজ করা।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কোড মুখস্থ না করে Architecture এবং Logic এ ফোকাস করা।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> Gemini & Claude দিয়ে সেকেন্ডের মধ্যে Error সলভ করা।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কয়েক সপ্তাহে পুরো প্রোডাকশন গ্রেড SaaS দাঁড় করানো।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> AI-কে আপনার Assistant Programmer বানিয়ে কাজ করা।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কোড মুখস্থ নয়, Architecture আর Logic-এ ফোকাস করা।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> Gemini আর Claude দিয়ে সেকেন্ডেই Error সলভ করা।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কয়েক সপ্তাহেই পুরো প্রোডাকশন-গ্রেড অ্যাপ দাঁড় করানো।</li>
               </ul>
             </div>
           </Reveal>
@@ -696,23 +707,23 @@ function WhyAIWorkflow() {
   const values: { icon: IconType; title: string; desc: string }[] = [
     {
       icon: Terminal,
-      title: "100% Free Tool Stack",
-      desc: "সাবস্ক্রিপশনের চিন্তা বাদ। AntiGravity, Gemini, এবং Claude Code এর ফ্রি টায়ার দিয়ে কিভাবে প্রো-লেভেলের কাজ করবেন, সেটাই শেখানো হবে।"
+      title: "১০০% ফ্রি টুল",
+      desc: "কোনো সাবস্ক্রিপশন ফি নেই। AntiGravity, Gemini আর Claude Code-এর ফ্রি ভার্সন দিয়েই কিভাবে প্রো-লেভেলের কাজ করবেন, সেটা হাতে-কলমে দেখানো হবে।"
     },
     {
       icon: Layers,
-      title: "Zero to Production",
-      desc: "লোকালহোস্টে আটকানো নয়। স্ক্র্যাচ থেকে কোড করে GitHub হয়ে Vercel/Render সার্ভারে প্রজেক্ট লাইভ করা পর্যন্ত কমপ্লিট গাইড।"
+      title: "জিরো থেকে প্রোডাকশন",
+      desc: "শুধু লোকালহোস্টে আটকে থাকা নয়। স্ক্র্যাচ থেকে কোড করে GitHub হয়ে লাইভ সার্ভারে অ্যাপ চালু করা পর্যন্ত — পুরোটা এখানে স্টেপ বাই স্টেপ দেখানো হবে।"
     },
     {
       icon: MonitorPlay,
-      title: "No-BS Architecture",
-      desc: "AI কে দিয়ে হাবিজাবি কোড লেখানো নয়। প্রপার সিস্টেম ডিজাইন এবং স্কেলেবল আর্কিটেকচার কিভাবে প্ল্যান করতে হয় তা শিখবেন।"
+      title: "প্রপার আর্কিটেকচার",
+      desc: "AI দিয়ে এলোমেলো কোড নয়। সিস্টেম ডিজাইন আর স্কেলেবল আর্কিটেকচার কিভাবে প্ল্যান করতে হয়, সেটাও শিখবেন।"
     },
     {
       icon: Globe,
-      title: "Job & Client Ready",
-      desc: "Software Engineer হিসেবে জবের প্রস্তুতি এবং ফ্রিল্যান্স ক্লায়েন্টদের নতুন বা Existing প্রজেক্ট AI দিয়ে কিভাবে সহজে ডেলিভারি করবেন, তার কমপ্লিট সিক্রেট।"
+      title: "জব আর ক্লায়েন্ট রেডি",
+      desc: "Software Engineer হিসেবে জবের প্রস্তুতি, আর ক্লায়েন্টের নতুন বা পুরোনো যেকোনো প্রজেক্ট AI দিয়ে সহজে ডেলিভার করার সিক্রেট।"
     }
   ];
 
@@ -751,70 +762,99 @@ function CurriculumJourney() {
       title: "The Modern AI Dev Stack Setup",
       icon: Target,
       points: [
-        "Cursor IDE & Claude Code সেটাপ",
-        "Gemini's updated model ইন্টিগ্রেশন (Free tier)",
-        "AntiGravity workflow এর বেসিক",
-        "সব ফ্রি টুলস দিয়ে প্রো-লেভেলের এনভায়রনমেন্ট তৈরি"
+        "AI-first mindset — তুমি architect, AI builder",
+        "Cursor IDE setup — AI built-in code editor",
+        "Node, npm, Git আর dev environment তৈরি",
+        "Claude Code — terminal এর AI agent",
+        "Gemini free tier integration",
+        "AntiGravity agentic workflow এর basics",
+        "সব ফ্রি tool দিয়ে pro-level environment"
       ]
     },
     {
       title: "Project Architecture & DB Design",
       icon: Layers,
       points: [
-        "SaaS আইডিয়া জেনারেট এবং ফিচার প্ল্যানিং",
-        "Gemini দিয়ে Database Schema & API structure জেনারেট",
-        "AntiGravity স্ট্যাক দিয়ে প্রজেক্টের বেইস তৈরি",
-        "ফ্রি AI টুলস দিয়ে System Design"
+        "AI দিয়ে SaaS idea generate আর validate",
+        "Feature planning আর PRD (requirements doc) লেখা",
+        "ফ্রি AI tool দিয়ে System Design",
+        "Gemini দিয়ে Database Schema design",
+        "REST API structure আর contract design",
+        "AntiGravity দিয়ে project base scaffold"
       ]
     },
     {
       title: "Frontend Generation with Claude",
       icon: Code2,
       points: [
-        "React/Next.js কম্পোনেন্ট প্রম্পটিং",
-        "Claude Code দিয়ে রিয়ে-টাইম UI জেনারেট",
-        "Responsive design & State management অটোমেশন",
-        "UI বাগ ফিক্সিং"
+        "React/Next.js foundations AI এর সাথে",
+        "Claude Code দিয়ে reusable UI component",
+        "Real-time UI generate-preview-refine loop",
+        "Responsive আর mobile-first UI design",
+        "State management আর form automation",
+        "UI bug fixing আর visual polish"
       ]
     },
     {
       title: "Backend, Database & Logic Mastery",
       icon: Cpu,
       points: [
-        "Robust API এবং ব্যাকএন্ড লজিক স্ক্র্যাচ থেকে",
-        "Gemini এর অ্যাডভান্সড রিজনিং দিয়ে DB অপটিমাইজেশন",
-        "Frontend এর সাথে Backend কানেকশন",
-        "AntiGravity দিয়ে ফাস্ট ব্যাকএন্ড ডেভেলপমেন্ট"
+        "Robust API আর backend logic scratch থেকে",
+        "Database integration আর full CRUD",
+        "Gemini দিয়ে database optimization",
+        "Frontend আর backend connect",
+        "Business logic, validation আর error handling",
+        "AntiGravity দিয়ে fast backend development"
       ]
     },
     {
       title: "Debugging & Version Control (GitHub)",
       icon: Zap,
       points: [
-        "The 'Error Loop' - AI error দিলে কিভাবে ফিক্স করবেন",
-        "GitHub এ প্রজেক্ট পুশ এবং ভার্সন কন্ট্রোল",
-        "Error logs পড়া এবং AI কে ফিডব্যাক দেওয়া",
-        "Code refactoring"
+        "The 'Error Loop' — AI error confidently fix",
+        "Error log আর stack trace পড়া",
+        "AI কে effective feedback দিয়ে fast fix",
+        "Git আর GitHub fundamentals",
+        "AI project এর জন্য version control workflow",
+        "AI দিয়ে code refactoring"
       ]
     },
     {
       title: "Building the Production SaaS",
       icon: Rocket,
       points: [
-        "AntiGravity, Gemini, Claude একসাথে করে ফুল প্রজেক্ট",
-        "User authentication & dashboard",
-        "Zero থেকে Production-ready কোডবেস",
-        "Final polish & UX improvements"
+        "AntiGravity + Gemini + Claude একসাথে orchestrate",
+        "User authentication system (login/signup)",
+        "User dashboard বানানো",
+        "Zero থেকে production-ready codebase",
+        "Security hardening — app যেন কেউ hack করতে না পারে",
+        "App কে mobile এর জন্য prepare করা",
+        "Final polish আর UX improvement"
       ]
     },
     {
       title: "Live Server Deployment & Career",
       icon: Globe,
       points: [
-        "Vercel/Render এ ফ্রি সার্ভারে প্রজেক্ট লাইভ করা",
-        "GitHub actions দিয়ে CI/CD অটোমেশন",
-        "পোর্টফোলিও তৈরি এবং জবের প্রস্তুতি",
-        "ফ্রিল্যান্স ক্লায়েন্ট ডেলিভারি সিক্রেটস"
+        "Vercel/Render এ ফ্রি live server এ deploy",
+        "Environment variable আর production config",
+        "GitHub Actions দিয়ে CI/CD automation",
+        "Developer portfolio বানানো",
+        "AI-era developer হিসেবে job preparation",
+        "Freelance client delivery secrets"
+      ]
+    },
+    {
+      title: "Mobile App + Play Store & App Store Launch",
+      icon: Smartphone,
+      points: [
+        "Web থেকে native mobile app এর foundation",
+        "AI দিয়ে mobile app এর screens বানানো",
+        "Native device feature আর phone এ testing",
+        "Release build বানানো (APK/AAB আর iOS)",
+        "Google Play Store এ app publish",
+        "Apple App Store এ app publish",
+        "Launch এর পর update, analytics আর growth"
       ]
     }
   ];
@@ -834,7 +874,7 @@ function CurriculumJourney() {
               Your Journey to <GradientText>Production</GradientText>
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              বোরিং সিলেবাস নয়, এটা একটা লেভেল-আপ গেম। ৭টি লেভেল পার করে জিরো থেকে লাইভ সার্ভারে আপনার পোর্টফোলিও দাঁড় করান।
+              বোরিং সিলেবাস নয় — এটা একটা লেভেল-আপ গেম। ৮টি লেভেল পার করে জিরো থেকে শুরু করে লাইভ ওয়েবসাইট আর পাবলিশ করা মোবাইল অ্যাপ পর্যন্ত নিজের পোর্টফোলিও দাঁড় করান।
             </p>
           </div>
         </Reveal>
@@ -872,22 +912,160 @@ function CurriculumJourney() {
   );
 }
 
+function DevStack() {
+  const stack: { name: string; tag: string; icon: IconType; desc: string }[] = [
+    {
+      name: "Cursor IDE",
+      tag: "Code Editor",
+      icon: Terminal,
+      desc: "আপনার মূল কোড এডিটর, যার ভেতরেই AI বসানো। চ্যাট, এডিট আর অটো-কমপ্লিট — সব এক জায়গায়। আগে VS Code চালিয়ে থাকলে নতুন করে কিছু শেখাই লাগবে না।"
+    },
+    {
+      name: "Claude Code",
+      tag: "AI Agent",
+      icon: Cpu,
+      desc: "টার্মিনালের পাওয়ারফুল AI এজেন্ট। পুরো প্রজেক্ট ধরে নিজে ফাইল পড়ে, কোড লেখে, কমান্ড চালায় — অনেকটা একজন জুনিয়র ডেভেলপারের মতো।"
+    },
+    {
+      name: "Gemini",
+      tag: "Planning & Reasoning",
+      icon: Brain,
+      desc: "Google-এর ফ্রি মডেল। ডেটাবেস ডিজাইন, সিস্টেম ডিজাইন আর প্ল্যানিং-এর মতো চিন্তা-নির্ভর কাজে সবচেয়ে কাজের।"
+    },
+    {
+      name: "AntiGravity",
+      tag: "Agentic Workflow",
+      icon: Code,
+      desc: "বড় একটা ফিচার একসাথে প্ল্যান করে জেনারেট করে দেয়। পুরো প্রজেক্ট দাঁড় করানোর কাজটা অনেক দ্রুত হয়ে যায়।"
+    }
+  ];
+
+  const tech: { name: string; role: string; icon: IconType }[] = [
+    { name: "JavaScript & TypeScript", role: "মূল প্রোগ্রামিং ভাষা — পুরো প্রজেক্ট এতেই হবে", icon: Code2 },
+    { name: "React + Next.js", role: "ওয়েবসাইটের ফ্রন্টএন্ড (যা ইউজার চোখে দেখে)", icon: Layout },
+    { name: "Node.js", role: "ব্যাকএন্ড আর সার্ভার-সাইড লজিক", icon: Server },
+    { name: "MongoDB (Database)", role: "সব ডেটা সেভ আর ম্যানেজ করার জায়গা", icon: Layers },
+    { name: "React Native (Expo)", role: "একই প্রজেক্ট থেকে মোবাইল অ্যাপ", icon: Smartphone },
+    { name: "Git & GitHub", role: "কোড সেভ, ভার্সন কন্ট্রোল আর ডিপ্লয়", icon: Globe },
+  ];
+
+  return (
+    <section className="py-24 relative overflow-hidden border-t border-slate-800/50">
+      <div className="absolute left-1/4 top-1/3 w-80 h-80 bg-cyan-600/10 rounded-full blur-[110px] pointer-events-none"></div>
+
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <Reveal>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 mb-4 border border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+              <Terminal size={32} />
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
+              আপনার <GradientText>AI Dev Stack</GradientText>
+            </h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              মাত্র ৪টি টুল, সবগুলোই ১০০% ফ্রি। নিচে দেখুন কোন টুল কোন কাজে লাগে, আর এই কোর্সে আপনি ঠিক কোন প্রোগ্রামিং ভাষা ও টেকনোলজিতে কোড করবেন — একদম পরিষ্কার করে।
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="grid sm:grid-cols-2 gap-6">
+          {stack.map((s, i) => (
+            <Reveal key={i} delay={i * 100}>
+              <div className="glass-panel p-7 rounded-2xl border border-slate-800 hover:border-cyan-500/50 hover:-translate-y-1 transition-all duration-300 group h-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/10 group-hover:scale-110 transition-all duration-300">
+                    <s.icon size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white leading-tight">{s.name}</h3>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">{s.tag}</span>
+                  </div>
+                </div>
+                <p className="text-slate-400 leading-relaxed text-sm">{s.desc}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* Programming languages & tech stack */}
+        <Reveal delay={150}>
+          <div className="mt-20 text-center mb-12">
+            <h3 className="text-2xl md:text-4xl font-black mb-4 text-white">
+              কোন <GradientText>ভাষায়</GradientText> কোড করবেন?
+            </h3>
+            <p className="text-slate-400 max-w-2xl mx-auto">
+              AI কোড লিখে দেবে ঠিকই, কিন্তু আপনি প্রতিটা ধাপে বুঝবেন কী হচ্ছে। নিচের ভাষা ও টেকনোলজিগুলো এই কোর্সে হাতে-কলমে শিখবেন — আগে থেকে জানা না থাকলেও সমস্যা নেই।
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {tech.map((t, i) => (
+            <Reveal key={i} delay={i * 80}>
+              <div className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/50 hover:-translate-y-1 transition-all duration-300 group flex items-center gap-4 h-full">
+                <div className="w-11 h-11 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-indigo-400 flex-shrink-0 group-hover:bg-indigo-500/10 group-hover:scale-110 transition-all duration-300">
+                  <t.icon size={22} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white leading-tight">{t.name}</h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">{t.role}</p>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={200}>
+          <p className="text-center text-slate-500 text-sm mt-10 max-w-2xl mx-auto">
+            <span className="text-cyan-400 font-semibold">এক কথায়:</span> JavaScript ও TypeScript-ই মূল ভাষা। ফ্রন্টএন্ডে React/Next.js, ব্যাকএন্ডে Node.js, ডেটার জন্য MongoDB, আর মোবাইল অ্যাপের জন্য React Native — পুরোটা একসাথে, শূন্য থেকে।
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function CtaBanner({ onEnroll, headline, sub }: { onEnroll: () => void; headline: ReactNode; sub: string }) {
+  return (
+    <section className="py-16 relative">
+      <div className="max-w-4xl mx-auto px-4 relative z-10">
+        <Reveal>
+          <div className="glass-panel neon-border rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+            <div className="absolute -top-1/2 left-1/2 -translate-x-1/2 w-96 h-96 bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="relative z-10">
+              <h3 className="text-2xl md:text-4xl font-black text-white mb-3">{headline}</h3>
+              <p className="text-slate-400 mb-8 max-w-xl mx-auto leading-relaxed">{sub}</p>
+              <button
+                onClick={onEnroll}
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all group cursor-pointer"
+              >
+                <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
+                এখনই Enroll করুন — ৳990
+              </button>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 function TargetAudience() {
   const audiences: { title: string; icon: IconType; desc: string }[] = [
     {
-      title: "Programming Beginners",
+      title: "নতুন প্রোগ্রামার",
       icon: Brain,
-      desc: "কোডিং এর বেসিক জানেন, কিন্তু একা প্রজেক্ট দাঁড় করাতে পারেন না।"
+      desc: "কোডিং-এর বেসিক জানেন, কিন্তু একা একটা পুরো প্রজেক্ট দাঁড় করাতে পারেন না।"
     },
     {
-      title: "Current Web Developers",
+      title: "বর্তমান ওয়েব ডেভেলপার",
       icon: Code,
-      desc: "আগে থেকেই কোডিং জানেন, প্রোডাক্টিভিটি ১০ গুণ বাড়াতে চান।"
+      desc: "আগে থেকেই কোড করেন, এখন AI দিয়ে কাজের গতি ১০ গুণ বাড়াতে চান।"
     },
     {
-      title: "Career Switchers",
+      title: "ক্যারিয়ার সুইচার",
       icon: Briefcase,
-      desc: "অন্য প্রফেশন থেকে টেক-এ এসে দ্রুত ইন্ডাস্ট্রিতে ঢুকতে চান।"
+      desc: "অন্য পেশা থেকে টেক-এ এসে দ্রুত ইন্ডাস্ট্রিতে ঢুকতে চান।"
     }
   ];
 
@@ -949,7 +1127,7 @@ function InstructorProfile() {
               <h2 className="text-cyan-400 font-bold tracking-widest uppercase mb-2">Meet Your Mentor</h2>
               <h3 className="text-4xl md:text-5xl font-black mb-6 text-white">Afnan Mahmud</h3>
               <p className="text-lg text-slate-300 mb-8 leading-relaxed">
-                দীর্ঘদিন ধরে MERN Stack এ প্রোডাকশন গ্রেড অ্যাপ্লিকেশন ডেভেলপ করছি। বর্তমান সময়ের AI রেভোলিউশনে কিভাবে ফ্রি টুলস ব্যবহার করে সবচেয়ে ফাস্ট এবং অপটিমাইজড ওয়েতে সফটওয়্যার বানানো যায়, সেটাই এই কোর্সে আমি শেয়ার করবো। No theory, just pure engineering.
+                দীর্ঘদিন ধরে MERN Stack-এ প্রোডাকশন-গ্রেড অ্যাপ বানাচ্ছি, রিয়েল ক্লায়েন্ট প্রজেক্ট ডেলিভার করছি। এখন AI দিয়ে কিভাবে ফ্রি টুলস ব্যবহার করে সবচেয়ে দ্রুত আর স্মার্ট ওয়েতে সফটওয়্যার বানানো যায় — ঠিক যেটা আমি নিজে Everyday করি, সেটাই এই কোর্সে শেয়ার করবো। শুধু থিওরি নয়, পুরোটাই স্ক্রিন শেয়ার করে আপনাদের ধরে ধরে বুজিয়ে দেয়া হবে প্রতিটি স্টেপ।
               </p>
 
               <div className="grid sm:grid-cols-2 gap-6">
@@ -992,7 +1170,7 @@ function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
               Unlock Your <GradientText>Superpower</GradientText>
             </h2>
             <p className="text-lg text-slate-400">
-              বড় বড় সাবস্ক্রিপশন ফি নয়, একবার পে করুন, লাইফটাইম এক্সেস নিন।
+              মাসে মাসে কোনো ফি নেই। একবার পেমেন্ট করুন, লাইফটাইম এক্সেস নিন।
             </p>
           </div>
         </Reveal>
@@ -1019,11 +1197,12 @@ function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
 
               <ul className="text-left space-y-4 mb-10 flex-grow">
                 {[
-                  "All 7 Modules (Zero to Live Server)",
-                  "Real SaaS Source Code (GitHub)",
-                  "Private Hacker Community",
-                  "AI Prompts Secret Library",
-                  "Lifetime Access & Updates"
+                  "৮টি মডিউল — জিরো থেকে লাইভ অ্যাপ পর্যন্ত",
+                  "ওয়েবসাইট + মোবাইল অ্যাপ (Play Store ও App Store)",
+                  "রিয়েল প্রজেক্টের সোর্স কোড (GitHub)",
+                  "প্রাইভেট কমিউনিটি সাপোর্ট",
+                  "AI Prompts সিক্রেট লাইব্রেরি",
+                  "লাইফটাইম এক্সেস আর আপডেট"
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300">
                     <div className="bg-cyan-500/20 p-1 rounded-full flex-shrink-0">
@@ -1051,20 +1230,28 @@ function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
 function FAQDark() {
   const faqs = [
     {
-      q: "আমি তো কোডিং পারিনা, আমি কি পারবো?",
-      a: "যদি বেসিক লজিক বুঝতে পারেন এবং শেখার আগ্রহ থাকে, তবে পারবেন। কোর্সটি বিগিনার ফ্রেন্ডলি ভাবেই ডিজাইন করা, যেখানে AI আপনার পেয়ার প্রোগ্রামার হিসেবে কাজ করবে।"
+      q: "আমি তো কোডিং পারি না, আমি কি পারবো?",
+      a: "বেসিক লজিক বুঝলে আর শেখার আগ্রহ থাকলে অবশ্যই পারবেন। পুরো কোর্সটাই বিগিনারদের কথা মাথায় রেখে সাজানো, যেখানে AI আপনার Assistant Programmer হয়ে পাশে থাকবে।"
     },
     {
-      q: "কোর্স করতে কি পেইড AI টুলস লাগবে?",
-      a: "না! আমরা শেখার জন্য সম্পূর্ণ ফ্রি টুলস (Gemini's updated model, Claude Code, AntiGravity, Cursor free tier) দিয়েই প্রজেক্ট দাঁড় করাবো। কোনো এক্সট্রা খরচ নেই।"
+      q: "কোর্স করতে কি টাকা দিয়ে AI টুল কিনতে হবে?",
+      a: "না। আমরা পুরো প্রজেক্ট দাঁড় করাবো সম্পূর্ণ ফ্রি টুল দিয়ে — Gemini, Claude Code, AntiGravity আর Cursor-এর ফ্রি ভার্সন। বাড়তি কোনো খরচ নেই।"
     },
     {
-      q: "কিভাবে প্রজেক্ট লাইভ করা শেখাবেন?",
-      a: "লোকালহোস্ট থেকে কোড GitHub এ পুশ করে, সেখান থেকে সম্পূর্ণ ফ্রিতে Vercel বা Render এর মত লাইভ সার্ভারে ডিপ্লয় করা পর্যন্ত প্র্যাক্টিক্যালি দেখানো হবে।"
+      q: "ওয়েবসাইট আর মোবাইল অ্যাপ — দুটোই কি শেখাবেন?",
+      a: "হ্যাঁ। প্রথমে একটা ফুল ওয়েবসাইট বানিয়ে লাইভ সার্ভারে দেবো, তারপর সেই প্রজেক্ট থেকেই মোবাইল অ্যাপ বানিয়ে Google Play Store আর Apple App Store-এ পাবলিশ করা পর্যন্ত পুরোটা দেখানো হবে।"
+    },
+    {
+      q: "প্রজেক্ট লাইভ করা কিভাবে শেখাবেন?",
+      a: "লোকাল থেকে কোড GitHub-এ পুশ করে, সেখান থেকে একদম ফ্রিতে Vercel বা Render-এর মতো লাইভ সার্ভারে ডিপ্লয় করা পর্যন্ত — পুরোটা হাতে-কলমে দেখানো হবে।"
+    },
+    {
+      q: "ওয়েবসাইট কি হ্যাক হয়ে যেতে পারে? সিকিউরিটি শেখাবেন?",
+      a: "হ্যাঁ। একটা পুরো লেসনে দেখানো হবে কিভাবে Claude Code দিয়ে নিজের অ্যাপের দুর্বলতা খুঁজে বের করে ফিক্স করতে হয় — যাতে লাইভ করার আগেই অ্যাপটা সিকিউর থাকে।"
     },
     {
       q: "কোর্সটি কি লাইভ নাকি রেকর্ডেড?",
-      a: "কোর্সটি মূলত হাই-কোয়ালিটি রেকর্ডেড ভিডিওর সমন্বয়ে তৈরি। তবে ডাউট ক্লিয়ার করার জন্য আমাদের প্রাইভেট কমিউনিটি সাপোর্ট রয়েছে।"
+      a: "কোর্সটি হাই-কোয়ালিটি রেকর্ডেড ভিডিওতে তৈরি, যাতে নিজের সময়মতো শিখতে পারেন। আর কোথাও আটকে গেলে প্রাইভেট কমিউনিটি সাপোর্ট তো আছেই।"
     }
   ];
 
@@ -1107,7 +1294,7 @@ function FooterDark() {
             <span>Afnan <GradientText>Mahmud</GradientText></span>
           </div>
           <p className="mb-6 max-w-sm leading-relaxed text-slate-500">
-            Escaping tutorial hell and building real, production-grade applications using the ultimate AI tool stack.
+            টিউটোরিয়াল হেল থেকে বেরিয়ে এসে ফ্রি AI টুল দিয়ে রিয়েল, প্রোডাকশন-গ্রেড অ্যাপ বানানো শিখুন — ওয়েবসাইট থেকে মোবাইল অ্যাপ পর্যন্ত।
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-cyan-400 transition-all duration-300 hover:-translate-y-1"><Send size={18} /></a>
