@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Space_Grotesk } from 'next/font/google';
 import OtpInput from '@/components/shared/OtpInput';
-import { trackPixel } from '@/lib/meta-pixel';
+import { trackPixel, setPixelAdvancedMatching } from '@/lib/meta-pixel';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
@@ -108,6 +108,12 @@ function OtpPageContent() {
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
           : String(Date.now());
+      // Advanced matching: feed the phone (E.164 without '+', e.g. 8801XXXXXXXXX)
+      // into the pixel so this conversion carries a matchable identifier. The
+      // pixel SDK hashes it client-side; the CAPI side hashes server-side.
+      const amDigits = phone.trim().replace(/\D/g, '');
+      const amPhone = amDigits.startsWith('88') ? amDigits : `88${amDigits}`;
+      if (amDigits) setPixelAdvancedMatching({ ph: amPhone });
       trackPixel('CompleteRegistration', { status: true }, eventId);
       void fetch('/api/track/complete-registration', {
         method: 'POST',

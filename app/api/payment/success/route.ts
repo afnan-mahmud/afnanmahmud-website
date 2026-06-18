@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       order.student,
       { $addToSet: { purchasedCourses: order.course._id } },
       { new: false }
-    ).select('phone name');
+    ).select('phone name email');
 
     // Meta Purchase — shared event id for browser/CAPI deduplication.
     const eventId = newEventId();
@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
         eventId,
         user: {
           phone: purchaser?.phone,
+          email: purchaser?.email,
           name: purchaser?.name,
           externalId: String(order.student),
         },

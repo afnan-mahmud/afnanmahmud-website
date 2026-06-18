@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
+import { requirePage } from '@/lib/permissions.server';
+import { can } from '@/lib/permissions';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import { Order } from '@/models/Order';
@@ -37,8 +37,7 @@ function buildDateRange(from?: string, to?: string): { createdAt: { $gte?: Date;
 }
 
 export default async function AdminDashboard({ searchParams }: { searchParams: Promise<{ from?: string; to?: string }> }) {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') redirect('/dashboard');
+  const access = await requirePage('dashboard.view');
 
   await connectDB();
 
@@ -74,13 +73,15 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const totalStudents = distinctBuyers.length;
   const recentOrders = orders.slice(0, 10);
 
+  // Each card is shown only if the viewer can view that card's section, so
+  // granting dashboard access never leaks another section's sensitive data.
   const STATS = [
-    { label: 'Total Revenue', value: `৳${totalRevenue.toLocaleString()}`, icon: DollarSign, color: '#4ade80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
-    { label: 'Total Students', value: totalStudents, icon: UserCheck, color: '#6366f1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)' },
-    { label: 'Total Users', value: totalUsers, icon: Users, color: '#f472b6', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
-    { label: 'Total Courses', value: courses, icon: BookOpen, color: '#22d3ee', bg: 'rgba(34,211,238,0.07)', border: 'rgba(34,211,238,0.18)' },
-    { label: 'Total Orders', value: successOrders.length, icon: ShoppingCart, color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.2)' },
-  ];
+    { perm: 'accounts.view', label: 'Total Revenue', value: `৳${totalRevenue.toLocaleString()}`, icon: DollarSign, color: '#4ade80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
+    { perm: 'students.view', label: 'Total Students', value: totalStudents, icon: UserCheck, color: '#6366f1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)' },
+    { perm: 'students.view', label: 'Total Users', value: totalUsers, icon: Users, color: '#f472b6', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
+    { perm: 'courses.view', label: 'Total Courses', value: courses, icon: BookOpen, color: '#22d3ee', bg: 'rgba(34,211,238,0.07)', border: 'rgba(34,211,238,0.18)' },
+    { perm: 'orders.view', label: 'Total Orders', value: successOrders.length, icon: ShoppingCart, color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.2)' },
+  ].filter((s) => can(access, s.perm));
 
   const inputStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.04)',
@@ -130,7 +131,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         ))}
       </div>
 
-      {/* Recent Orders */}
+      {/* Recent Orders — only for viewers who can see orders */}
+      {can(access, 'orders.view') && (
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '1rem', margin: 0 }}>Recent Orders</h2>
@@ -167,6 +169,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
           </table>
         </div>
       </div>
+      )}
 
       <style>{`@media (max-width: 640px) { .admin-content { padding: 20px 16px !important; } }`}</style>
     </div>

@@ -4,28 +4,34 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, BookOpen, Users, UserX, ShoppingCart, Wallet, LogOut, X,
+  LayoutDashboard, BookOpen, Users, UserX, ShoppingCart, Wallet, LogOut, X, ShieldCheck,
+  type LucideIcon,
 } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
+import { visibleNav, type Access } from '@/lib/permissions';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 
-const NAV = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/admin/courses', label: 'Courses', icon: BookOpen },
-  { href: '/admin/students', label: 'Students', icon: Users, exact: true },
-  { href: '/admin/abandoned-students', label: 'Abandoned Students', icon: UserX },
-  { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/admin/accounts', label: 'Accounts', icon: Wallet },
-];
+/** Icon per nav href — the nav list itself lives in lib/permissions. */
+const ICONS: Record<string, LucideIcon> = {
+  '/admin': LayoutDashboard,
+  '/admin/courses': BookOpen,
+  '/admin/students': Users,
+  '/admin/abandoned-students': UserX,
+  '/admin/orders': ShoppingCart,
+  '/admin/accounts': Wallet,
+  '/admin/users': ShieldCheck,
+};
 
 interface AdminSidebarProps {
+  access: Access;
   open?: boolean;
   onClose?: () => void;
 }
 
-export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
+export default function AdminSidebar({ access, open, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const NAV = visibleNav(access);
 
   const content = (
     <div
@@ -62,7 +68,8 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         <p className={sg.className} style={{ color: '#3f3f46', fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 8px', marginBottom: 8 }}>
           Navigation
         </p>
-        {NAV.map(({ href, label, icon: Icon, exact }) => {
+        {NAV.map(({ href, label, exact }) => {
+          const Icon = ICONS[href] ?? LayoutDashboard;
           const isActive = exact ? pathname === href : pathname.startsWith(href);
           return (
             <Link

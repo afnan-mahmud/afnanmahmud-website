@@ -11,6 +11,7 @@ interface LeanCourse {
   _id: { toString(): string };
   previewVideoId?: string;
   curriculum: ICourse['curriculum'];
+  demoClasses?: { videoId: string }[];
 }
 
 /**
@@ -39,12 +40,16 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    // Find the published course that references this videoId (as a lesson or preview).
+    // Find the published course that references this videoId (lesson, preview, or demo class).
     const course = await Course.findOne({
       isPublished: true,
-      $or: [{ previewVideoId: videoId }, { 'curriculum.lessons.videoId': videoId }],
+      $or: [
+        { previewVideoId: videoId },
+        { 'curriculum.lessons.videoId': videoId },
+        { 'demoClasses.videoId': videoId },
+      ],
     })
-      .select('previewVideoId curriculum')
+      .select('previewVideoId curriculum demoClasses')
       .lean<LeanCourse>();
 
     if (!course) {
@@ -54,10 +59,11 @@ export async function POST(req: NextRequest) {
     // Classify the videoId: a course preview or a preview-flagged lesson is public;
     // any other lesson requires ownership of this course.
     const isCoursePreview = course.previewVideoId === videoId;
+    const isDemoClass = Boolean(course.demoClasses?.some((d) => d.videoId === videoId));
     const matchedLesson = course.curriculum
       .flatMap((s) => s.lessons)
       .find((l) => l.videoId === videoId);
-    const isPublic = isCoursePreview || Boolean(matchedLesson?.isPreview);
+    const isPublic = isCoursePreview || isDemoClass || Boolean(matchedLesson?.isPreview);
 
     const session = await auth();
 

@@ -1,7 +1,6 @@
-'use client';
-
-import { useState } from 'react';
+import Link from 'next/link';
 import { Space_Grotesk, Inter } from 'next/font/google';
+import Pagination from './Pagination';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -27,32 +26,44 @@ interface OrderRow {
 const FILTERS = ['all', 'pending', 'success', 'failed'] as const;
 type Filter = typeof FILTERS[number];
 
-export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
-  const [filter, setFilter] = useState<Filter>('all');
-
-  const visible = filter === 'all' ? orders : orders.filter((o) => o.status === filter);
+export default function OrdersTable({
+  orders,
+  status = 'all',
+  page = 1,
+  totalPages = 1,
+  total,
+  pageSize,
+}: {
+  orders: OrderRow[];
+  status?: Filter;
+  page?: number;
+  totalPages?: number;
+  total?: number;
+  pageSize?: number;
+}) {
+  const visible = orders;
 
   return (
     <div style={{ padding: '36px 32px', maxWidth: 1200 }} className="admin-content">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
         <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', margin: 0 }}>Orders</h1>
-        {/* Filter */}
+        {/* Filter — server-side via ?status=, resets to page 1 */}
         <div style={{ display: 'flex', gap: 6 }}>
           {FILTERS.map((f) => {
-            const active = filter === f;
+            const active = status === f;
             const st = f !== 'all' ? STATUS_STYLE[f] : null;
             return (
-              <button
+              <Link
                 key={f}
-                onClick={() => setFilter(f)}
+                href={f === 'all' ? '/admin/orders' : `/admin/orders?status=${f}`}
                 className={sg.className}
                 style={{
-                  padding: '6px 14px', borderRadius: 100, border: active ? (st ? `1px solid ${st.border}` : '1px solid rgba(99,102,241,0.3)') : '1px solid rgba(255,255,255,0.07)',
+                  padding: '6px 14px', borderRadius: 100, textDecoration: 'none', border: active ? (st ? `1px solid ${st.border}` : '1px solid rgba(99,102,241,0.3)') : '1px solid rgba(255,255,255,0.07)',
                   background: active ? (st ? st.bg : 'rgba(99,102,241,0.1)') : 'transparent',
                   color: active ? (st ? st.color : '#a5b4fc') : '#52525b',
                   fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer', textTransform: 'capitalize',
                 }}
-              >{f}</button>
+              >{f}</Link>
             );
           })}
         </div>
@@ -100,6 +111,14 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          basePath="/admin/orders"
+          total={total}
+          pageSize={pageSize}
+          extraParams={{ status: status === 'all' ? undefined : status }}
+        />
       </div>
       <style>{`@media (max-width: 640px) { .admin-content { padding: 20px 16px !important; } }`}</style>
     </div>

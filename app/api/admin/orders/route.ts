@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { Order } from '@/models/Order';
 import type { ICourse } from '@/models/Course';
 import type { IUser } from '@/models/User';
+import { requirePerm } from '@/lib/permissions.server';
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') {
+  if (!await requirePerm('orders.view')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   await connectDB();

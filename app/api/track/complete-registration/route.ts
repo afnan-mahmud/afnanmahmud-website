@@ -20,13 +20,14 @@ export async function POST(req: NextRequest) {
     const eventId = body.eventId || newEventId();
 
     await connectDB();
-    const user = await User.findById(session.user.id).select('phone name');
+    const user = await User.findById(session.user.id).select('phone name email');
 
     await sendCapiEvent({
       eventName: 'CompleteRegistration',
       eventId,
       user: {
         phone: user?.phone,
+        email: user?.email,
         name: user?.name,
         externalId: String(session.user.id),
       },

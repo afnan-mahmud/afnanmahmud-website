@@ -18,6 +18,10 @@ export interface IUser extends Document {
   email?: string;
   avatar?: string;
   role: 'student' | 'admin';
+  /** Admin team: true = full-access owner (can manage the team). */
+  isOwner?: boolean;
+  /** Admin team: granted per-action permission strings (see lib/permissions). */
+  permissions: string[];
   purchasedCourses: Types.ObjectId[];
   progress: IProgress[];
   deviceSessions: IDeviceSession[];
@@ -49,6 +53,10 @@ const UserSchema = new Schema<IUser>(
     email: { type: String },
     avatar: { type: String },
     role: { type: String, enum: ['student', 'admin'], default: 'student' },
+    // No default for isOwner: legacy admins read as `undefined` so getAccess can
+    // detect and promote them once. Team-created admins set it to false explicitly.
+    isOwner: { type: Boolean },
+    permissions: { type: [String], default: [] },
     purchasedCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
     progress: { type: [ProgressSchema], default: [] },
     deviceSessions: { type: [DeviceSessionSchema], default: [] },

@@ -14,6 +14,14 @@ export interface ISection {
   lessons: ILesson[];
 }
 
+export interface IDemoClass {
+  _id: string;
+  title: string;
+  description?: string;
+  videoId: string;
+  durationLabel?: string;
+}
+
 export interface ICourse extends Document {
   title: string;
   slug: string;
@@ -27,6 +35,7 @@ export interface ICourse extends Document {
   category?: string;
   level: 'beginner' | 'intermediate' | 'advanced';
   curriculum: ISection[];
+  demoClasses: IDemoClass[];
   enrolledCount: number;
   createdAt: Date;
 }
@@ -51,6 +60,17 @@ const SectionSchema = new Schema<ISection>(
   { _id: false }
 );
 
+const DemoClassSchema = new Schema<IDemoClass>(
+  {
+    _id: { type: String, required: true },
+    title: { type: String, required: true },
+    description: { type: String },
+    videoId: { type: String, required: true },
+    durationLabel: { type: String },
+  },
+  { _id: false }
+);
+
 const CourseSchema = new Schema<ICourse>(
   {
     title: { type: String, required: true },
@@ -69,6 +89,7 @@ const CourseSchema = new Schema<ICourse>(
       required: true,
     },
     curriculum: { type: [SectionSchema], default: [] },
+    demoClasses: { type: [DemoClassSchema], default: [] },
     enrolledCount: { type: Number, default: 0 },
   },
   { timestamps: { createdAt: true, updatedAt: false } }

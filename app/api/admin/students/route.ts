@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { Course, type ICourse } from '@/models/Course';
 import { Order } from '@/models/Order';
 import { sendPurchaseConfirmation } from '@/lib/sms';
+import { requirePerm } from '@/lib/permissions.server';
 
 export async function GET() {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') {
+  if (!await requirePerm('students.view')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   await connectDB();
@@ -44,8 +43,7 @@ export async function GET() {
 // amount > 0 records a `success` Order, which flows into the accounts ledger
 // as credit. amount === 0 enrolls without any Order (no ledger entry).
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') {
+  if (!await requirePerm('students.add')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

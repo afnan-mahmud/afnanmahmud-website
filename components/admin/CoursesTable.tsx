@@ -25,7 +25,17 @@ const LEVEL_COLOR: Record<string, string> = {
   advanced: '#f87171',
 };
 
-export default function CoursesTable({ initialCourses }: { initialCourses: CourseRow[] }) {
+export default function CoursesTable({
+  initialCourses,
+  canCreate = false,
+  canEdit = false,
+  canDelete = false,
+}: {
+  initialCourses: CourseRow[];
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+}) {
   const [courses, setCourses] = useState(initialCourses);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -69,14 +79,16 @@ export default function CoursesTable({ initialCourses }: { initialCourses: Cours
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
         <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', margin: 0 }}>Courses</h1>
-        <Link
-          href="/admin/courses/create"
-          className={sg.className}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 20px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 8, color: 'white', fontWeight: 700, fontSize: '0.875rem', textDecoration: 'none' }}
-        >
-          <Plus size={15} />
-          Create New Course
-        </Link>
+        {canCreate && (
+          <Link
+            href="/admin/courses/create"
+            className={sg.className}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 20px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 8, color: 'white', fontWeight: 700, fontSize: '0.875rem', textDecoration: 'none' }}
+          >
+            <Plus size={15} />
+            Create New Course
+          </Link>
+        )}
       </div>
 
       {/* Table */}
@@ -115,37 +127,48 @@ export default function CoursesTable({ initialCourses }: { initialCourses: Cours
                   </td>
                   {/* Toggle */}
                   <td style={{ padding: '12px 16px' }}>
-                    <button
-                      onClick={() => handleToggle(c._id, c.isPublished)}
-                      disabled={togglingId === c._id}
-                      title={c.isPublished ? 'Click to unpublish' : 'Click to publish'}
-                      style={{
-                        width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-                        background: c.isPublished ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.1)',
-                        position: 'relative', transition: 'background 0.2s', opacity: togglingId === c._id ? 0.5 : 1,
-                      }}
-                    >
-                      <span style={{ position: 'absolute', top: 3, left: c.isPublished ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
-                    </button>
+                    {canEdit ? (
+                      <button
+                        onClick={() => handleToggle(c._id, c.isPublished)}
+                        disabled={togglingId === c._id}
+                        title={c.isPublished ? 'Click to unpublish' : 'Click to publish'}
+                        style={{
+                          width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                          background: c.isPublished ? 'rgba(99,102,241,0.8)' : 'rgba(255,255,255,0.1)',
+                          position: 'relative', transition: 'background 0.2s', opacity: togglingId === c._id ? 0.5 : 1,
+                        }}
+                      >
+                        <span style={{ position: 'absolute', top: 3, left: c.isPublished ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
+                      </button>
+                    ) : (
+                      <span className={sg.className} style={{ color: c.isPublished ? '#a5b4fc' : '#52525b', fontSize: '0.6875rem', fontWeight: 700 }}>
+                        {c.isPublished ? 'Published' : 'Draft'}
+                      </span>
+                    )}
                   </td>
                   {/* Actions */}
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <Link
-                        href={`/admin/courses/${c._id}/edit`}
-                        title="Edit"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 7, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#6366f1', textDecoration: 'none' }}
-                      >
-                        <Edit2 size={14} />
-                      </Link>
-                      <button
-                        onClick={() => setConfirmId(c._id)}
-                        disabled={deletingId === c._id}
-                        title="Delete"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 7, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', cursor: 'pointer', opacity: deletingId === c._id ? 0.5 : 1 }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {canEdit && (
+                        <Link
+                          href={`/admin/courses/${c._id}/edit`}
+                          title="Edit"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 7, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#6366f1', textDecoration: 'none' }}
+                        >
+                          <Edit2 size={14} />
+                        </Link>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => setConfirmId(c._id)}
+                          disabled={deletingId === c._id}
+                          title="Delete"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 7, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', cursor: 'pointer', opacity: deletingId === c._id ? 0.5 : 1 }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                      {!canEdit && !canDelete && <span style={{ color: '#3f3f46', fontSize: '0.75rem' }}>—</span>}
                     </div>
                   </td>
                 </tr>

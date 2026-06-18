@@ -6,7 +6,7 @@ import { User } from '@/models/User';
 import CourseTabs from '@/components/course/CourseTabs';
 import EnrollButton from '@/components/course/EnrollButton';
 import { stripLessonNotes } from '@/lib/course';
-import TrackEvent from '@/components/tracking/TrackEvent';
+import ViewContentTracker from '@/components/tracking/ViewContentTracker';
 import VdoPlayer from '@/components/VdoPlayer';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { Users, BookOpen, BarChart2, Play } from 'lucide-react';
@@ -109,15 +109,11 @@ export default async function CourseDetailPage({
 
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
-      <TrackEvent
-        event="ViewContent"
-        params={{
-          value: course.price,
-          currency: 'BDT',
-          content_ids: [course.slug],
-          content_name: course.title,
-          content_type: 'product',
-        }}
+      <ViewContentTracker
+        contentId={course.slug}
+        contentName={course.title}
+        value={course.price}
+        currency="BDT"
       />
       {/* ── HERO ── */}
       <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '64px' }}>

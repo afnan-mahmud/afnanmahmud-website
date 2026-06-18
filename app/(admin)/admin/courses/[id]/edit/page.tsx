@@ -1,12 +1,11 @@
-import { redirect, notFound } from 'next/navigation';
-import { auth } from '@/lib/auth';
+import { notFound } from 'next/navigation';
 import { connectDB } from '@/lib/db';
 import { Course } from '@/models/Course';
 import CourseForm from '@/components/admin/CourseForm';
+import { requirePage } from '@/lib/permissions.server';
 
 export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') redirect('/dashboard');
+  await requirePage('courses.edit');
 
   const { id } = await params;
   await connectDB();
@@ -27,6 +26,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
       sectionTitle: string;
       lessons?: Array<{ _id?: string; title: string; videoId?: string; duration?: string; isPreview?: boolean; note?: string }>;
     }>;
+    demoClasses?: Array<{ _id: string; title: string; description?: string; videoId?: string; durationLabel?: string }>;
   };
 
   const raw = await Course.findById(id).lean<LeanCourse>();
@@ -55,6 +55,13 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
         isPreview: l.isPreview ?? false,
         note: l.note ?? '',
       })),
+    })),
+    demoClasses: (raw.demoClasses ?? []).map((d) => ({
+      _id: d._id,
+      title: d.title,
+      description: d.description ?? '',
+      videoId: d.videoId ?? '',
+      durationLabel: d.durationLabel ?? '',
     })),
   };
 

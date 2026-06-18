@@ -8,8 +8,9 @@ import {
   Send, AtSign, Mail, Layout, Smartphone, Server,
   Volume2, VolumeX, X
 } from 'lucide-react';
+import Link from 'next/link';
 import EnrollModal from './EnrollModal';
-import { trackPixel } from '@/lib/meta-pixel';
+import ViewContentTracker from '@/components/tracking/ViewContentTracker';
 
 type IconType = ComponentType<{ size?: number | string; className?: string }>;
 
@@ -184,20 +185,16 @@ export default function AiForDevelopersPage() {
   const [demoOpen, setDemoOpen] = useState(false);
   const openDemo = () => setDemoOpen(true);
 
-  useEffect(() => {
-    // Meta ViewContent for the landing course.
-    trackPixel('ViewContent', {
-      value: COURSE_PRICE,
-      currency: 'BDT',
-      content_ids: [COURSE_SLUG],
-      content_name: 'AI for Developers',
-      content_type: 'product',
-    });
-  }, []);
-
   return (
     <div className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
       <style>{globalStyles}</style>
+
+      <ViewContentTracker
+        contentId={COURSE_SLUG}
+        contentName="AI for Developers"
+        value={COURSE_PRICE}
+        currency="BDT"
+      />
 
       <EnrollModal open={enrollOpen} onClose={() => setEnrollOpen(false)} />
       <VideoDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
@@ -310,6 +307,11 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
               {/* Mobile/tablet: inline auto-playing demo video above the Enroll button */}
               <div className="lg:hidden mb-6">
                 <MobileDemoVideo />
+                {/* Mobile/tablet: demo class button right below the demo video */}
+                <Link href="/ai-for-developers/demo" className="mt-4 w-full flex px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700">
+                  <MonitorPlay size={20} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+                  ডেমো ক্লাস দেখুন
+                </Link>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -320,8 +322,13 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
                 {/* Desktop only: opens the demo video in a modal */}
                 <button onClick={onWatchDemo} className="hidden lg:flex w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 hover:-translate-y-1 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700 cursor-pointer">
                   <Play size={20} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
-                  Watch Demo
+                  Course Details
                 </button>
+                {/* Desktop only: demo class page beside the outline/demo video button */}
+                <Link href="/ai-for-developers/demo" className="hidden lg:flex w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 hover:-translate-y-1 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700">
+                  <MonitorPlay size={20} className="text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+                  Demo Class
+                </Link>
               </div>
             </Reveal>
           </div>

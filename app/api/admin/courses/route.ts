@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { Course } from '@/models/Course';
-
-async function requireAdmin() {
-  const session = await auth();
-  return session?.user?.role === 'admin' ? session : null;
-}
+import { requirePerm } from '@/lib/permissions.server';
 
 export async function GET() {
-  if (!await requireAdmin()) {
+  if (!await requirePerm('courses.view')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   await connectDB();
@@ -18,7 +13,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!await requireAdmin()) {
+  if (!await requirePerm('courses.create')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   try {

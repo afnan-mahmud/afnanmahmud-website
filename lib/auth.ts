@@ -7,10 +7,17 @@ import { authConfig } from './auth.config';
 import { deviceClass } from './device';
 import { registerDeviceSession } from './auth-device';
 
+/** Max wrong guesses before a code is burned — caps OTP brute-force. */
+const MAX_OTP_ATTEMPTS = 5;
+
 export async function verifyOtpCode(
   phone: string,
   code: string
 ): Promise<{ id: string; phone: string; role: string; name: string } | null> {
+  // Guard against non-string credentials (NoSQL operator injection via the
+  // credentials provider) — only plain strings ever reach the query.
+  if (typeof phone !== 'string' || typeof code !== 'string') return null;
+
   await connectDB();
 
   const otpRecord = await OtpCode.findOne({
@@ -20,7 +27,17 @@ export async function verifyOtpCode(
   });
 
   if (!otpRecord) return null;
-  if (otpRecord.code !== code) return null;
+
+  if (otpRecord.code !== code) {
+    // Count the failed attempt; burn the code once the cap is reached so an
+    // attacker can't keep guessing the same live code.
+    const reachedCap = (otpRecord.attempts ?? 0) + 1 >= MAX_OTP_ATTEMPTS;
+    await OtpCode.updateOne(
+      { _id: otpRecord._id },
+      reachedCap ? { $inc: { attempts: 1 }, $set: { used: true } } : { $inc: { attempts: 1 } }
+    );
+    return null;
+  }
 
   await OtpCode.updateOne({ _id: otpRecord._id }, { used: true });
 

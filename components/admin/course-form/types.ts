@@ -13,6 +13,14 @@ export interface BuilderSection {
   lessons: BuilderLesson[];
 }
 
+export interface BuilderDemoClass {
+  _id: string;
+  title: string;
+  description: string;
+  videoId: string;
+  durationLabel: string;
+}
+
 export interface FormData {
   title: string;
   slug: string;
@@ -50,6 +58,13 @@ export interface CourseFormInitial {
       isPreview?: boolean;
       note?: string;
     }>;
+  }>;
+  demoClasses?: Array<{
+    _id?: string;
+    title: string;
+    description?: string;
+    videoId?: string;
+    durationLabel?: string;
   }>;
 }
 

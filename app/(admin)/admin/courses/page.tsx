@@ -1,12 +1,11 @@
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { Course } from '@/models/Course';
 import CoursesTable from '@/components/admin/CoursesTable';
+import { requirePage } from '@/lib/permissions.server';
+import { can } from '@/lib/permissions';
 
 export default async function AdminCoursesPage() {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') redirect('/dashboard');
+  const access = await requirePage('courses.view');
 
   await connectDB();
   const raw = await Course.find().sort({ createdAt: -1 }).lean();
@@ -21,5 +20,12 @@ export default async function AdminCoursesPage() {
     slug: c.slug,
   }));
 
-  return <CoursesTable initialCourses={courses} />;
+  return (
+    <CoursesTable
+      initialCourses={courses}
+      canCreate={can(access, 'courses.create')}
+      canEdit={can(access, 'courses.edit')}
+      canDelete={can(access, 'courses.delete')}
+    />
+  );
 }

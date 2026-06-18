@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Inter, Poppins } from 'next/font/google';
+import { trackPixel } from '@/lib/meta-pixel';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800'] });
@@ -51,7 +52,16 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
         body: JSON.stringify({ name: name.trim(), phone: phone.trim() }),
       });
 
-      const data = await res.json() as { paymentUrl?: string; alreadyPurchased?: boolean; error?: string };
+      const data = await res.json() as {
+        paymentUrl?: string;
+        alreadyPurchased?: boolean;
+        error?: string;
+        eventId?: string;
+        value?: number;
+        currency?: string;
+        contentId?: string;
+        contentName?: string;
+      };
 
       if (!res.ok) {
         setError(data.error ?? 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করো।');
@@ -64,6 +74,20 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
       }
 
       if (data.paymentUrl) {
+        // Meta InitiateCheckout — same eventId as the server CAPI call (dedup).
+        if (data.eventId) {
+          trackPixel(
+            'InitiateCheckout',
+            {
+              value: data.value,
+              currency: data.currency ?? 'BDT',
+              content_ids: data.contentId ? [data.contentId] : undefined,
+              content_name: data.contentName,
+              content_type: 'product',
+            },
+            data.eventId
+          );
+        }
         window.location.href = data.paymentUrl;
       }
     } catch {

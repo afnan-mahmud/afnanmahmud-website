@@ -42,6 +42,7 @@ function hashPhone(phone: string | undefined | null): string | undefined {
 
 export interface CapiUserInfo {
   phone?: string;
+  email?: string;
   name?: string;
   externalId?: string;
 }
@@ -74,8 +75,18 @@ function buildUserData(user: CapiUserInfo, signals: RequestSignals) {
   const ud: Record<string, unknown> = {};
   const ph = hashPhone(user.phone);
   if (ph) ud.ph = [ph];
-  const fn = hashField(user.name);
-  if (fn) ud.fn = [fn];
+  const em = hashField(user.email);
+  if (em) ud.em = [em];
+  // Split the full name into first/last so Meta gets both fn and ln.
+  if (user.name && user.name.trim()) {
+    const parts = user.name.trim().split(/\s+/);
+    const fn = hashField(parts[0]);
+    if (fn) ud.fn = [fn];
+    if (parts.length > 1) {
+      const ln = hashField(parts.slice(1).join(' '));
+      if (ln) ud.ln = [ln];
+    }
+  }
   const ext = hashField(user.externalId);
   if (ext) ud.external_id = [ext];
   if (signals.fbp) ud.fbp = signals.fbp;

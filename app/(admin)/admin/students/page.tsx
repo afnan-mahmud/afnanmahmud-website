@@ -1,13 +1,21 @@
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { Course, type ICourse } from '@/models/Course';
 import StudentsTable from '@/components/admin/StudentsTable';
+import { requirePage } from '@/lib/permissions.server';
+import { can } from '@/lib/permissions';
 
-export default async function AdminStudentsPage() {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') redirect('/dashboard');
+const PAGE_SIZE = 20;
+
+export default async function AdminStudentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const access = await requirePage('students.view');
+
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
 
   await connectDB();
   type LeanUser = {
@@ -22,13 +30,18 @@ export default async function AdminStudentsPage() {
   type LeanCourse = { _id: unknown; title: string; price: number };
 
   // Only students who have purchased at least one course.
-  const [raw, coursesRaw] = await Promise.all([
-    User.find({ role: 'student', 'purchasedCourses.0': { $exists: true } })
+  const filter = { role: 'student', 'purchasedCourses.0': { $exists: true } };
+  const [total, raw, coursesRaw] = await Promise.all([
+    User.countDocuments(filter),
+    User.find(filter)
       .populate<{ purchasedCourses: ICourse[] }>('purchasedCourses', 'title slug')
       .sort({ createdAt: -1 })
+      .skip((page - 1) * PAGE_SIZE)
+      .limit(PAGE_SIZE)
       .lean<LeanUser[]>(),
     Course.find({}, 'title price').sort({ title: 1 }).lean<LeanCourse[]>(),
   ]);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const courseOptions = coursesRaw.map((c) => ({
     _id: String(c._id),
@@ -46,5 +59,17 @@ export default async function AdminStudentsPage() {
     createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
   }));
 
-  return <StudentsTable students={students} title="Students" emptyMessage="No purchased students yet" addStudentCourses={courseOptions} />;
+  return (
+    <StudentsTable
+      students={students}
+      title="Students"
+      emptyMessage="No purchased students yet"
+      addStudentCourses={can(access, 'students.add') ? courseOptions : undefined}
+      page={page}
+      totalPages={totalPages}
+      total={total}
+      pageSize={PAGE_SIZE}
+      basePath="/admin/students"
+    />
+  );
 }

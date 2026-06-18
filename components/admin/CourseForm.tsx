@@ -10,7 +10,7 @@ import MediaTab from './course-form/MediaTab';
 import CurriculumTab from './course-form/CurriculumTab';
 import SettingsTab from './course-form/SettingsTab';
 import { validateForm, countErrors, firstTabWithError } from './course-form/validation';
-import type { BuilderSection, FormData, CourseFormInitial, TabKey } from './course-form/types';
+import type { BuilderSection, BuilderDemoClass, FormData, CourseFormInitial, TabKey } from './course-form/types';
 
 const TABS: { key: TabKey; label: string; icon: typeof FileText }[] = [
   { key: 'details', label: 'Details', icon: FileText },
@@ -31,6 +31,16 @@ function buildInitialCurriculum(initial?: CourseFormInitial): BuilderSection[] {
       isPreview: l.isPreview ?? false,
       note: l.note ?? '',
     })),
+  }));
+}
+
+function buildInitialDemoClasses(initial?: CourseFormInitial): BuilderDemoClass[] {
+  return (initial?.demoClasses ?? []).map((d) => ({
+    _id: d._id ?? uid(),
+    title: d.title,
+    description: d.description ?? '',
+    videoId: d.videoId ?? '',
+    durationLabel: d.durationLabel ?? '',
   }));
 }
 
@@ -58,6 +68,7 @@ export default function CourseForm({ initial, mode }: { initial?: CourseFormInit
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [curriculum, setCurriculum] = useState<BuilderSection[]>(() => buildInitialCurriculum(initial));
+  const [demoClasses, setDemoClasses] = useState<BuilderDemoClass[]>(() => buildInitialDemoClasses(initial));
   const [submitting, setSubmitting] = useState(false);
 
   const setField = useCallback(<K extends keyof FormData>(k: K, v: FormData[K]) => setForm((f) => ({ ...f, [k]: v })), []);
@@ -66,14 +77,14 @@ export default function CourseForm({ initial, mode }: { initial?: CourseFormInit
   const initialSnapshot = useRef<string>('');
   const savedRef = useRef(false);
   useEffect(() => {
-    initialSnapshot.current = JSON.stringify({ form, curriculum, thumbnail: thumbnailPreview });
+    initialSnapshot.current = JSON.stringify({ form, curriculum, demoClasses, thumbnail: thumbnailPreview });
     // Snapshot the mount-time state only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const dirty = useMemo(
     () => !savedRef.current && initialSnapshot.current !== '' &&
-      JSON.stringify({ form, curriculum, thumbnail: thumbnailPreview }) !== initialSnapshot.current,
-    [form, curriculum, thumbnailPreview]
+      JSON.stringify({ form, curriculum, demoClasses, thumbnail: thumbnailPreview }) !== initialSnapshot.current,
+    [form, curriculum, demoClasses, thumbnailPreview]
   );
   const dirtyOrFile = dirty || !!thumbnailFile;
 
@@ -130,6 +141,16 @@ export default function CourseForm({ initial, mode }: { initial?: CourseFormInit
           sectionTitle: s.sectionTitle,
           lessons: s.lessons,
         })),
+        // Demo classes keep their _id (used as the React + Mongoose subdoc key).
+        demoClasses: demoClasses
+          .filter((d) => d.title.trim() && d.videoId.trim())
+          .map((d) => ({
+            _id: d._id,
+            title: d.title.trim(),
+            description: d.description.trim() || undefined,
+            videoId: d.videoId.trim(),
+            durationLabel: d.durationLabel.trim() || undefined,
+          })),
       };
 
       const url = mode === 'create' ? '/api/admin/courses' : `/api/admin/courses/${initial!._id}`;
@@ -146,7 +167,7 @@ export default function CourseForm({ initial, mode }: { initial?: CourseFormInit
     } finally {
       setSubmitting(false);
     }
-  }, [form, thumbnailFile, thumbnailPreview, curriculum, mode, initial, router]);
+  }, [form, thumbnailFile, thumbnailPreview, curriculum, demoClasses, mode, initial, router]);
 
   return (
     <div style={{ padding: '36px 32px 100px', maxWidth: 1000 }} className="admin-content">
@@ -194,7 +215,7 @@ export default function CourseForm({ initial, mode }: { initial?: CourseFormInit
           <DetailsTab form={form} setField={setField} slugManual={slugManual} setSlugManual={setSlugManual} thumbnailPreview={thumbnailPreview} />
         </div>
         <div style={{ display: activeTab === 'media' ? 'block' : 'none' }}>
-          <MediaTab form={form} setField={setField} thumbnailPreview={thumbnailPreview} onPickFile={handlePickFile} onRemoveThumbnail={() => { setThumbnailPreview(null); setThumbnailFile(null); }} dragging={dragging} setDragging={setDragging} />
+          <MediaTab form={form} setField={setField} thumbnailPreview={thumbnailPreview} onPickFile={handlePickFile} onRemoveThumbnail={() => { setThumbnailPreview(null); setThumbnailFile(null); }} dragging={dragging} setDragging={setDragging} demoClasses={demoClasses} setDemoClasses={setDemoClasses} />
         </div>
         <div style={{ display: activeTab === 'curriculum' ? 'block' : 'none' }}>
           <CurriculumTab curriculum={curriculum} setCurriculum={setCurriculum} />

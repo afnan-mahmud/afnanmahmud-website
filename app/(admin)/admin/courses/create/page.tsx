@@ -1,9 +1,7 @@
 import CourseForm from '@/components/admin/CourseForm';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { requirePage } from '@/lib/permissions.server';
 
 export default async function CreateCoursePage() {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') redirect('/dashboard');
+  await requirePage('courses.create');
   return <CourseForm mode="create" />;
 }

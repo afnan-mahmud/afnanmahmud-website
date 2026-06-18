@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { Order } from '@/models/Order';
 import { Expense } from '@/models/Expense';
@@ -9,13 +7,25 @@ import { Wallet, Receipt, Landmark } from 'lucide-react';
 import type { IUser } from '@/models/User';
 import type { ICourse } from '@/models/Course';
 import ExpenseButton from '@/components/admin/ExpenseButton';
+import Pagination from '@/components/admin/Pagination';
+import { requirePage } from '@/lib/permissions.server';
+import { can } from '@/lib/permissions';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
 
-export default async function AccountsPage() {
-  const session = await auth();
-  if (session?.user?.role !== 'admin') redirect('/dashboard');
+const PAGE_SIZE = 20;
+
+export default async function AccountsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const access = await requirePage('accounts.view');
+  const canExpense = can(access, 'accounts.expense');
+
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
 
   await connectDB();
 
@@ -81,6 +91,12 @@ export default async function AccountsPage() {
     }, [])
     .reverse();
 
+  // Totals/running balance are computed across all transactions; only the
+  // current page's rows are rendered.
+  const total = ledger.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pagedLedger = ledger.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const BOXES = [
     { label: 'Total Order', value: totalOrders, icon: Wallet, color: '#4ade80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
     { label: 'Expense', value: totalExpense, icon: Receipt, color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)' },
@@ -93,7 +109,7 @@ export default async function AccountsPage() {
     <div style={{ padding: '36px 32px', maxWidth: 1100 }} className="admin-content">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
         <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', margin: 0 }}>Accounts</h1>
-        <ExpenseButton categories={categories} />
+        {canExpense && <ExpenseButton categories={categories} />}
       </div>
 
       {/* Summary boxes */}
@@ -126,10 +142,10 @@ export default async function AccountsPage() {
               </tr>
             </thead>
             <tbody>
-              {ledger.length === 0 ? (
+              {pagedLedger.length === 0 ? (
                 <tr><td colSpan={5} className={inter.className} style={{ padding: '40px 16px', textAlign: 'center', color: '#52525b', fontSize: '0.875rem' }}>No transactions yet</td></tr>
-              ) : ledger.map((e, i) => (
-                <tr key={e.id} style={{ borderBottom: i < ledger.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+              ) : pagedLedger.map((e, i) => (
+                <tr key={e.id} style={{ borderBottom: i < pagedLedger.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                   <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                     {e.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
@@ -142,6 +158,7 @@ export default async function AccountsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination currentPage={page} totalPages={totalPages} basePath="/admin/accounts" total={total} pageSize={PAGE_SIZE} />
       </div>
 
       <style>{`@media (max-width: 640px) { .admin-content { padding: 20px 16px !important; } }`}</style>

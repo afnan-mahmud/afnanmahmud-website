@@ -4,6 +4,7 @@ import { Fragment, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import AddStudentModal, { type CourseOption } from './AddStudentModal';
+import Pagination from './Pagination';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -38,6 +39,12 @@ interface StudentsTableProps {
   showEnrolled?: boolean;
   /** When provided, renders an "Add Student" button + modal next to the title. */
   addStudentCourses?: CourseOption[];
+  /** Pagination state — when provided, a pager is rendered below the table. */
+  page?: number;
+  totalPages?: number;
+  total?: number;
+  pageSize?: number;
+  basePath?: string;
 }
 
 export default function StudentsTable({
@@ -46,6 +53,11 @@ export default function StudentsTable({
   emptyMessage = 'No students yet',
   showEnrolled = true,
   addStudentCourses,
+  page = 1,
+  totalPages = 1,
+  total,
+  pageSize,
+  basePath = '/admin/students',
 }: StudentsTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -133,6 +145,7 @@ export default function StudentsTable({
             </tbody>
           </table>
         </div>
+        <Pagination currentPage={page} totalPages={totalPages} basePath={basePath} total={total} pageSize={pageSize} />
       </div>
       <style>{`@media (max-width: 640px) { .admin-content { padding: 20px 16px !important; } }`}</style>
     </div>

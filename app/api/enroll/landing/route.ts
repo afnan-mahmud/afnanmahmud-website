@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     await sendCapiEvent({
       eventName: 'InitiateCheckout',
       eventId,
-      user: { phone: user.phone, name: user.name, externalId: String(user._id) },
+      user: { phone: user.phone, email: user.email, name: user.name, externalId: String(user._id) },
       signals: capiSignalsFromRequest(req),
       customData: {
         value: course.price,
