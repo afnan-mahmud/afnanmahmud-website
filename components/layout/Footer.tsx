@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
@@ -96,20 +95,21 @@ export default function Footer() {
                 marginBottom: '18px',
               }}
             >
-              <div
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/afnan-logo.png"
+                alt="Afnan Mahmud"
+                width={40}
+                height={40}
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  display: 'block',
                   boxShadow: '0 0 16px rgba(99,102,241,0.4)',
                 }}
-              >
-                <BookOpen size={18} color="white" />
-              </div>
+              />
               <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#f1f5f9', letterSpacing: '-0.01em' }}>
                 Afnan<span style={{ color: '#818cf8' }}> Mahmud</span>
               </span>
@@ -216,6 +216,7 @@ export default function Footer() {
                 { label: 'Sign In', href: '/auth/otp' },
                 { label: 'Privacy Policy', href: '/privacy' },
                 { label: 'Terms of Service', href: '/terms' },
+                { label: 'Refund Policy', href: '/refund' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

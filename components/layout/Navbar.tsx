@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import { Space_Grotesk } from 'next/font/google';
 import {
-  Menu, X, BookOpen, LayoutDashboard, LogOut, LogIn,
+  Menu, X, LayoutDashboard, LogOut, LogIn,
   User, GraduationCap, ChevronDown,
 } from 'lucide-react';
 
@@ -84,9 +84,14 @@ export default function Navbar() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Logo */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BookOpen size={16} color="white" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/afnan-logo.png"
+            alt="Afnan Mahmud"
+            width={36}
+            height={36}
+            style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+          />
           <span style={{ fontSize: '1.125rem', fontWeight: 700, color: '#f1f5f9', letterSpacing: '-0.02em' }}>
             Afnan<span style={{ color: '#6366f1' }}> Mahmud</span>
           </span>

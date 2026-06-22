@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, type ReactNode, type ComponentType } from 'react';
 import {
   CheckCircle2, XCircle, ChevronDown, Play, Code, Code2, Sparkles, Cpu, Layers, Zap,
-  Star, Brain, Terminal, Rocket, Check,
+  Brain, Terminal, Rocket, Check,
   Briefcase, Globe, Lock, Target, Trophy, MonitorPlay,
   Send, AtSign, Mail, Layout, Smartphone, Server,
   Volume2, VolumeX, X
@@ -114,9 +114,8 @@ const Reveal = ({ children, delay = 0, direction = 'up' }: RevealProps) => {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-1000 ${
-        isVisible ? 'opacity-100' : 'opacity-0'
-      } ${getTransform()}`}
+      className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'
+        } ${getTransform()}`}
       style={{ transitionDelay: `${delay}ms`, transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
     >
       {children}
@@ -209,21 +208,19 @@ export default function AiForDevelopersPage() {
 
       <main className="relative z-10">
         <HeroSection onEnroll={openEnroll} onWatchDemo={openDemo} />
-        <TechStackStrip />
-        <GamifiedStats />
         <PainPointSection />
-        <WhyAIWorkflow />
         <CtaBanner
           onEnroll={openEnroll}
-          headline={<>পুরোনো নিয়মে আর কত? <GradientText>Smart way</GradientText>-তে শুরু করুন।</>}
-          sub="একটাবার AI-first ওয়েতে কাজ করা শিখে গেলে আর পিছনে তাকাতে হবে না। আজই জার্নিটা শুরু করুন।"
+          headline={<>পুরোনো নিয়মে আর কত? <GradientText>Smart way</GradientText>-তে Software Development শুরু করুন।</>}
+          sub="AI হবে আপনার Assistant Programmer, আর আপনি হবেন একজন Software Architecture। আপনি System এবং Database ডিজাইন করবেন, Backend API Structure এবং Contract ডিজাইন করবেন Even এগুলোও আবার একটা AI কে দিয়ে করিয়ে নিবেন তারপর AI কে দিয়ে আপনি Code লিখাবেন।"
         />
-        <CurriculumJourney />
+        <WhyAIWorkflow />
         <DevStack />
+        <CurriculumJourney />
         <CtaBanner
           onEnroll={openEnroll}
-          headline={<>জিরো থেকে <GradientText>লাইভ অ্যাপ</GradientText> — পুরোটা একসাথে।</>}
-          sub="৮টি মডিউল, একটা রিয়েল প্রজেক্ট, ওয়েবসাইট থেকে মোবাইল অ্যাপ পর্যন্ত। লাইফটাইম এক্সেস, একবারের পেমেন্টে।"
+          headline={<>জিরো থেকে <GradientText>লাইভ অ্যাপ</GradientText> — পুরো প্রসেসটাই এখানে শিখানো হবে</>}
+          sub="৮টি মডিউলে টোটাল ৪০+ লেসনে, পাঁচটি রিয়েল প্রজেক্টে আপনাকে ওয়েবসাইট থেকে মোবাইল অ্যাপ বিল্ড করে সার্ভারে Deploy করে মোবাইল অ্যাপ Play Store এবং App Store পাবলিশ করা পর্যন্ত সম্পূর্ণ প্রসেস Step by Step শিখানো হবে"
         />
         <TargetAudience />
         <InstructorProfile />
@@ -251,9 +248,8 @@ function Navbar({ onEnroll }: { onEnroll: () => void }) {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-panel border-b border-slate-800/50 py-3 shadow-lg' : 'bg-transparent py-5'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div className="flex items-center gap-2 font-black text-xl tracking-tight cursor-pointer hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(34,211,238,0.4)]">
-            <Terminal size={18} />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/afnan-logo.png" alt="Afnan Mahmud" className="w-9 h-9 rounded-full object-cover shadow-[0_0_15px_rgba(34,211,238,0.4)]" />
           <span className="text-white">Afnan <GradientText>Mahmud</GradientText></span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
@@ -276,7 +272,7 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 overflow-hidden border-b border-slate-800/50 min-h-[90vh] flex items-center">
       {/* Cyberpunk Glow Effects */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none animate-pulse-glow"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" style={{animationDelay: '1s'}}></div>
+      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '1s' }}></div>
 
       {/* Grid Pattern Background */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDQwaDQwVjBIMHoiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')] [mask-image:linear-gradient(to_bottom,transparent,black,transparent)] opacity-50"></div>
@@ -291,15 +287,22 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
             </Reveal>
 
             <Reveal delay={200} direction="right">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] text-white">
-                AI দিয়ে সম্পূর্ণ <GradientText>Custom Website</GradientText> <br className="hidden md:block"/>
-                and Mobile App বানান।
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1] text-white">
+                AI-পাওয়ার্ড <GradientText>Software Development</GradientText>
               </h1>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-6 leading-snug text-slate-200">
+                ১-২ মাসেই কাস্টম ওয়েব এবং মোবাইল অ্যাপ বিল্ড করা শিখুন
+              </p>
             </Reveal>
 
             <Reveal delay={300} direction="right">
-              <p className="max-w-xl text-lg md:text-xl text-slate-400 mb-10 leading-relaxed font-medium">
-                AntiGravity, Gemini, এবং Claude Code ব্যবহার করে <span className="text-white font-bold">সম্পূর্ণ ফ্রি টুলস দিয়ে</span> জিরো থেকে প্রোডাকশন গ্রেড ডেভেলপমেন্ট শিখুন। এই কোর্স শেষে আপনি যেকোনো কোম্পানিতে <strong className="text-indigo-400">Software Engineer হিসেবে জব</strong> করতে পারবেন এবং ক্লায়েন্টের <strong className="text-pink-400">Existing বা New</strong> যেকোনো প্রজেক্ট অনায়াসে হ্যান্ডেল করতে পারবেন।
+              <p className="mt-5 sm:mt-6 max-w-2xl text-[15px] sm:text-base md:text-lg lg:text-xl text-slate-300/90 leading-relaxed sm:leading-loose tracking-wide [text-wrap:pretty] border-l-2 border-indigo-500/40 pl-4 sm:pl-5">
+                Coding এর ঝামেলা এখন <span className="bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent font-semibold">AI এর কাঁধে</span>, মডার্ন AI-কে বানান আপনার পার্সোনাল প্রোগ্রামার।
+                কোড লেখার কাজ করবে AI, আর আপনি হয়ে উঠবেন এমন এক
+                <span className="text-white font-semibold"> Full Stack Developer</span>—যে যেকোনো ক্লায়েন্টের
+                <strong className="text-indigo-400 font-semibold"> Existing বা New</strong> প্রজেক্ট
+                হ্যান্ডেল করতে পারবেন এবং যেকোনো কোম্পানিতে
+                <strong className="text-pink-400 font-semibold"> Software Developer</strong> হিসেবে আপনার ক্যারিয়ার শুরু করতে পারবেন।
               </p>
             </Reveal>
 
@@ -308,15 +311,17 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
               <div className="lg:hidden mb-6">
                 <MobileDemoVideo />
                 {/* Mobile/tablet: demo class button right below the demo video */}
-                <Link href="/ai-for-developers/demo" className="mt-4 w-full flex px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700">
-                  <MonitorPlay size={20} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
-                  ডেমো ক্লাস দেখুন
+                <Link href="/ai-for-developers/demo" className="mt-4 group relative w-full flex rounded-xl p-[2px] bg-gradient-to-r from-cyan-500 to-indigo-600 shadow-[0_0_20px_rgba(34,211,238,0.35)] hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] hover:-translate-y-1 active:scale-95 transition-all">
+                  <span className="w-full flex items-center justify-center gap-2 rounded-[10px] bg-slate-950 px-8 py-4 text-white font-bold text-lg group-hover:bg-slate-900 transition-colors">
+                    <MonitorPlay size={20} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+                    ডেমো ক্লাস দেখুন
+                  </span>
                 </Link>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 <button onClick={onEnroll} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
-                  <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20}/>
+                  <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
                   Enroll Now - ৳990
                 </button>
                 {/* Desktop only: opens the demo video in a modal */}
@@ -330,6 +335,10 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
                   Demo Class
                 </Link>
               </div>
+              <div className="mt-5 inline-flex items-center gap-2.5 rounded-full border border-emerald-400/40 bg-gradient-to-r from-emerald-500/15 to-teal-500/10 px-4 py-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-sm">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/20 text-sm animate-float">🛡️</span>
+                <span className="text-sm font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200">৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
+              </div>
             </Reveal>
           </div>
 
@@ -337,82 +346,82 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
           <div className="hidden lg:block w-full">
             <Reveal delay={300} direction="left">
               <div className="relative h-[600px] w-full">
-              {/* Main Desktop App Mockup */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] max-w-2xl animate-float">
-                <div className="glass-panel rounded-2xl border border-slate-700 shadow-2xl overflow-hidden neon-border">
-                  {/* Window Header */}
-                  <div className="bg-slate-900/80 px-4 py-3 border-b border-slate-800 flex items-center gap-2">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                      <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                    </div>
-                    <div className="mx-auto flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-950 px-3 py-1 rounded-md">
-                      <Lock size={10} className="text-green-400"/> production-ready-app.com
-                    </div>
-                  </div>
-                  {/* Window Body (Code + UI concept) */}
-                  <div className="p-6 bg-[#0B1120] relative overflow-hidden flex gap-6 h-[350px]">
-                    <div className="w-1/2 font-mono text-sm">
-                      <p className="text-pink-400 mb-2">import <span className="text-slate-300">&#123; AI, App &#125;</span> from <span className="text-green-400">&apos;@antigravity/core&apos;</span>;</p>
-                      <p className="text-indigo-400 mb-2">const <span className="text-blue-300">buildPlatform</span> = <span className="text-purple-400">async</span> () =&gt; &#123;</p>
-                      <p className="text-slate-400 ml-4 mb-1">{'// Generating Full-Stack SaaS'}</p>
-                      <p className="text-slate-300 ml-4 mb-2"><span className="text-indigo-400">await</span> AI.<span className="text-blue-300">generateBackend</span>();</p>
-                      <p className="text-slate-300 ml-4 mb-2"><span className="text-indigo-400">await</span> AI.<span className="text-blue-300">deployToLiveServer</span>();</p>
-                      <p className="text-purple-400">&#125;;</p>
-                    </div>
-                    {/* Simulated UI rendering */}
-                    <div className="w-1/2 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 relative z-10 shadow-lg">
-                      <div className="w-full h-8 bg-slate-800 rounded-lg animate-pulse"></div>
-                      <div className="flex gap-3">
-                        <div className="w-1/2 h-24 bg-indigo-500/20 border border-indigo-500/30 rounded-lg"></div>
-                        <div className="w-1/2 h-24 bg-cyan-500/20 border border-cyan-500/30 rounded-lg"></div>
+                {/* Main Desktop App Mockup */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] max-w-2xl animate-float">
+                  <div className="glass-panel rounded-2xl border border-slate-700 shadow-2xl overflow-hidden neon-border">
+                    {/* Window Header */}
+                    <div className="bg-slate-900/80 px-4 py-3 border-b border-slate-800 flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                       </div>
-                      <div className="w-full h-16 bg-slate-800 rounded-lg mt-auto flex items-center px-4 gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400"><Check size={16}/></div>
-                        <div className="h-2 w-24 bg-slate-700 rounded-full"></div>
+                      <div className="mx-auto flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-950 px-3 py-1 rounded-md">
+                        <Lock size={10} className="text-green-400" /> production-ready-app.com
+                      </div>
+                    </div>
+                    {/* Window Body (Code + UI concept) */}
+                    <div className="p-6 bg-[#0B1120] relative overflow-hidden flex gap-6 h-[350px]">
+                      <div className="w-1/2 font-mono text-sm">
+                        <p className="text-pink-400 mb-2">import <span className="text-slate-300">&#123; AI, App &#125;</span> from <span className="text-green-400">&apos;@antigravity/core&apos;</span>;</p>
+                        <p className="text-indigo-400 mb-2">const <span className="text-blue-300">buildPlatform</span> = <span className="text-purple-400">async</span> () =&gt; &#123;</p>
+                        <p className="text-slate-400 ml-4 mb-1">{'// Generating Full-Stack SaaS'}</p>
+                        <p className="text-slate-300 ml-4 mb-2"><span className="text-indigo-400">await</span> AI.<span className="text-blue-300">generateBackend</span>();</p>
+                        <p className="text-slate-300 ml-4 mb-2"><span className="text-indigo-400">await</span> AI.<span className="text-blue-300">deployToLiveServer</span>();</p>
+                        <p className="text-purple-400">&#125;;</p>
+                      </div>
+                      {/* Simulated UI rendering */}
+                      <div className="w-1/2 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 relative z-10 shadow-lg">
+                        <div className="w-full h-8 bg-slate-800 rounded-lg animate-pulse"></div>
+                        <div className="flex gap-3">
+                          <div className="w-1/2 h-24 bg-indigo-500/20 border border-indigo-500/30 rounded-lg"></div>
+                          <div className="w-1/2 h-24 bg-cyan-500/20 border border-cyan-500/30 rounded-lg"></div>
+                        </div>
+                        <div className="w-full h-16 bg-slate-800 rounded-lg mt-auto flex items-center px-4 gap-3">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400"><Check size={16} /></div>
+                          <div className="h-2 w-24 bg-slate-700 rounded-full"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Floating Elements (Mobile App Representation) */}
-              <div className="absolute bottom-10 -left-10 w-48 animate-float-delayed z-20">
-                <div className="glass-panel p-4 rounded-3xl border border-slate-700 shadow-2xl shadow-indigo-900/50 bg-[#0f172a]/90 backdrop-blur-xl">
-                  <div className="w-full h-80 border border-slate-700 rounded-2xl relative overflow-hidden bg-[#060b19]">
-                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-black rounded-full z-10"></div>
-                    <div className="p-4 pt-8">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500"></div>
-                        <div className="w-16 h-3 rounded-full bg-slate-800"></div>
+                {/* Floating Elements (Mobile App Representation) */}
+                <div className="absolute bottom-10 -left-10 w-48 animate-float-delayed z-20">
+                  <div className="glass-panel p-4 rounded-3xl border border-slate-700 shadow-2xl shadow-indigo-900/50 bg-[#0f172a]/90 backdrop-blur-xl">
+                    <div className="w-full h-80 border border-slate-700 rounded-2xl relative overflow-hidden bg-[#060b19]">
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-black rounded-full z-10"></div>
+                      <div className="p-4 pt-8">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-500"></div>
+                          <div className="w-16 h-3 rounded-full bg-slate-800"></div>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="w-full h-20 bg-slate-800 rounded-xl"></div>
+                          <div className="w-full h-12 bg-indigo-500/20 border border-indigo-500/50 rounded-xl"></div>
+                        </div>
                       </div>
-                      <div className="space-y-3">
-                        <div className="w-full h-20 bg-slate-800 rounded-xl"></div>
-                        <div className="w-full h-12 bg-indigo-500/20 border border-indigo-500/50 rounded-xl"></div>
+                      <div className="absolute bottom-0 w-full h-12 bg-slate-900 border-t border-slate-800 flex justify-around items-center px-4">
+                        <div className="w-4 h-4 rounded-full bg-slate-600"></div>
+                        <div className="w-4 h-4 rounded-full bg-cyan-400 shadow-[0_0_10px_cyan]"></div>
+                        <div className="w-4 h-4 rounded-full bg-slate-600"></div>
                       </div>
-                    </div>
-                    <div className="absolute bottom-0 w-full h-12 bg-slate-900 border-t border-slate-800 flex justify-around items-center px-4">
-                      <div className="w-4 h-4 rounded-full bg-slate-600"></div>
-                      <div className="w-4 h-4 rounded-full bg-cyan-400 shadow-[0_0_10px_cyan]"></div>
-                      <div className="w-4 h-4 rounded-full bg-slate-600"></div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Floating Badge */}
-              <div className="absolute top-10 -right-5 z-20 animate-float" style={{animationDelay: '1s'}}>
-                <div className="glass-panel px-5 py-3 rounded-2xl border border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.2)] flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
-                    <Zap size={20} className="fill-cyan-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm leading-tight">10x Faster</p>
-                    <p className="text-slate-400 text-xs">Development Speed</p>
+                {/* Floating Badge */}
+                <div className="absolute top-10 -right-5 z-20 animate-float" style={{ animationDelay: '1s' }}>
+                  <div className="glass-panel px-5 py-3 rounded-2xl border border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.2)] flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                      <Zap size={20} className="fill-cyan-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold text-sm leading-tight">10x Faster</p>
+                      <p className="text-slate-400 text-xs">Development Speed</p>
+                    </div>
                   </div>
                 </div>
-              </div>
               </div>
 
             </Reveal>
@@ -452,11 +461,11 @@ function MobileDemoVideo() {
               video.muted = true;
               setMuted(true);
               setNeedsTap(true);
-              video.play().catch(() => {});
+              video.play().catch(() => { });
             });
           } else {
             // Resume on re-entry, respecting the current mute state.
-            video.play().catch(() => {});
+            video.play().catch(() => { });
           }
         } else {
           video.pause();
@@ -476,7 +485,7 @@ function MobileDemoVideo() {
       video.muted = false;
       setMuted(false);
       setNeedsTap(false);
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     } else {
       video.muted = true;
       setMuted(true);
@@ -533,7 +542,7 @@ function VideoDemoModal({ open, onClose }: { open: boolean; onClose: () => void 
     if (!video) return;
     if (open) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     } else {
       video.pause();
     }
@@ -571,86 +580,6 @@ function VideoDemoModal({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
-function TechStackStrip() {
-  const tools: { name: string; icon: IconType }[] = [
-    { name: "Cursor IDE", icon: Terminal },
-    { name: "Gemini Pro", icon: Brain },
-    { name: "AntiGravity", icon: Code },
-    { name: "Claude Code", icon: Cpu },
-    { name: "React", icon: Layout },
-    { name: "GitHub", icon: Globe },
-    { name: "Live Server", icon: Server },
-    { name: "Mobile App", icon: Smartphone },
-  ];
-
-  return (
-    <div className="border-y border-slate-800/50 bg-[#060b19]/80 backdrop-blur-md py-6 relative z-10 overflow-hidden flex">
-      <div className="absolute left-0 w-32 h-full bg-gradient-to-r from-[#020617] to-transparent z-20"></div>
-      <div className="absolute right-0 w-32 h-full bg-gradient-to-l from-[#020617] to-transparent z-20"></div>
-
-      <div className="flex w-[200%] animate-marquee">
-        {[...tools, ...tools, ...tools].map((tool, idx) => (
-          <div key={idx} className="flex items-center gap-3 mx-8 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
-            <tool.icon size={24} className="text-indigo-400" />
-            <span className="font-bold text-slate-300 text-lg whitespace-nowrap tracking-wide">{tool.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function GamifiedStats() {
-  return (
-    <Reveal>
-      <div className="relative z-10 mt-12 max-w-5xl mx-auto px-4">
-        <div className="glass-panel rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 neon-border shadow-2xl shadow-black">
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-4">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="w-12 h-12 rounded-full border-2 border-[#0f172a] bg-slate-800 flex items-center justify-center overflow-hidden">
-                  <img src={`https://i.pravatar.cc/100?img=${i+20}`} alt="coder" className="w-full h-full object-cover" />
-                </div>
-              ))}
-              <div className="w-12 h-12 rounded-full border-2 border-[#0f172a] bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-300">
-                500+
-              </div>
-            </div>
-            <div>
-              <p className="text-white font-bold">People&apos;s Enrolled</p>
-              <div className="flex items-center text-amber-400 text-sm gap-1">
-                <Star size={14} fill="currentColor" />
-                <Star size={14} fill="currentColor" />
-                <Star size={14} fill="currentColor" />
-                <Star size={14} fill="currentColor" />
-                <Star size={14} fill="currentColor" />
-                <span className="text-slate-400 ml-1">(4.9/5)</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden md:block w-px h-12 bg-slate-700"></div>
-
-          <div className="flex items-center gap-6 sm:gap-10">
-            <div className="text-center">
-              <Brain className="mx-auto mb-2 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" size={28} />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gemini Pro</p>
-            </div>
-            <div className="text-center">
-              <Terminal className="mx-auto mb-2 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" size={28} />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">AntiGravity</p>
-            </div>
-            <div className="text-center">
-              <Code className="mx-auto mb-2 text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)]" size={28} />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Claude Code</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Reveal>
-  );
-}
-
 function PainPointSection() {
   return (
     <section className="py-24 relative overflow-hidden">
@@ -661,7 +590,7 @@ function PainPointSection() {
               <span className="text-red-500">কেন</span> আপনি আটকে যাচ্ছেন?
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              কোর্স কিনছেন, ঘণ্টার পর ঘণ্টা ভিডিও দেখছেন — কিন্তু নিজে বানাতে গেলেই মাথা ফাঁকা। দোষটা আপনার না, দোষটা পুরোনো নিয়মে শেখার।
+              কোর্স দেখছেন, AI দিয়ে নাড়াচাড়াও করছেন — কিন্তু নিজে একটা পুরো, real প্রজেক্ট দাঁড় করাতে গেলেই কোথাও না কোথাও আটকে যাচ্ছেন। দোষটা আপনার না, দোষটা পুরোনো নিয়মে শেখার।
             </p>
           </div>
         </Reveal>
@@ -674,13 +603,13 @@ function PainPointSection() {
                 <XCircle size={100} className="text-red-500" />
               </div>
               <h3 className="text-2xl font-bold text-red-400 mb-6 flex items-center gap-3">
-                <XCircle size={24} /> The Old Way (Tutorial Hell)
+                <XCircle size={24} /> The Old Way (কোথায় আপনার সমস্যা হচ্ছে?)
               </h3>
               <ul className="space-y-4 text-slate-300">
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> ঘণ্টার পর ঘণ্টা টিউটোরিয়াল দেখেও মনে কিছুই থাকে না।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> সিনট্যাক্স মুখস্থ করতে গিয়ে আসল লজিকটাই ভুলে যাওয়া।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> একটা Error-এর সমাধান খুঁজতে গিয়ে পুরো দিন শেষ।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> প্রজেক্ট শেষ হওয়ার আগেই আগ্রহটা হারিয়ে ফেলা।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> একদম নতুনদের জন্য (The Fear of Code): কোডিং ব্যাকগ্রাউন্ড বা সিএসই ডিগ্রি নেই বলে শুরু করার আগেই মনে হয়—“প্রোগ্রামিং তো আমার জন্য নয়, এত সিনট্যাক্স কি মনে থাকবে?”</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> হালকা জানা ও ভাইব কোডারদের জন্য (The Gap): AI প্রম্পট দিয়ে বা হালকা কোড জোড়াতালি দিয়ে সুন্দর ফ্রন্টএন্ড বা UI বানিয়ে ফেলছেন; কিন্তু যখনই সার্ভার কানেক্ট করা, ডেটাবেজ ম্যানেজ করা বা সাইট লাইভ (Deployment) করার কথা আসে—সেখানেই আটকে যাচ্ছেন।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> আসল প্রসেস না জানা (The Lost Architect): ইউটিউব দেখে টুকটাক প্রজেক্ট বানাতে পারেন, কিন্তু একটা প্রফেশনাল অ্যাপের শুরু থেকে শেষ পর্যন্ত (Full Development Cycle) কীভাবে সাজাতে হয়, সেই আসল রোডম্যাপটাই জানা নেই।</li>
+                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> টাইম কিলিং এরর (The Error Loop): কোড করতে গিয়ে একটা অদ্ভুত Error আসলেই মাথা গরম হয়ে যায়। গুগল বা স্ট্যাক-ওভারফ্লোতে সমাধান খুঁজতে খুঁজতেই পুরো দিন শেষ, একসময় আগ্রহটাই হারিয়ে ফেলেন।</li>
               </ul>
             </div>
           </Reveal>
@@ -694,13 +623,13 @@ function PainPointSection() {
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-500/20 blur-2xl"></div>
 
               <h3 className="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
-                <CheckCircle2 size={24} /> The Modern AI Way
+                <CheckCircle2 size={24} /> The Modern AI Way (আমরা যেভাবে সমাধান করব)
               </h3>
               <ul className="space-y-4 text-slate-200">
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> AI-কে আপনার Assistant Programmer বানিয়ে কাজ করা।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কোড মুখস্থ নয়, Architecture আর Logic-এ ফোকাস করা।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> Gemini আর Claude দিয়ে সেকেন্ডেই Error সলভ করা।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কয়েক সপ্তাহেই পুরো প্রোডাকশন-গ্রেড অ্যাপ দাঁড় করানো।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> জিরো থেকে মেন্টরশিপ: কোনো কোডিং ব্যাকগ্রাউন্ড লাগবে না। আমরা ধরে নেব আপনার শুধু টেকনোলজির প্রতি আগ্রহ আছে—বাকিটা স্ক্র্যাচ থেকে দেখানোর দায়িত্ব আমাদের।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কমপ্লিট ফুল-স্ট্যাক রোডম্যাপ: শুধু ফ্রন্টএন্ড বা ভাইব কোডিং নয়; ডেটাবেজ ডিজাইন, সার্ভার আর্কিটেকচার এবং কীভাবে একটা প্রজেক্টকে প্রফেশনালি ডিপ্লয় (Live) করতে হয়—তার পুরো এ-টু-জেড প্রসেস আপনি শিখবেন।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> AI-কে বানান আপনার পার্সোনাল মেন্টর: Gemini এবং Claude-কে কীভাবে আপনার অ্যাসিস্ট্যান্ট বানিয়ে সেকেন্ডের মধ্যে জটিল এরর সলভ করতে হয় এবং প্রোডাকশন-গ্রেড কোড লিখতে হয়, সেই স্মার্ট হ্যাকস শিখবেন।</li>
+                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> লজিক ও আর্কিটেকচারে ফোকাস: সিনট্যাক্স মুখস্থ করার দিন শেষ, ওটা AI করবে। আপনি শিখবেন কীভাবে প্রজেক্টের লজিক সাজাতে হয় এবং বড় অ্যাপ ডিজাইন করতে হয়।</li>
               </ul>
             </div>
           </Reveal>
@@ -914,6 +843,25 @@ function CurriculumJourney() {
             ))}
           </div>
         </div>
+
+        <Reveal delay={100} direction="up">
+          <div className="mt-14 relative overflow-hidden rounded-3xl glass-panel neon-border p-8 md:p-10">
+            <div className="absolute -top-1/3 right-0 w-80 h-80 bg-cyan-500/15 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/30 to-indigo-600/30 border border-cyan-500/30 text-cyan-300 flex-shrink-0">
+                  <Sparkles size={22} />
+                </div>
+                <h3 className="text-xl md:text-2xl font-black text-white leading-snug">
+                  মনে কি প্রশ্ন জাগছে — <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-300">&ldquo;এত কিছু মাত্র ৳৯৯০ টাকায় কীভাবে সম্ভব?&rdquo;</span>
+                </h3>
+              </div>
+              <p className="text-slate-300 leading-relaxed md:text-lg">
+                বাজারে যেখানে নরমাল কোর্সের দাম ৫ থেকে ১০ হাজার টাকা, সেখানে আমরা এত কম দামে কেন নিচ্ছি — এটার কারণ একটাই, <span className="font-bold text-white">সবার জন্য এক্সেসিবল করা।</span> আমরা চাই সিএসই ডিগ্রি বা মোটা অঙ্কের টাকা না থাকা সত্ত্বেও দেশের যেকোনো প্রান্ত থেকে একজন তরুণ যেন মাত্র ১-২ মাসে মডার্ন টেকনোলজিতে নিজের ক্যারিয়ার গড়তে পারে। টাকার জন্য শিখতে পারি নাই — এমন যেন কোনো কারণ না হয়ে দাঁড়ায়।
+              </p>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -1049,6 +997,10 @@ function CtaBanner({ onEnroll, headline, sub }: { onEnroll: () => void; headline
                 <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
                 এখনই Enroll করুন — ৳990
               </button>
+              <div className="mt-5 inline-flex items-center gap-2.5 rounded-full border border-emerald-400/40 bg-gradient-to-r from-emerald-500/15 to-teal-500/10 px-4 py-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-sm">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/20 text-sm animate-float">🛡️</span>
+                <span className="text-sm font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200">৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
+              </div>
             </div>
           </div>
         </Reveal>
@@ -1060,19 +1012,19 @@ function CtaBanner({ onEnroll, headline, sub }: { onEnroll: () => void; headline
 function TargetAudience() {
   const audiences: { title: string; icon: IconType; desc: string }[] = [
     {
-      title: "নতুন প্রোগ্রামার",
+      title: "একদম বিগেনার",
       icon: Brain,
-      desc: "কোডিং-এর বেসিক জানেন, কিন্তু একা একটা পুরো প্রজেক্ট দাঁড় করাতে পারেন না।"
+      desc: "কোডিং-এর বেসিক জানেন না, কিন্তু বেসিক Computer ব্যাবহার করতে জানেন, ইন্টারনেট ব্রাউজিং করতে জানেন, কিবোর্ড এর কি গুলো চিনতে পারেন তাহলেই আপনি নিশ্চিন্তে এই কোর্সে Enroll করতে পারেন।"
     },
     {
       title: "বর্তমান ওয়েব ডেভেলপার",
       icon: Code,
-      desc: "আগে থেকেই কোড করেন, এখন AI দিয়ে কাজের গতি ১০ গুণ বাড়াতে চান।"
+      desc: "আগে থেকেই কোড করেন, এখন AI দিয়ে কাজের গতি ১০ গুণ বাড়াতে চান এবং Mobile App Development শিখতে চাচ্ছেন, তাহলে আপনিও একদম নিশ্চিন্তে Enroll করতে পারেন।"
     },
     {
       title: "ক্যারিয়ার সুইচার",
       icon: Briefcase,
-      desc: "অন্য পেশা থেকে টেক-এ এসে দ্রুত ইন্ডাস্ট্রিতে ঢুকতে চান।"
+      desc: "এখন নন-টেক কোন বেকগ্রাউন্ডে কাজ করছেন। নিজের স্কিল ডেভেলপ করে টেক-এ এসে দ্রুত ইন্ডাস্ট্রিতে ঢুকতে চান, তাহলে আপনিও একদম নিশ্চিন্তে Enroll করতে পারেন।"
     }
   ];
 
@@ -1190,16 +1142,23 @@ function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
 
             {/* Badge */}
             <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-6 py-2 rounded-full text-sm font-black shadow-[0_0_15px_rgba(34,211,238,0.5)] uppercase tracking-wider flex items-center gap-2 z-20 animate-float">
-              <Sparkles size={16}/> Early Bird Action
+              <Sparkles size={16} /> Early Bird Action
             </div>
 
             <div className="bg-slate-900 rounded-[30px] p-8 md:p-10 text-center h-full flex flex-col relative z-10 overflow-hidden">
               <h3 className="text-2xl font-bold text-white mb-2">Zero to Production Masterclass</h3>
               <p className="text-slate-400 mb-8 text-sm">No monthly fees. 100% Free Tools Taught.</p>
 
-              <div className="mb-8 flex items-end justify-center gap-3">
+              <div className="mb-6 flex items-end justify-center gap-3">
                 <span className="text-2xl text-slate-500 line-through font-bold">৳5000</span>
                 <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight drop-shadow-sm">৳990</span>
+              </div>
+
+              <div className="mb-8 flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-left">
+                <Zap size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm leading-relaxed text-amber-100/90">
+                  <span className="font-bold text-amber-300">যেকোনো সময় দাম বাড়তে পারে।</span> দাম বেড়ে যাওয়ার আগেই আপনার সিটটি নিশ্চিত করুন।
+                </p>
               </div>
 
               <ul className="text-left space-y-4 mb-10 flex-grow">
@@ -1223,7 +1182,16 @@ function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
               <button onClick={onEnroll} className="w-full py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all cursor-pointer">
                 Start Mission Now
               </button>
-              <p className="text-xs text-slate-500 mt-5 flex items-center justify-center gap-2">
+              <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-left">
+                <span className="text-lg leading-none mt-0.5">🛡️</span>
+                <div>
+                  <p className="text-sm font-bold text-emerald-300">৭ দিনের মানি-ব্যাক গ্যারান্টি</p>
+                  <p className="mt-1 text-sm leading-relaxed text-emerald-100/90">
+                    কোর্স শুরু করুন নিশ্চিন্তে। ৭ দিনের মধ্যে যদি মনে হয় এটা আপনার জন্য নয় — কোনো প্রশ্ন ছাড়াই পুরো টাকা ফেরত।
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 mt-3 flex items-center justify-center gap-2">
                 <Lock size={14} /> Secure Payment System
               </p>
             </div>
@@ -1259,6 +1227,10 @@ function FAQDark() {
     {
       q: "কোর্সটি কি লাইভ নাকি রেকর্ডেড?",
       a: "কোর্সটি হাই-কোয়ালিটি রেকর্ডেড ভিডিওতে তৈরি, যাতে নিজের সময়মতো শিখতে পারেন। আর কোথাও আটকে গেলে প্রাইভেট কমিউনিটি সাপোর্ট তো আছেই।"
+    },
+    {
+      q: "এত প্রিমিউম কোর্স এত কম দামে কেন?",
+      a: "খুবই যৌক্তিক প্রশ্ন! বাজারে যেখানে নরমাল কোর্সের দাম ৫ থেকে ১০ হাজার টাকা, সেখানে আমরা এত কম দামে কেন নিচ্ছি — এটার কারণ একটাই, সবার জন্য এক্সেসিবল করা। আমরা চাই সিএসই ডিগ্রি বা মোটা অঙ্কের টাকা না থাকা সত্ত্বেও দেশের যেকোনো প্রান্ত থেকে একজন তরুণ যেন মাত্র ১-২ মাসে মডার্ন টেকনোলজিতে নিজের ক্যারিয়ার গড়তে পারে। টাকার জন্য শিখতে পারি নাই — এমন যেন কোনো কারণ না হয়ে দাঁড়ায়।"
     }
   ];
 
@@ -1295,9 +1267,8 @@ function FooterDark() {
       <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-12 relative z-10">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2 font-black text-2xl text-white mb-6 hover:opacity-80 transition-opacity cursor-pointer inline-flex">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center text-white shadow-[0_0_10px_rgba(34,211,238,0.3)]">
-              <Terminal size={18} />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/afnan-logo.png" alt="Afnan Mahmud" className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(34,211,238,0.3)]" />
             <span>Afnan <GradientText>Mahmud</GradientText></span>
           </div>
           <p className="mb-6 max-w-sm leading-relaxed text-slate-500">
@@ -1323,9 +1294,9 @@ function FooterDark() {
         <div>
           <h4 className="text-white font-bold mb-6 tracking-wide uppercase text-sm">System</h4>
           <ul className="space-y-3">
-            <li><a href="#" className="hover:text-cyan-400 hover:translate-x-1 transition-all inline-block">Terms of Service</a></li>
-            <li><a href="#" className="hover:text-cyan-400 hover:translate-x-1 transition-all inline-block">Privacy Policy</a></li>
-            <li><a href="#" className="hover:text-cyan-400 hover:translate-x-1 transition-all inline-block">Refund Policy</a></li>
+            <li><a href="/terms" className="hover:text-cyan-400 hover:translate-x-1 transition-all inline-block">Terms of Service</a></li>
+            <li><a href="/privacy" className="hover:text-cyan-400 hover:translate-x-1 transition-all inline-block">Privacy Policy</a></li>
+            <li><a href="/refund" className="hover:text-cyan-400 hover:translate-x-1 transition-all inline-block">Refund Policy</a></li>
           </ul>
         </div>
       </div>
