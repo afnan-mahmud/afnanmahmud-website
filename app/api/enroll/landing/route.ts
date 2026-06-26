@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const COURSE_SLUG = body.slug && ALLOWED_SLUGS.has(body.slug) ? body.slug : DEFAULT_COURSE_SLUG;
 
     if (!name || !phone) {
-      return NextResponse.json({ error: 'নাম ও ফোন নম্বর দিতে হবে।' }, { status: 400 });
+      return NextResponse.json({ error: 'আপনার নাম ও ফোন নম্বর দিতে হবে।' }, { status: 400 });
     }
 
     // Normalise phone: strip spaces/dashes, ensure starts with 01

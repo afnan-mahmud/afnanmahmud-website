@@ -184,6 +184,15 @@ export default function AiForDevelopersPage() {
   const [demoOpen, setDemoOpen] = useState(false);
   const openDemo = () => setDemoOpen(true);
 
+  // Auto-open the enroll modal after a failed payment retry (?retry=1).
+  // Reads the URL (external system) once on mount — a legitimate effect.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('retry') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEnrollOpen(true);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
       <style>{globalStyles}</style>
@@ -772,7 +781,7 @@ function CurriculumJourney() {
       title: "Live Server Deployment & Career",
       icon: Globe,
       points: [
-        "Vercel/Render এ ফ্রি live server এ deploy",
+        "VPS/AWS এ live server এ deploy",
         "Environment variable আর production config",
         "GitHub Actions দিয়ে CI/CD automation",
         "Developer portfolio বানানো",
@@ -1218,7 +1227,7 @@ function FAQDark() {
     },
     {
       q: "প্রজেক্ট লাইভ করা কিভাবে শেখাবেন?",
-      a: "লোকাল থেকে কোড GitHub-এ পুশ করে, সেখান থেকে একদম ফ্রিতে Vercel বা Render-এর মতো লাইভ সার্ভারে ডিপ্লয় করা পর্যন্ত — পুরোটা হাতে-কলমে দেখানো হবে।"
+      a: "লোকাল থেকে কোড GitHub-এ পুশ করে, সেখান থেকে VPS বা AWS-এর মতো লাইভ সার্ভারে ডিপ্লয় করা পর্যন্ত — পুরোটা হাতে-কলমে দেখানো হবে।"
     },
     {
       q: "ওয়েবসাইট কি হ্যাক হয়ে যেতে পারে? সিকিউরিটি শেখাবেন?",

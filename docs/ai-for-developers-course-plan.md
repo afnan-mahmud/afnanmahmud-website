@@ -53,13 +53,13 @@
 - Final polish & UX improvements
 
 **Module 7 — Live Server Deployment & Career**
-- Vercel/Render এ ফ্রি সার্ভারে প্রজেক্ট লাইভ করা
+- VPS/AWS সার্ভারে প্রজেক্ট লাইভ করা
 - GitHub actions দিয়ে CI/CD অটোমেশন
 - পোর্টফোলিও তৈরি এবং জবের প্রস্তুতি
 - ফ্রিল্যান্স ক্লায়েন্ট ডেলিভারি সিক্রেটস
 
 ## ⚠️ Gap to resolve with Afnan
-Afnan's described scope = **custom website → mobile app → server deploy → Play Store & App Store live → career guideline.** The hero headline promises "Custom Website **and Mobile App**," but the current 7 modules are **web/SaaS-focused only** — there is **no explicit mobile-app build, no Play Store / App Store publishing** content in the module list. Module 7 covers web deploy (Vercel/Render) + career, not mobile store submission.
+Afnan's described scope = **custom website → mobile app → server deploy → Play Store & App Store live → career guideline.** The hero headline promises "Custom Website **and Mobile App**," but the current 7 modules are **web/SaaS-focused only** — there is **no explicit mobile-app build, no Play Store / App Store publishing** content in the module list. Module 7 covers web deploy (VPS/AWS) + career, not mobile store submission.
 Decide before writing lessons: (a) fold mobile-app + store-publishing into the existing 7 modules, or (b) keep 7 web modules and add mobile/store as extra lessons within M3/M6/M7. The lesson breakdown must cover EVERY topic step-by-step so a learner ends with a live website AND a published mobile app.
 
 ## Data model (where lessons will live) — `scripts/seed-ai-for-developers.ts`

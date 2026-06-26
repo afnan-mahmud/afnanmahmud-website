@@ -139,7 +139,7 @@ function PaymentSuccessContent() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Link
-              href={courseSlug ? `/dashboard/my-courses/${courseSlug}` : '/dashboard'}
+              href="/auth/otp"
               className={sg.className}
               style={{
                 display: 'flex',

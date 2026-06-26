@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { UserPlus, Pencil, Trash2, Crown } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { PERMISSIONS } from '@/lib/permissions';
+import { formatDhakaDate } from '@/lib/date';
 import AdminPermissionModal, { type AdminTarget } from './AdminPermissionModal';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
@@ -97,7 +98,7 @@ export default function TeamTable({ admins, currentUserId }: { admins: AdminRow[
                       {a.isOwner ? 'Full access' : sectionSummary(a.permissions)}
                     </td>
                     <td className={inter.className} style={{ ...td, color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                      {a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                      {a.createdAt ? formatDhakaDate(a.createdAt) : '—'}
                     </td>
                     <td style={{ ...td, whiteSpace: 'nowrap', textAlign: 'right' }}>
                       {a.isOwner ? (

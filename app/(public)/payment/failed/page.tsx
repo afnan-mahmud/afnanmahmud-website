@@ -11,9 +11,9 @@ const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
 
 const REASON_MESSAGES: Record<string, string> = {
-  payment_cancelled: 'You cancelled the payment.',
-  verification_failed: 'We could not verify your payment. Please contact support if you were charged.',
-  insufficient_funds: 'Payment declined due to insufficient balance.',
+  payment_cancelled: 'You cancelled the payment. You can try again anytime.',
+  verification_failed: 'We could not verify your payment. If you were charged, contact support on WhatsApp.',
+  insufficient_funds: 'Payment declined due to insufficient balance. Check your balance and try again.',
   invalid_order: 'Invalid order. Please try enrolling again.',
   server_error: 'An unexpected error occurred on our end. Please try again.',
 };
@@ -22,14 +22,27 @@ function getFriendlyMessage(reason: string): string {
   return REASON_MESSAGES[reason] ?? 'Something went wrong. Please try again.';
 }
 
+// Map a course slug to its landing-page path so "Try Again" reopens the right modal.
+const SLUG_TO_LANDING: Record<string, string> = {
+  'ai-for-developers': '/ai-for-developers',
+  'complete-website-and-mobile-application-development-course-by-ai': '/mobile-app-development-by-ai',
+};
+
+function getRetryHref(courseSlug: string): string {
+  const landing = SLUG_TO_LANDING[courseSlug];
+  if (landing) return `${landing}?retry=1`;
+  if (courseSlug) return `/courses/${courseSlug}`;
+  return '/';
+}
+
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const reason = searchParams.get('reason') ?? 'unknown';
   const courseSlug = searchParams.get('course') ?? '';
   const message = getFriendlyMessage(reason);
+  const retryHref = getRetryHref(courseSlug);
 
-  const WHATSAPP_URL = 'https://wa.me/8801XXXXXXXXX?text=Payment+failed+for+order+issue';
-  const SUPPORT_EMAIL = 'mailto:support@devcourses.bd';
+  const WHATSAPP_URL = 'https://wa.me/8801791225000?text=Payment+failed+for+order+issue';
 
   return (
     <div
@@ -130,7 +143,7 @@ function PaymentFailedContent() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {courseSlug && (
               <Link
-                href={`/courses/${courseSlug}`}
+                href={retryHref}
                 className={sg.className}
                 style={{
                   display: 'flex',
@@ -153,7 +166,7 @@ function PaymentFailedContent() {
               </Link>
             )}
             <a
-              href={reason === 'verification_failed' ? SUPPORT_EMAIL : WHATSAPP_URL}
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className={sg.className}

@@ -8,6 +8,10 @@ const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] }
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
 const ACCENT = '#625fff';
+const RETRY_KEY = 'devc_enroll_retry';
+
+const isValidName = (v: string) => v.trim().length >= 2;
+const isValidPhone = (v: string) => /^01[3-9]\d{8}$/.test(v);
 
 interface EnrollModalProps {
   open: boolean;
@@ -19,14 +23,29 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [touched, setTouched] = useState({ name: false, phone: false });
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setError('');
+      setTouched({ name: false, phone: false });
+      // Prefill from a previous failed attempt (seamless retry).
+      try {
+        const saved = localStorage.getItem(RETRY_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as { name?: string; phone?: string };
+          if (parsed.name) setName(parsed.name);
+          if (parsed.phone) setPhone(parsed.phone);
+        }
+      } catch { /* ignore malformed/unavailable storage */ }
       setTimeout(() => nameRef.current?.focus(), 80);
     }
   }, [open]);
+
+  const nameValid = isValidName(name);
+  const phoneValid = isValidPhone(phone);
+  const formValid = nameValid && phoneValid;
 
   // Close on Escape key
   useEffect(() => {
@@ -40,9 +59,14 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setTouched({ name: true, phone: true });
 
-    if (!name.trim()) { setError('তোমার নাম দাও।'); return; }
-    if (!phone.trim()) { setError('ফোন নম্বর দাও।'); return; }
+    if (!formValid) return;
+
+    // Save for seamless retry if the payment fails.
+    try {
+      localStorage.setItem(RETRY_KEY, JSON.stringify({ name: name.trim(), phone: phone.trim() }));
+    } catch { /* ignore unavailable storage */ }
 
     setLoading(true);
     try {
@@ -134,6 +158,23 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
           </button>
         )}
 
+        {/* Funnel stepper */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+          {['Enroll', 'Payment', 'Access'].map((step, i) => (
+            <div key={step} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: i === 0 ? ACCENT : '#d8d6d0',
+                  boxShadow: i === 0 ? `0 0 8px ${ACCENT}80` : 'none',
+                }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: i === 0 ? ACCENT : '#a8a49c' }}>{step}</span>
+              </span>
+              {i < 2 && <span style={{ width: 20, height: 1, background: '#e8e6e0' }} />}
+            </div>
+          ))}
+        </div>
+
         {/* Header */}
         <div style={{ marginBottom: 28 }}>
           <div style={{
@@ -150,7 +191,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
             Enroll করতে তোমার তথ্য দাও
           </h2>
           <p style={{ fontSize: 14, color: '#8c8880', margin: 0, lineHeight: 1.6 }}>
-            নাম ও ফোন নম্বর দিলেই payment page-এ চলে যাবে।
+            আপনার নাম ও ফোন নম্বর দিয়ে নিচের বাটনে ক্লিক করলে payment page-এ চলে যাবেন।
           </p>
         </div>
 
@@ -167,16 +208,20 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               placeholder="যেমন: Rahim Uddin"
               disabled={loading}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
-                border: `1.5px solid ${name ? ACCENT + '60' : '#e8e6e0'}`,
+                border: `1.5px solid ${touched.name && !nameValid ? '#ef4444' : name ? ACCENT + '60' : '#e8e6e0'}`,
                 fontSize: 15, fontFamily: 'inherit', color: '#1a1814',
                 outline: 'none', background: 'white', transition: 'border-color 0.2s',
                 boxSizing: 'border-box',
               }}
             />
+            {touched.name && !nameValid && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#dc2626' }}>নাম কমপক্ষে ২ অক্ষরের হতে হবে।</p>
+            )}
           </div>
 
           {/* Phone */}
@@ -186,19 +231,24 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
             </label>
             <input
               type="tel"
+              inputMode="numeric"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+              onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
               placeholder="01XXXXXXXXX"
               disabled={loading}
               maxLength={11}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
-                border: `1.5px solid ${phone ? ACCENT + '60' : '#e8e6e0'}`,
+                border: `1.5px solid ${touched.phone && !phoneValid ? '#ef4444' : phone ? ACCENT + '60' : '#e8e6e0'}`,
                 fontSize: 15, fontFamily: 'inherit', color: '#1a1814',
                 outline: 'none', background: 'white', transition: 'border-color 0.2s',
                 boxSizing: 'border-box',
               }}
             />
+            {touched.phone && !phoneValid && (
+              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#dc2626' }}>সঠিক BD নম্বর দাও (যেমন 01712345678)।</p>
+            )}
           </div>
 
           {/* Error */}
@@ -215,17 +265,27 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !formValid}
             style={{
               width: '100%', padding: '15px', borderRadius: 50,
-              background: loading ? '#a8a6ff' : ACCENT, color: 'white',
+              background: loading || !formValid ? '#a8a6ff' : ACCENT, color: 'white',
               border: 'none', fontSize: 15, fontWeight: 700,
-              fontFamily: 'inherit', cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', cursor: loading || !formValid ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s', marginTop: 4,
-              boxShadow: loading ? 'none' : '0 4px 16px rgba(98,95,255,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: loading || !formValid ? 'none' : '0 4px 16px rgba(98,95,255,0.3)',
             }}
           >
-            {loading ? 'অপেক্ষা করো...' : 'Payment Page-এ যাও →'}
+            {loading ? (
+              <>
+                <span style={{
+                  width: 16, height: 16, borderRadius: '50%',
+                  border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white',
+                  display: 'inline-block', animation: 'enrollSpin 0.7s linear infinite',
+                }} />
+                Securing your spot...
+              </>
+            ) : 'Enroll Now →'}
           </button>
         </form>
 
@@ -243,6 +303,9 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
         @keyframes hBlink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
+        }
+        @keyframes enrollSpin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>

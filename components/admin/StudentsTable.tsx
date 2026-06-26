@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import AddStudentModal, { type CourseOption } from './AddStudentModal';
 import Pagination from './Pagination';
+import { formatDhakaDate } from '@/lib/date';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -123,7 +124,7 @@ export default function StudentsTable({
                         </td>
                       )}
                       <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                        {new Date(s.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {formatDhakaDate(s.createdAt)}
                       </td>
                     </tr>
                     {isExpanded && (

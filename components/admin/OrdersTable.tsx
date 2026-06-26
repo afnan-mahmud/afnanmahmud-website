@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import Pagination from './Pagination';
+import { formatDhakaDate } from '@/lib/date';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -103,7 +104,7 @@ export default function OrdersTable({
                       <span className={sg.className} style={{ padding: '2px 8px', background: st.bg, border: `1px solid ${st.border}`, borderRadius: '100px', color: st.color, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'capitalize' }}>{o.status}</span>
                     </td>
                     <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                      {new Date(o.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {formatDhakaDate(o.createdAt)}
                     </td>
                   </tr>
                 );

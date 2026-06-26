@@ -9,6 +9,7 @@ import { Space_Grotesk, Inter } from 'next/font/google';
 import { DollarSign, Users, UserCheck, BookOpen, ShoppingCart } from 'lucide-react';
 import type { IUser } from '@/models/User';
 import type { ICourse } from '@/models/Course';
+import { formatDhakaDate, dhakaToday, dhakaMonthStart, dhakaDayStart, dhakaDayEnd, isValidYmd, shiftDay } from '@/lib/date';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -19,20 +20,14 @@ const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
   failed: { color: '#f87171', bg: 'rgba(248,113,113,0.1)' },
 };
 
-/** Build a Mongo `createdAt` range from `from`/`to` (YYYY-MM-DD); `to` is inclusive to end-of-day. */
+/**
+ * Build a Mongo `createdAt` range from `from`/`to` (YYYY-MM-DD), interpreted in
+ * Bangladesh time: `from` starts at 00:00 BST, `to` is inclusive to 23:59 BST.
+ */
 function buildDateRange(from?: string, to?: string): { createdAt: { $gte?: Date; $lte?: Date } } | Record<string, never> {
   const createdAt: { $gte?: Date; $lte?: Date } = {};
-  if (from) {
-    const d = new Date(from);
-    if (!Number.isNaN(d.getTime())) createdAt.$gte = d;
-  }
-  if (to) {
-    const d = new Date(to);
-    if (!Number.isNaN(d.getTime())) {
-      d.setHours(23, 59, 59, 999);
-      createdAt.$lte = d;
-    }
-  }
+  if (isValidYmd(from)) createdAt.$gte = dhakaDayStart(from);
+  if (isValidYmd(to)) createdAt.$lte = dhakaDayEnd(to);
   return Object.keys(createdAt).length ? { createdAt } : {};
 }
 
@@ -44,6 +39,19 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const { from, to } = await searchParams;
   const range = buildDateRange(from, to);
   const hasRange = Object.keys(range).length > 0;
+
+  // Quick presets (all computed in Bangladesh time).
+  const today = dhakaToday();
+  const yesterday = shiftDay(today, -1);
+  const monthStart = dhakaMonthStart();
+  const PRESETS = [
+    { label: 'Today', from: today, to: today },
+    { label: 'Yesterday', from: yesterday, to: yesterday },
+    { label: 'This Month', from: monthStart, to: today },
+    { label: 'All', from: '', to: '' },
+  ];
+  const activePreset = PRESETS.find((p) => p.from === (from ?? '') && p.to === (to ?? ''))?.label
+    ?? (hasRange ? null : 'All');
 
   type LeanOrder = {
     _id: unknown;
@@ -99,6 +107,34 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
         Admin Dashboard
       </h1>
 
+      {/* Quick presets */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+        {PRESETS.map((p) => {
+          const isActive = activePreset === p.label;
+          const href = p.from ? `/admin?from=${p.from}&to=${p.to}` : '/admin';
+          return (
+            <Link
+              key={p.label}
+              href={href}
+              className={sg.className}
+              style={{
+                padding: '7px 14px',
+                borderRadius: 8,
+                fontSize: '0.8125rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                border: '1px solid',
+                borderColor: isActive ? '#6366f1' : 'rgba(255,255,255,0.1)',
+                background: isActive ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)',
+                color: isActive ? '#a5b4fc' : '#a1a1aa',
+              }}
+            >
+              {p.label}
+            </Link>
+          );
+        })}
+      </div>
+
       {/* Date range filter */}
       <form method="get" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 12, marginBottom: 28 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -114,7 +150,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
           <Link href="/admin" className={sg.className} style={{ color: '#71717a', fontSize: '0.8125rem', fontWeight: 600, textDecoration: 'none', padding: '9px 4px' }}>Reset</Link>
         )}
         <span className={inter.className} style={{ color: '#52525b', fontSize: '0.75rem', marginLeft: 'auto', alignSelf: 'center' }}>
-          {hasRange ? `Showing ${from || '…'} → ${to || '…'}` : 'Showing all time'}
+          {hasRange ? `Showing ${from || '…'} → ${to || '…'} (BST)` : 'Showing all time'}
         </span>
       </form>
 
@@ -161,7 +197,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                     <td style={{ padding: '12px 16px' }}>
                       <span className={sg.className} style={{ padding: '2px 8px', background: st.bg, borderRadius: '100px', color: st.color, fontSize: '0.6875rem', fontWeight: 700, textTransform: 'capitalize' }}>{o.status}</span>
                     </td>
-                    <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{new Date(o.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                    <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{formatDhakaDate(o.createdAt)}</td>
                   </tr>
                 );
               })}

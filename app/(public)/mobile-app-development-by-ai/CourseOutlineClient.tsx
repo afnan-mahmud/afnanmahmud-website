@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Inter, Poppins } from 'next/font/google';
 import type { CourseData } from '@/app/(public)/mobile-app-development-by-ai/data';
 import EnrollModal from './EnrollModal';
@@ -35,6 +35,15 @@ export default function CourseOutlineClient({ data }: { data: CourseData }) {
 
   const [activePhaseIdx, setActivePhaseIdx] = useState(0);
   const [enrollOpen, setEnrollOpen] = useState(false);
+
+  // Auto-open the enroll modal after a failed payment retry (?retry=1).
+  // Reads the URL (external system) once on mount — a legitimate effect.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('retry') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEnrollOpen(true);
+    }
+  }, []);
 
   const activePhase = phases[activePhaseIdx];
   const phaseColor = PHASE_ACCENT_LIGHT[activePhaseIdx] ?? '#625fff';

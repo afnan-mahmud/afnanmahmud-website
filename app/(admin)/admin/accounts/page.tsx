@@ -8,6 +8,7 @@ import type { IUser } from '@/models/User';
 import type { ICourse } from '@/models/Course';
 import ExpenseButton from '@/components/admin/ExpenseButton';
 import Pagination from '@/components/admin/Pagination';
+import { formatDhakaDate } from '@/lib/date';
 import { requirePage } from '@/lib/permissions.server';
 import { can } from '@/lib/permissions';
 
@@ -147,7 +148,7 @@ export default async function AccountsPage({
               ) : pagedLedger.map((e, i) => (
                 <tr key={e.id} style={{ borderBottom: i < pagedLedger.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                   <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                    {e.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {formatDhakaDate(e.date)}
                   </td>
                   <td className={inter.className} style={{ padding: '12px 16px', color: '#e2e8f0', fontSize: '0.8125rem' }}>{e.particulars}</td>
                   <td className={sg.className} style={{ padding: '12px 16px', textAlign: 'right', color: e.credit ? '#4ade80' : '#3f3f46', fontSize: '0.875rem', fontWeight: 600, whiteSpace: 'nowrap' }}>{e.credit ? `৳${e.credit.toLocaleString()}` : '—'}</td>
