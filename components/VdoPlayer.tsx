@@ -52,13 +52,15 @@ export default function VdoPlayer({ videoId, title, onReady }: { videoId: string
       ? ({ status: 'ready', otp: current.otp, playbackInfo: current.playbackInfo } as const)
       : ({ status: 'error' } as const);
 
-  const readyFired = useState(() => ({ done: false }))[0];
+  // Fire onReady once per video. Track the id it last fired for so a reused
+  // player instance that swaps videoId fires again for the new video.
+  const readyFired = useState(() => ({ forId: '' as string }))[0];
   useEffect(() => {
-    if (state.status === 'ready' && !readyFired.done) {
-      readyFired.done = true;
+    if (state.status === 'ready' && readyFired.forId !== videoId) {
+      readyFired.forId = videoId;
       onReady?.();
     }
-  }, [state.status, onReady, readyFired]);
+  }, [state.status, videoId, onReady, readyFired]);
 
   const fill: React.CSSProperties = {
     position: 'absolute',
