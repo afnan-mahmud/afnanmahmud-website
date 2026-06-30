@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { trackPixel } from '@/lib/meta-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 interface ViewContentTrackerProps {
   contentId: string;
@@ -42,6 +43,14 @@ export default function ViewContentTracker({
     };
 
     trackPixel('ViewContent', customData, eventId);
+
+    pushToDataLayer(GTM_EVENT.viewItem, {
+      content_id: contentId,
+      content_name: contentName,
+      value,
+      currency,
+      event_id: eventId,
+    });
 
     fetch('/api/track/view-content', {
       method: 'POST',

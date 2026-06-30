@@ -6,6 +6,7 @@ import { Terminal, Rocket, ArrowLeft, PlayCircle, Lock, Clock } from 'lucide-rea
 import EnrollModal from '../EnrollModal';
 import VdoPlayer from '@/components/VdoPlayer';
 import { trackCustomPixel } from '@/lib/meta-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const COURSE_SLUG = 'ai-for-developers';
 
@@ -73,6 +74,12 @@ export default function DemoClassClient({
       { content_ids: [COURSE_SLUG], content_name: courseTitle, content_type: 'product' },
       eventId
     );
+
+    pushToDataLayer(GTM_EVENT.viewDemoClass, {
+      content_id: COURSE_SLUG,
+      content_name: courseTitle,
+      event_id: eventId,
+    });
 
     fetch('/api/track/view-demo', {
       method: 'POST',
