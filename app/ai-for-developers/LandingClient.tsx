@@ -48,7 +48,7 @@ export const Reveal = ({ children, delay = 0, direction = 'up' }: RevealProps) =
   return (
     <div
       ref={ref}
-      className={`transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'
+      className={`transition duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'
         } ${getTransform()}`}
       style={{ transitionDelay: `${delay}ms`, transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
     >
@@ -118,7 +118,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

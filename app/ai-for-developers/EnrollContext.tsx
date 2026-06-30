@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import EnrollModal from './EnrollModal';
 import VideoDemoModal from './VideoDemoModal';
 
@@ -37,13 +37,21 @@ export function EnrollProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const openEnroll = useCallback(() => setEnrollOpen(true), []);
+  const openDemo = useCallback(() => setDemoOpen(true), []);
+  const closeEnroll = useCallback(() => setEnrollOpen(false), []);
+  const closeDemo = useCallback(() => setDemoOpen(false), []);
+
+  // Stable value identity so opening/closing a modal re-renders only the
+  // modals — not every useEnroll() consumer (Navbar, Hero, CTAs). Keeps the
+  // enroll-click interaction cheap (better INP).
+  const value = useMemo(() => ({ openEnroll, openDemo }), [openEnroll, openDemo]);
+
   return (
-    <EnrollContext.Provider
-      value={{ openEnroll: () => setEnrollOpen(true), openDemo: () => setDemoOpen(true) }}
-    >
+    <EnrollContext.Provider value={value}>
       {children}
-      <EnrollModal open={enrollOpen} onClose={() => setEnrollOpen(false)} />
-      <VideoDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
+      <EnrollModal open={enrollOpen} onClose={closeEnroll} />
+      <VideoDemoModal open={demoOpen} onClose={closeDemo} />
     </EnrollContext.Provider>
   );
 }
