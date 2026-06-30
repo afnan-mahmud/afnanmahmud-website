@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 import MetaPixel from "@/components/tracking/MetaPixel";
 import Clarity from "@/components/tracking/Clarity";
+import GoogleTagManager from "@/components/tracking/GoogleTagManager";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <MetaPixel />
         <Clarity />
+        <GoogleTagManager />
         <SessionProvider>
           {children}
         </SessionProvider>
