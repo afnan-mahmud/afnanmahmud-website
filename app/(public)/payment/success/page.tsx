@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { trackPixel } from '@/lib/meta-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -18,6 +19,7 @@ function PaymentSuccessContent() {
   const eid = searchParams.get('eid');
   const value = searchParams.get('value');
   const currency = searchParams.get('currency') ?? 'BDT';
+  const txn = searchParams.get('txn') ?? undefined;
 
   useEffect(() => {
     // Meta Purchase — same eventId as the server CAPI call (dedup).
@@ -33,6 +35,25 @@ function PaymentSuccessContent() {
       },
       eid
     );
+
+    let phone: string | undefined;
+    try {
+      const saved = localStorage.getItem('devc_enroll_retry');
+      if (saved) {
+        const digits = (JSON.parse(saved) as { phone?: string }).phone?.replace(/\D/g, '');
+        if (digits) phone = digits.startsWith('88') ? digits : `88${digits}`;
+      }
+    } catch { /* ignore unavailable/malformed storage */ }
+
+    pushToDataLayer(GTM_EVENT.purchase, {
+      content_id: courseSlug || undefined,
+      content_name: courseTitle,
+      value: value ? Number(value) : undefined,
+      currency,
+      transaction_id: txn,
+      event_id: eid,
+      ...(phone ? { user_data: { phone } } : {}),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eid]);
 

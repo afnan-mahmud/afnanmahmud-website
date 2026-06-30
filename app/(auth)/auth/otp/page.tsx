@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Space_Grotesk } from 'next/font/google';
 import OtpInput from '@/components/shared/OtpInput';
 import { trackPixel, setPixelAdvancedMatching } from '@/lib/meta-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
@@ -115,6 +116,10 @@ function OtpPageContent() {
       const amPhone = amDigits.startsWith('88') ? amDigits : `88${amDigits}`;
       if (amDigits) setPixelAdvancedMatching({ ph: amPhone });
       trackPixel('CompleteRegistration', { status: true }, eventId);
+      pushToDataLayer(GTM_EVENT.signUp, {
+        event_id: eventId,
+        ...(amDigits ? { user_data: { phone: amPhone } } : {}),
+      });
       void fetch('/api/track/complete-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

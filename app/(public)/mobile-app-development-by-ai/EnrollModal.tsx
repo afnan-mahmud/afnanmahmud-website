@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Inter, Poppins } from 'next/font/google';
 import { trackPixel } from '@/lib/meta-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800'] });
@@ -111,6 +112,13 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
             },
             data.eventId
           );
+          pushToDataLayer(GTM_EVENT.beginCheckout, {
+            content_id: data.contentId,
+            content_name: data.contentName,
+            value: data.value,
+            currency: data.currency ?? 'BDT',
+            event_id: data.eventId,
+          });
         }
         window.location.href = data.paymentUrl;
       }

@@ -117,6 +117,7 @@ export async function GET(req: NextRequest) {
       eid: eventId,
       value: String(order.amount),
       currency: order.currency ?? 'BDT',
+      txn: orderId,
     });
     return NextResponse.redirect(`${baseUrl}/payment/success?${successParams.toString()}`);
   } catch (err) {

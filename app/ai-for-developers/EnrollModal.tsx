@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Lock, Rocket, Loader2 } from 'lucide-react';
 import { trackPixel } from '@/lib/meta-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const COURSE_SLUG = 'ai-for-developers';
 const RETRY_KEY = 'devc_enroll_retry';
@@ -110,6 +111,13 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
             },
             data.eventId
           );
+          pushToDataLayer(GTM_EVENT.beginCheckout, {
+            content_id: data.contentId,
+            content_name: data.contentName,
+            value: data.value,
+            currency: data.currency ?? 'BDT',
+            event_id: data.eventId,
+          });
         }
         window.location.href = data.paymentUrl;
       }
