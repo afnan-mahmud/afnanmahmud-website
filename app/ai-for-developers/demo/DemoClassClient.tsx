@@ -147,7 +147,16 @@ export default function DemoClassClient({
               <div key={demo.id} className="rounded-3xl glass-panel border border-slate-700 overflow-hidden neon-border">
                 {/* 16:9 player */}
                 <div className="relative w-full bg-black" style={{ aspectRatio: '16 / 9' }}>
-                  <VdoPlayer videoId={demo.videoId} title={demo.title} />
+                  <VdoPlayer
+                    videoId={demo.videoId}
+                    title={demo.title}
+                    onReady={() =>
+                      pushToDataLayer(GTM_EVENT.demoPlay, {
+                        content_id: COURSE_SLUG,
+                        content_name: courseTitle,
+                      })
+                    }
+                  />
                 </div>
                 <div className="p-5 md:p-7">
                   <div className="flex items-center gap-3 mb-2">

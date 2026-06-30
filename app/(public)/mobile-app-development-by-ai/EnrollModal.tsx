@@ -8,6 +8,7 @@ import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
+const COURSE_SLUG = 'mobile-app-development-by-ai';
 const ACCENT = '#625fff';
 const RETRY_KEY = 'devc_enroll_retry';
 
@@ -26,9 +27,12 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
   const [error, setError] = useState('');
   const [touched, setTouched] = useState({ name: false, phone: false });
   const nameRef = useRef<HTMLInputElement>(null);
+  const formStarted = useRef(false);
 
   useEffect(() => {
     if (open) {
+      pushToDataLayer(GTM_EVENT.enrollClick, { content_id: COURSE_SLUG });
+      formStarted.current = false;
       setError('');
       setTouched({ name: false, phone: false });
       // Prefill from a previous failed attempt (seamless retry).
@@ -56,6 +60,12 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [loading, onClose]);
+
+  function handleFormStart() {
+    if (formStarted.current) return;
+    formStarted.current = true;
+    pushToDataLayer(GTM_EVENT.formStart, { content_id: COURSE_SLUG });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -217,6 +227,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+              onFocus={handleFormStart}
               placeholder="যেমন: Rahim Uddin"
               disabled={loading}
               style={{
@@ -243,6 +254,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+              onFocus={handleFormStart}
               placeholder="01XXXXXXXXX"
               disabled={loading}
               maxLength={11}

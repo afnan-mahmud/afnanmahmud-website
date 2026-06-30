@@ -24,9 +24,12 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
   const [done, setDone] = useState('');
   const [touched, setTouched] = useState({ name: false, phone: false });
   const nameRef = useRef<HTMLInputElement>(null);
+  const formStarted = useRef(false);
 
   useEffect(() => {
     if (open) {
+      pushToDataLayer(GTM_EVENT.enrollClick, { content_id: COURSE_SLUG });
+      formStarted.current = false;
       setError('');
       setDone('');
       setTouched({ name: false, phone: false });
@@ -54,6 +57,12 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [loading, onClose]);
+
+  function handleFormStart() {
+    if (formStarted.current) return;
+    formStarted.current = true;
+    pushToDataLayer(GTM_EVENT.formStart, { content_id: COURSE_SLUG });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -191,6 +200,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+              onFocus={handleFormStart}
               placeholder="যেমন: Rahim Uddin"
               disabled={loading}
               className={
@@ -213,6 +223,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+              onFocus={handleFormStart}
               placeholder="01XXXXXXXXX"
               disabled={loading}
               maxLength={11}

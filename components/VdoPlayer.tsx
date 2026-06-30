@@ -11,7 +11,7 @@ import { Play, Loader2 } from 'lucide-react';
  * Fills its nearest positioned ancestor (position: absolute; inset: 0), so the
  * parent owns the 16:9 sizing — same container the YouTube iframe used before.
  */
-export default function VdoPlayer({ videoId, title }: { videoId: string; title?: string }) {
+export default function VdoPlayer({ videoId, title, onReady }: { videoId: string; title?: string; onReady?: () => void }) {
   // Keyed by videoId so a stale result for a previous video is ignored and the
   // component shows "loading" again when videoId changes — without resetting
   // state synchronously inside the effect body.
@@ -51,6 +51,14 @@ export default function VdoPlayer({ videoId, title }: { videoId: string; title?:
     : 'otp' in current
       ? ({ status: 'ready', otp: current.otp, playbackInfo: current.playbackInfo } as const)
       : ({ status: 'error' } as const);
+
+  const readyFired = useState(() => ({ done: false }))[0];
+  useEffect(() => {
+    if (state.status === 'ready' && !readyFired.done) {
+      readyFired.done = true;
+      onReady?.();
+    }
+  }, [state.status, onReady, readyFired]);
 
   const fill: React.CSSProperties = {
     position: 'absolute',
