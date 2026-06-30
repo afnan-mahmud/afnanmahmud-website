@@ -6,10 +6,11 @@ import {
   Brain, Terminal, Rocket, Check,
   Briefcase, Globe, Lock, Target, Trophy, MonitorPlay,
   Send, AtSign, Mail, Layout, Smartphone, Server,
-  Volume2, VolumeX, X
+  Volume2, VolumeX
 } from 'lucide-react';
 import Link from 'next/link';
-import EnrollModal from './EnrollModal';
+import Image from 'next/image';
+import { EnrollProvider, useEnroll } from './EnrollContext';
 import ViewContentTracker from '@/components/tracking/ViewContentTracker';
 
 type IconType = ComponentType<{ size?: number | string; className?: string }>;
@@ -179,21 +180,8 @@ const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false }: 
 // --- MAIN PAGE COMPONENT ---
 
 export default function AiForDevelopersPage() {
-  const [enrollOpen, setEnrollOpen] = useState(false);
-  const openEnroll = () => setEnrollOpen(true);
-  const [demoOpen, setDemoOpen] = useState(false);
-  const openDemo = () => setDemoOpen(true);
-
-  // Auto-open the enroll modal after a failed payment retry (?retry=1).
-  // Reads the URL (external system) once on mount — a legitimate effect.
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('retry') === '1') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEnrollOpen(true);
-    }
-  }, []);
-
   return (
+    <EnrollProvider>
     <div className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
       <style>{globalStyles}</style>
 
@@ -204,22 +192,18 @@ export default function AiForDevelopersPage() {
         currency="BDT"
       />
 
-      <EnrollModal open={enrollOpen} onClose={() => setEnrollOpen(false)} />
-      <VideoDemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
-
       {/* Dark Cyber Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')]"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617]"></div>
       </div>
 
-      <Navbar onEnroll={openEnroll} />
+      <Navbar />
 
       <main className="relative z-10">
-        <HeroSection onEnroll={openEnroll} onWatchDemo={openDemo} />
+        <HeroSection />
         <PainPointSection />
         <CtaBanner
-          onEnroll={openEnroll}
           headline={<>পুরোনো নিয়মে আর কত? <GradientText>Smart way</GradientText>-তে Software Development শুরু করুন।</>}
           sub="AI হবে আপনার Assistant Programmer, আর আপনি হবেন একজন Software Architecture। আপনি System এবং Database ডিজাইন করবেন, Backend API Structure এবং Contract ডিজাইন করবেন Even এগুলোও আবার একটা AI কে দিয়ে করিয়ে নিবেন তারপর AI কে দিয়ে আপনি Code লিখাবেন।"
         />
@@ -227,24 +211,25 @@ export default function AiForDevelopersPage() {
         <DevStack />
         <CurriculumJourney />
         <CtaBanner
-          onEnroll={openEnroll}
           headline={<>জিরো থেকে <GradientText>লাইভ অ্যাপ</GradientText> — পুরো প্রসেসটাই এখানে শিখানো হবে</>}
           sub="৮টি মডিউলে টোটাল ৪০+ লেসনে, পাঁচটি রিয়েল প্রজেক্টে আপনাকে ওয়েবসাইট থেকে মোবাইল অ্যাপ বিল্ড করে সার্ভারে Deploy করে মোবাইল অ্যাপ Play Store এবং App Store পাবলিশ করা পর্যন্ত সম্পূর্ণ প্রসেস Step by Step শিখানো হবে"
         />
         <TargetAudience />
         <InstructorProfile />
-        <PricingNeon onEnroll={openEnroll} />
+        <PricingNeon />
         <FAQDark />
       </main>
 
       <FooterDark />
     </div>
+    </EnrollProvider>
   );
 }
 
 // --- PAGE SECTIONS ---
 
-function Navbar({ onEnroll }: { onEnroll: () => void }) {
+function Navbar() {
+  const { openEnroll } = useEnroll();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -257,8 +242,7 @@ function Navbar({ onEnroll }: { onEnroll: () => void }) {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-panel border-b border-slate-800/50 py-3 shadow-lg' : 'bg-transparent py-5'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div className="flex items-center gap-2 font-black text-xl tracking-tight cursor-pointer hover:opacity-80 transition-opacity">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/afnan-logo.png" alt="Afnan Mahmud" className="w-9 h-9 rounded-full object-cover shadow-[0_0_15px_rgba(34,211,238,0.4)]" />
+          <Image src="/afnan-logo.png" alt="Afnan Mahmud" width={36} height={36} priority className="w-9 h-9 rounded-full object-cover shadow-[0_0_15px_rgba(34,211,238,0.4)]" />
           <span className="text-white">Afnan <GradientText>Mahmud</GradientText></span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
@@ -267,7 +251,7 @@ function Navbar({ onEnroll }: { onEnroll: () => void }) {
           <a href="#faq" className="hover:text-cyan-400 hover:-translate-y-0.5 transition-all">FAQ</a>
         </div>
         <div>
-          <button onClick={onEnroll} className="bg-white hover:bg-slate-200 text-slate-900 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:scale-95 inline-block cursor-pointer">
+          <button onClick={openEnroll} className="bg-white hover:bg-slate-200 text-slate-900 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:scale-95 inline-block cursor-pointer">
             Start Mission
           </button>
         </div>
@@ -276,7 +260,8 @@ function Navbar({ onEnroll }: { onEnroll: () => void }) {
   );
 }
 
-function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchDemo: () => void }) {
+function HeroSection() {
+  const { openEnroll, openDemo } = useEnroll();
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 overflow-hidden border-b border-slate-800/50 min-h-[90vh] flex items-center">
       {/* Cyberpunk Glow Effects */}
@@ -329,12 +314,12 @@ function HeroSection({ onEnroll, onWatchDemo }: { onEnroll: () => void; onWatchD
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                <button onClick={onEnroll} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
+                <button onClick={openEnroll} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
                   <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
                   Enroll Now - ৳990
                 </button>
                 {/* Desktop only: opens the demo video in a modal */}
-                <button onClick={onWatchDemo} className="hidden lg:flex w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 hover:-translate-y-1 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700 cursor-pointer">
+                <button onClick={openDemo} className="hidden lg:flex w-full sm:w-auto px-8 py-4 rounded-xl glass-panel text-white font-bold text-lg hover:bg-white/5 hover:-translate-y-1 active:scale-95 transition-all items-center justify-center gap-2 group border-slate-700 cursor-pointer">
                   <Play size={20} className="text-cyan-400 group-hover:text-cyan-300 transition-colors" />
                   Course Details
                 </button>
@@ -510,7 +495,7 @@ function MobileDemoVideo() {
         playsInline
         loop
         controls
-        preload="metadata"
+        preload="none"
       />
 
       {/* Always-visible sound toggle */}
@@ -531,60 +516,6 @@ function MobileDemoVideo() {
           <Volume2 size={16} /> Tap for sound
         </button>
       )}
-    </div>
-  );
-}
-
-// Desktop demo: video plays inside a modal opened by the "Watch Demo" button.
-// Because it's opened by a click (a user gesture), it plays with sound.
-function VideoDemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (open) {
-      video.currentTime = 0;
-      video.play().catch(() => { });
-    } else {
-      video.pause();
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  return (
-    <div
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      className="fixed inset-0 z-[1000] flex items-center justify-center p-5 bg-black/80 backdrop-blur-sm"
-      style={{ animation: 'modalFade 0.2s ease' }}
-    >
-      <div
-        className="relative w-full max-w-4xl"
-        style={{ animation: 'modalSlideIn 0.22s ease' }}
-      >
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-slate-800 border border-slate-700 text-slate-300 flex items-center justify-center hover:bg-slate-700 hover:text-white transition-colors"
-        >
-          <X size={18} />
-        </button>
-        <video
-          ref={videoRef}
-          src={DEMO_VIDEO_SRC}
-          className="w-full h-auto rounded-2xl border border-slate-700 neon-border bg-black"
-          controls
-          playsInline
-          preload="auto"
-        />
-      </div>
     </div>
   );
 }
@@ -989,7 +920,8 @@ function DevStack() {
   );
 }
 
-function CtaBanner({ onEnroll, headline, sub }: { onEnroll: () => void; headline: ReactNode; sub: string }) {
+function CtaBanner({ headline, sub }: { headline: ReactNode; sub: string }) {
+  const { openEnroll } = useEnroll();
   return (
     <section className="py-16 relative">
       <div className="max-w-4xl mx-auto px-4 relative z-10">
@@ -1000,7 +932,7 @@ function CtaBanner({ onEnroll, headline, sub }: { onEnroll: () => void; headline
               <h3 className="text-2xl md:text-4xl font-black text-white mb-3">{headline}</h3>
               <p className="text-slate-400 mb-8 max-w-xl mx-auto leading-relaxed">{sub}</p>
               <button
-                onClick={onEnroll}
+                onClick={openEnroll}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all group cursor-pointer"
               >
                 <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
@@ -1126,7 +1058,8 @@ function InstructorProfile() {
   );
 }
 
-function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
+function PricingNeon() {
+  const { openEnroll } = useEnroll();
   return (
     <section id="pricing" className="py-24 relative">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-[500px] bg-indigo-600/20 rounded-full blur-[150px] pointer-events-none"></div>
@@ -1188,7 +1121,7 @@ function PricingNeon({ onEnroll }: { onEnroll: () => void }) {
                 ))}
               </ul>
 
-              <button onClick={onEnroll} className="w-full py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all cursor-pointer">
+              <button onClick={openEnroll} className="w-full py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all cursor-pointer">
                 Start Mission Now
               </button>
               <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-left">
@@ -1276,8 +1209,7 @@ function FooterDark() {
       <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-12 relative z-10">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2 font-black text-2xl text-white mb-6 hover:opacity-80 transition-opacity cursor-pointer inline-flex">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/afnan-logo.png" alt="Afnan Mahmud" className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(34,211,238,0.3)]" />
+            <Image src="/afnan-logo.png" alt="Afnan Mahmud" width={40} height={40} className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(34,211,238,0.3)]" />
             <span>Afnan <GradientText>Mahmud</GradientText></span>
           </div>
           <p className="mb-6 max-w-sm leading-relaxed text-slate-500">
