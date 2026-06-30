@@ -8,7 +8,10 @@ import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
-const COURSE_SLUG = 'mobile-app-development-by-ai';
+// This modal enrolls in the landing route's DEFAULT course (it POSTs no slug),
+// so content_id here must match that default — keeps enroll_click/form_start
+// consistent with the begin_checkout/purchase content_id resolved server-side.
+const COURSE_SLUG = 'complete-website-and-mobile-application-development-course-by-ai';
 const ACCENT = '#625fff';
 const RETRY_KEY = 'devc_enroll_retry';
 
