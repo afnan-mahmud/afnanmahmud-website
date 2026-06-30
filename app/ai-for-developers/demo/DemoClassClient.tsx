@@ -151,7 +151,7 @@ export default function DemoClassClient({
                     videoId={demo.videoId}
                     title={demo.title}
                     onReady={() =>
-                      pushToDataLayer(GTM_EVENT.demoPlay, {
+                      pushToDataLayer(GTM_EVENT.demoClassReady, {
                         content_id: COURSE_SLUG,
                         content_name: courseTitle,
                       })

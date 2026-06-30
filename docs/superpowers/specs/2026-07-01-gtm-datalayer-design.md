@@ -72,7 +72,7 @@ event carries `event_id` (same id as the Meta layer).
 |---|---|---|
 | `enroll_click` | "Enroll" CTA click (before modal opens) | explicit `pushToDataLayer` |
 | `form_start` | first field focus inside `EnrollModal` | explicit `pushToDataLayer` (once per mount) |
-| `demo_play` | demo video play | explicit `pushToDataLayer` from the player |
+| `demo_class_ready` | demo player finished loading (VdoCipher auto-loads, so this is a demo-viewed signal, not a literal play) | `onReady` from the player |
 | `scroll_depth` (25/50/75/100%) | landing pages | **GTM built-in Scroll Depth trigger — no app code** |
 
 > Scroll depth and generic outbound-link clicks are handled by GTM's own
@@ -104,6 +104,12 @@ ROAS for Google Ads.
 4. (Optional) GA4 config tag + GA4 event tags listening to the same dataLayer events.
 5. Built-in Scroll Depth + Click triggers for behavioral signals.
 6. New campaigns/conversions later → add tags in GTM only; **no code changes**.
+
+> **Note for GTM setup:** `page_view` is a *custom* dataLayer event the app
+> pushes on SPA route changes (mirrors the existing MetaPixel pattern). The
+> `gtm.js` container load also fires GTM's own initial pageview. When wiring a
+> GA4 config/page tag, trigger it on **either** the built-in All Pages **or**
+> the custom `page_view` — not both — to avoid double-counting.
 
 ## Out of scope (YAGNI)
 

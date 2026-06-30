@@ -23,7 +23,9 @@ export const GTM_EVENT = {
   signUp: 'sign_up',
   enrollClick: 'enroll_click',
   formStart: 'form_start',
-  demoPlay: 'demo_play',
+  // Fires when a demo player finishes loading (VdoCipher auto-loads), i.e. the
+  // demo was viewed — not a literal play interaction. Named accordingly.
+  demoClassReady: 'demo_class_ready',
 } as const;
 
 /** Push an event + params into window.dataLayer. No-op on SSR or when GTM is unset. */
