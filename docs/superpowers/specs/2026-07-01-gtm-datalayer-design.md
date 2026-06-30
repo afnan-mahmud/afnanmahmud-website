@@ -80,9 +80,18 @@ event carries `event_id` (same id as the Meta layer).
 
 ## Enhanced Conversions (user data)
 
-`purchase` and `sign_up` push `user_data: { phone: '8801XXXXXXXXX' }` (already in
-that normalized format server-side / from session — never trusted raw from an
-arbitrary client field). In GTM, Enhanced Conversions hashes this **client-side
+`purchase` and `sign_up` push `user_data: { phone: '8801XXXXXXXXX' }`. Phone
+sources differ by page and are kept **out of the URL** (no PII in query strings):
+- `sign_up` (OTP page): the phone the user just typed is already available
+  client-side (`amPhone`, normalized to `8801XXXXXXXXX`).
+- `purchase` (success page): the buyer is not logged in after a landing-modal
+  enroll, so there is no session. The `EnrollModal` already persists the phone
+  in `localStorage` (`devc_enroll_retry`) before redirecting to EPS; the success
+  page reads it back, normalizes to `8801XXXXXXXXX`, and pushes it. If absent,
+  `purchase` still fires with `transaction_id` (order id) so Enhanced
+  Conversions can be backfilled via Google Ads offline import keyed on order_id.
+
+In GTM, Enhanced Conversions hashes this **client-side
 with SHA-256**; the raw phone is never sent to Google. This lifts match rate and
 ROAS for Google Ads.
 
