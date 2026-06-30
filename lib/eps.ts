@@ -21,6 +21,8 @@ function baseUrl(): string {
   return url.replace(/\/+$/, '');
 }
 
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 /** True when all credentials needed for a live EPS call are present. */
 export function epsConfigured(): boolean {
   return Boolean(
@@ -60,32 +62,45 @@ async function getToken(): Promise<string> {
     throw new Error('EPS_USERNAME / EPS_PASSWORD not configured');
   }
 
-  const res = await fetch(`${baseUrl()}/v1/Auth/GetToken`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-hash': makeHash(userName),
-    },
-    body: JSON.stringify({ userName, password }),
-  });
+  // EPS intermittently answers GetToken with a bare 404 (no body) or a transient
+  // 5xx. A couple of quick retries turns those one-off glitches into a working
+  // token instead of a failed payment verification.
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(`${baseUrl()}/v1/Auth/GetToken`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-hash': makeHash(userName),
+        },
+        body: JSON.stringify({ userName, password }),
+      });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`EPS GetToken failed: ${res.status} — ${text}`);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`EPS GetToken failed: ${res.status} — ${text}`);
+      }
+
+      const data = (await res.json()) as {
+        token?: string;
+        expireDate?: string;
+        errorMessage?: string | null;
+        errorCode?: string | null;
+      };
+
+      if (!data.token) {
+        throw new Error(`EPS GetToken returned no token: ${data.errorMessage ?? 'unknown error'}`);
+      }
+
+      return data.token;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 2) await sleep(800);
+    }
   }
 
-  const data = (await res.json()) as {
-    token?: string;
-    expireDate?: string;
-    errorMessage?: string | null;
-    errorCode?: string | null;
-  };
-
-  if (!data.token) {
-    throw new Error(`EPS GetToken returned no token: ${data.errorMessage ?? 'unknown error'}`);
-  }
-
-  return data.token;
+  throw lastErr instanceof Error ? lastErr : new Error('EPS GetToken failed');
 }
 
 export interface EpsInitParams {
@@ -185,18 +200,49 @@ export async function initiatePayment(params: EpsInitParams): Promise<EpsInitRes
   return { paymentUrl: data.RedirectURL, epsTransactionId: data.TransactionId };
 }
 
+/**
+ * Tri-state outcome of a verification:
+ *   - 'success' — EPS confirms the charge completed.
+ *   - 'failed'  — EPS reports a terminal failure (declined/cancelled/expired/…).
+ *   - 'pending' — not yet final OR a transient error (HTTP/token glitch, status
+ *                 not yet settled). NEVER treat this as a hard failure: the buyer
+ *                 may well have been charged. Retry now / reconcile later.
+ */
+export type EpsVerifyOutcome = 'success' | 'failed' | 'pending';
+
 export interface EpsVerifyResult {
-  verified: boolean;
+  outcome: EpsVerifyOutcome;
   status?: string;
   epsTransactionId?: string;
   totalAmount?: number;
 }
 
 /**
- * API No. 03 — CheckMerchantTransactionStatus.
- * Verifies a transaction by the merchantTransactionId we generated.
+ * EPS status strings that mean the transaction is conclusively dead. Anything
+ * that is neither "success" nor one of these (including unknown/empty values or
+ * a transient HTTP error) is treated as still-pending so a charged-but-not-yet-
+ * settled payment is never written off.
  */
-export async function verifyPayment(merchantTransactionId: string): Promise<EpsVerifyResult> {
+const TERMINAL_FAILURE_STATUSES = new Set([
+  'failed',
+  'failure',
+  'fail',
+  'cancel',
+  'cancelled',
+  'canceled',
+  'declined',
+  'decline',
+  'rejected',
+  'reject',
+  'expired',
+  'void',
+  'voided',
+  'unsuccessful',
+  'error',
+]);
+
+/** Single CheckMerchantTransactionStatus call. Transient errors → 'pending'. */
+async function checkStatusOnce(merchantTransactionId: string): Promise<EpsVerifyResult> {
   const token = await getToken();
 
   const url = new URL(`${baseUrl()}/v1/EPSEngine/CheckMerchantTransactionStatus`);
@@ -211,7 +257,8 @@ export async function verifyPayment(merchantTransactionId: string): Promise<EpsV
   });
 
   if (!res.ok) {
-    return { verified: false };
+    // Transient gateway error — not a decision. Let the caller retry/reconcile.
+    return { outcome: 'pending' };
   }
 
   const data = (await res.json()) as {
@@ -221,12 +268,49 @@ export async function verifyPayment(merchantTransactionId: string): Promise<EpsV
   };
 
   const status = data.Status;
+  const norm = typeof status === 'string' ? status.trim().toLowerCase() : '';
+
+  let outcome: EpsVerifyOutcome;
+  if (norm === 'success') outcome = 'success';
+  else if (TERMINAL_FAILURE_STATUSES.has(norm)) outcome = 'failed';
+  else outcome = 'pending';
+
   return {
-    verified: typeof status === 'string' && status.toLowerCase() === 'success',
+    outcome,
     status,
     epsTransactionId: data.EpsTransactionId,
     totalAmount: data.TotalAmount != null ? Number(data.TotalAmount) : undefined,
   };
+}
+
+/**
+ * API No. 03 — CheckMerchantTransactionStatus.
+ * Verifies a transaction by the merchantTransactionId we generated.
+ *
+ * Because EPS settles the status a beat after it redirects the buyer back (and
+ * because there is no IPN/webhook in the V5 API), we poll a few times: a result
+ * is only returned early once it is conclusive ('success' or 'failed'). A still-
+ * 'pending' result after all attempts is handed back as-is for the reconciler.
+ */
+export async function verifyPayment(
+  merchantTransactionId: string,
+  opts?: { retries?: number; retryDelayMs?: number }
+): Promise<EpsVerifyResult> {
+  const retries = opts?.retries ?? 3;
+  const retryDelayMs = opts?.retryDelayMs ?? 1500;
+
+  let last: EpsVerifyResult = { outcome: 'pending' };
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      last = await checkStatusOnce(merchantTransactionId);
+    } catch {
+      // Token fetch / network failure — transient, keep polling.
+      last = { outcome: 'pending' };
+    }
+    if (last.outcome !== 'pending') return last;
+    if (attempt < retries) await sleep(retryDelayMs);
+  }
+  return last;
 }
 
 /** Generate a unique, minimum 10-digit merchant transaction id. */

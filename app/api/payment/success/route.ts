@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { verifyPayment, epsConfigured } from '@/lib/eps';
+import { verifyPayment, epsConfigured, type EpsVerifyOutcome } from '@/lib/eps';
 import { Order } from '@/models/Order';
-import { Course } from '@/models/Course';
-import { User } from '@/models/User';
-import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
-import { sendPurchaseConfirmation } from '@/lib/sms';
+import { capiSignalsFromRequest } from '@/lib/meta-capi';
+import { finalizeSuccessfulOrder } from '@/lib/order-fulfillment';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -20,108 +18,90 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const order = await Order.findById(orderId).populate<{ course: { slug: string; title: string; _id: unknown } }>('course');
-    if (!order) {
+    const order = await Order.findById(orderId).populate<{ course: { slug: string } }>('course');
+    if (!order || !order.course) {
       return NextResponse.redirect(`${baseUrl}/payment/failed?reason=invalid_order`);
     }
+    const courseSlug = order.course.slug;
 
-    // Was this order already completed? Side-effects (enrolledCount, CAPI, SMS)
-    // must run only on the first transition to success, so a page refresh or a
-    // duplicate EPS redirect doesn't double-count, re-fire Purchase, or re-send SMS.
-    const alreadyProcessed = order.status === 'success';
+    // Already finalized (page refresh / duplicate EPS redirect): re-grant access
+    // idempotently and go straight to the success page — no re-verification needed.
+    if (order.status === 'success') {
+      const fin = await finalizeSuccessfulOrder(orderId, { signals: capiSignalsFromRequest(req) });
+      return redirectSuccess(baseUrl, orderId, fin);
+    }
 
-    // Verify the payment server-side via EPS CheckMerchantTransactionStatus,
-    // keyed by the merchantTransactionId we stored when the order was created.
-    let isVerified = false;
+    // Verify server-side via EPS CheckMerchantTransactionStatus, keyed by the
+    // merchantTransactionId we stored at order creation.
+    let outcome: EpsVerifyOutcome;
     let epsTransactionId: string | undefined;
 
     if (epsConfigured() && order.merchantTransactionId) {
       const result = await verifyPayment(order.merchantTransactionId);
-      isVerified = result.verified;
       epsTransactionId = result.epsTransactionId;
 
-      // Guard against amount tampering: the verified amount must match the order.
+      // Anti-tampering: a confirmed charge whose amount doesn't match the order is
+      // rejected as a hard failure.
       if (
-        isVerified &&
+        result.outcome === 'success' &&
         result.totalAmount != null &&
         Math.abs(result.totalAmount - order.amount) > 0.01
       ) {
-        isVerified = false;
+        outcome = 'failed';
+      } else {
+        outcome = result.outcome;
       }
     } else {
-      // No live gateway configured — accept only outside production (dev bypass).
-      isVerified = process.env.NODE_ENV !== 'production';
+      // No live gateway configured — accept only outside production (dev bypass);
+      // in production an unconfigured gateway can't confirm, so treat as pending.
+      outcome = process.env.NODE_ENV !== 'production' ? 'success' : 'pending';
     }
 
-    if (!isVerified) {
+    if (outcome === 'failed') {
       await Order.findByIdAndUpdate(orderId, { status: 'failed', failReason: 'verification_failed' });
-      return NextResponse.redirect(`${baseUrl}/payment/failed?reason=verification_failed&course=${order.course.slug}`);
+      return NextResponse.redirect(
+        `${baseUrl}/payment/failed?reason=verification_failed&course=${courseSlug}`
+      );
     }
 
-    // Mark order success
-    await Order.findByIdAndUpdate(orderId, {
-      status: 'success',
-      ...(epsTransactionId ? { transactionId: epsTransactionId } : {}),
-    });
-
-    // Add course to user's purchasedCourses (idempotent)
-    const purchaser = await User.findByIdAndUpdate(
-      order.student,
-      { $addToSet: { purchasedCourses: order.course._id } },
-      { new: false }
-    ).select('phone name email');
-
-    // Meta Purchase — shared event id for browser/CAPI deduplication.
-    const eventId = newEventId();
-
-    // One-time side-effects on the first transition to success.
-    if (!alreadyProcessed) {
-      // Increment enrolled count
-      await Course.findByIdAndUpdate(order.course._id, {
-        $inc: { enrolledCount: 1 },
-      });
-
-      await sendCapiEvent({
-        eventName: 'Purchase',
-        eventId,
-        user: {
-          phone: purchaser?.phone,
-          email: purchaser?.email,
-          name: purchaser?.name,
-          externalId: String(order.student),
-        },
-        signals: capiSignalsFromRequest(req),
-        customData: {
-          value: order.amount,
-          currency: order.currency ?? 'BDT',
-          content_ids: [order.course.slug],
-          content_name: order.course.title,
-          content_type: 'product',
-        },
-      });
-
-      // Confirmation SMS — best-effort; a failure must not affect enrollment or
-      // the redirect.
-      if (purchaser?.phone) {
-        try {
-          await sendPurchaseConfirmation(purchaser.phone, order.course.title);
-        } catch (smsErr) {
-          console.error('[payment/success] confirmation SMS failed', smsErr);
-        }
-      }
+    if (outcome === 'pending') {
+      // Charge may well have gone through but isn't settled yet. Do NOT mark
+      // failed — leave the order pending and let the processing page (and the
+      // reconciliation cron) finish it. The buyer never sees a false "failed".
+      return NextResponse.redirect(
+        `${baseUrl}/payment/processing?orderId=${orderId}&course=${courseSlug}`
+      );
     }
 
-    const successParams = new URLSearchParams({
-      course: order.course.slug,
-      title: order.course.title,
-      eid: eventId,
-      value: String(order.amount),
-      currency: order.currency ?? 'BDT',
-      txn: orderId,
+    // outcome === 'success'
+    const fin = await finalizeSuccessfulOrder(orderId, {
+      epsTransactionId,
+      signals: capiSignalsFromRequest(req),
     });
-    return NextResponse.redirect(`${baseUrl}/payment/success?${successParams.toString()}`);
+    return redirectSuccess(baseUrl, orderId, fin);
   } catch (err) {
     console.error('[payment/success]', err);
-    return NextResponse.redirect(`${baseUrl}/payment/failed?reason=server_error`);
+    // On an unexpected server error we leave the order untouched (likely still
+    // pending) and route to processing so a real charge is recovered, not lost.
+    return NextResponse.redirect(`${baseUrl}/payment/processing?orderId=${orderId}`);
   }
+}
+
+function redirectSuccess(
+  baseUrl: string,
+  orderId: string,
+  fin: Awaited<ReturnType<typeof finalizeSuccessfulOrder>>
+): NextResponse {
+  if (!fin) {
+    return NextResponse.redirect(`${baseUrl}/payment/failed?reason=invalid_order`);
+  }
+  const params = new URLSearchParams({
+    course: fin.courseSlug,
+    title: fin.courseTitle,
+    eid: fin.eventId,
+    value: String(fin.amount),
+    currency: fin.currency,
+    txn: orderId,
+  });
+  return NextResponse.redirect(`${baseUrl}/payment/success?${params.toString()}`);
 }
