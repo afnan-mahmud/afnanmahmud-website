@@ -481,13 +481,13 @@ function FooterDark() {
             <Image src="/afnan-logo.png" alt="Afnan Mahmud" width={40} height={40} className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(34,211,238,0.3)]" />
             <span>Afnan <GradientText>Mahmud</GradientText></span>
           </div>
-          <p className="mb-6 max-w-sm leading-relaxed text-slate-500">
+          <p className="mb-6 max-w-sm leading-relaxed text-slate-400">
             টিউটোরিয়াল হেল থেকে বেরিয়ে এসে ফ্রি AI টুল দিয়ে রিয়েল, প্রোডাকশন-গ্রেড অ্যাপ বানানো শিখুন — ওয়েবসাইট থেকে মোবাইল অ্যাপ পর্যন্ত।
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-cyan-400 transition-all duration-300 hover:-translate-y-1"><Send size={18} /></a>
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-indigo-400 transition-all duration-300 hover:-translate-y-1"><AtSign size={18} /></a>
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-pink-400 transition-all duration-300 hover:-translate-y-1"><Mail size={18} /></a>
+            <a href="#" aria-label="Telegram" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-cyan-400 transition-all duration-300 hover:-translate-y-1"><Send size={18} aria-hidden="true" /></a>
+            <a href="#" aria-label="X (Twitter)" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-indigo-400 transition-all duration-300 hover:-translate-y-1"><AtSign size={18} aria-hidden="true" /></a>
+            <a href="#" aria-label="Email" className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 hover:text-pink-400 transition-all duration-300 hover:-translate-y-1"><Mail size={18} aria-hidden="true" /></a>
           </div>
         </div>
 
@@ -510,7 +510,7 @@ function FooterDark() {
           </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-slate-900 text-center text-sm relative z-10 text-slate-600">
+      <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-slate-900 text-center text-sm relative z-10 text-slate-400">
         <p>&copy; {new Date().getFullYear()} Afnan Mahmud. System Online.</p>
       </div>
     </footer>
