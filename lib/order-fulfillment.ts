@@ -3,6 +3,7 @@ import { Order } from '@/models/Order';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import { sendCapiEvent, newEventId, type CapiEventInput } from '@/lib/meta-capi';
+import { sendTikTokEvent, type TikTokSignals } from '@/lib/tiktok-events';
 import { sendPurchaseConfirmation } from '@/lib/sms';
 
 export interface FinalizeResult {
@@ -28,7 +29,7 @@ export interface FinalizeResult {
  */
 export async function finalizeSuccessfulOrder(
   orderId: string,
-  opts?: { epsTransactionId?: string; signals?: CapiEventInput['signals'] }
+  opts?: { epsTransactionId?: string; signals?: CapiEventInput['signals']; tiktokSignals?: TikTokSignals }
 ): Promise<FinalizeResult | null> {
   await connectDB();
 
@@ -78,6 +79,24 @@ export async function finalizeSuccessfulOrder(
         content_ids: [order.course.slug],
         content_name: order.course.title,
         content_type: 'product',
+      },
+    });
+
+    await sendTikTokEvent({
+      eventName: 'CompletePayment',
+      eventId,
+      user: {
+        phone: purchaser?.phone,
+        email: purchaser?.email,
+        name: purchaser?.name,
+        externalId: String(order.student),
+      },
+      signals: opts?.tiktokSignals ?? {},
+      properties: {
+        contents: [{ content_id: order.course.slug, content_type: 'product', content_name: order.course.title }],
+        content_type: 'product',
+        value: order.amount,
+        currency: order.currency ?? 'BDT',
       },
     });
 

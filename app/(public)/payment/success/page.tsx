@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { trackPixel } from '@/lib/meta-pixel';
+import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
@@ -32,6 +33,19 @@ function PaymentSuccessContent() {
         content_ids: courseSlug ? [courseSlug] : undefined,
         content_name: courseTitle,
         content_type: 'product',
+      },
+      eid
+    );
+
+    trackTikTok(
+      'CompletePayment',
+      {
+        contents: courseSlug
+          ? [{ content_id: courseSlug, content_type: 'product', content_name: courseTitle }]
+          : undefined,
+        content_type: 'product',
+        value: value ? Number(value) : undefined,
+        currency,
       },
       eid
     );
