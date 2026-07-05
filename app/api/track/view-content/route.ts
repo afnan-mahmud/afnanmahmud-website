@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
+import { sendTikTokEvent, tiktokSignalsFromRequest } from '@/lib/tiktok-events';
 
 /**
  * Server-side CAPI ViewContent, mirroring the browser pixel fired on course /
@@ -54,6 +55,21 @@ export async function POST(req: NextRequest) {
         content_ids: body.contentId ? [body.contentId] : undefined,
         content_name: body.contentName,
         content_type: 'product',
+      },
+    });
+
+    await sendTikTokEvent({
+      eventName: 'ViewContent',
+      eventId,
+      user,
+      signals: tiktokSignalsFromRequest(req),
+      properties: {
+        contents: body.contentId
+          ? [{ content_id: body.contentId, content_type: 'product', content_name: body.contentName }]
+          : undefined,
+        content_type: 'product',
+        value: typeof body.value === 'number' ? body.value : undefined,
+        currency: body.currency || 'BDT',
       },
     });
 
