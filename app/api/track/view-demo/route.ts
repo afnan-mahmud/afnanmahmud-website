@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
+import { sendTikTokEvent, tiktokSignalsFromRequest } from '@/lib/tiktok-events';
 
 /**
  * Public CAPI event for visits to the demo-class page (custom event
@@ -27,6 +28,19 @@ export async function POST(req: NextRequest) {
       customData: {
         content_ids: body.contentId ? [body.contentId] : undefined,
         content_name: body.contentName,
+        content_type: 'product',
+      },
+    });
+
+    await sendTikTokEvent({
+      eventName: 'ViewDemoClass',
+      eventId,
+      user: {},
+      signals: tiktokSignalsFromRequest(req),
+      properties: {
+        contents: body.contentId
+          ? [{ content_id: body.contentId, content_type: 'product', content_name: body.contentName }]
+          : undefined,
         content_type: 'product',
       },
     });
