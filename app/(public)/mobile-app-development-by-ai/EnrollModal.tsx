@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Inter, Poppins } from 'next/font/google';
 import { trackPixel } from '@/lib/meta-pixel';
+import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -122,6 +123,18 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
               content_ids: data.contentId ? [data.contentId] : undefined,
               content_name: data.contentName,
               content_type: 'product',
+            },
+            data.eventId
+          );
+          trackTikTok(
+            'InitiateCheckout',
+            {
+              contents: data.contentId
+                ? [{ content_id: data.contentId, content_type: 'product', content_name: data.contentName }]
+                : undefined,
+              content_type: 'product',
+              value: data.value,
+              currency: data.currency ?? 'BDT',
             },
             data.eventId
           );

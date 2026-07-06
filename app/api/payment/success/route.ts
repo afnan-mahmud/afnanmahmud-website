@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import { verifyPayment, epsConfigured, type EpsVerifyOutcome } from '@/lib/eps';
 import { Order } from '@/models/Order';
 import { capiSignalsFromRequest } from '@/lib/meta-capi';
+import { tiktokSignalsFromRequest } from '@/lib/tiktok-events';
 import { finalizeSuccessfulOrder } from '@/lib/order-fulfillment';
 
 export async function GET(req: NextRequest) {
@@ -27,7 +28,10 @@ export async function GET(req: NextRequest) {
     // Already finalized (page refresh / duplicate EPS redirect): re-grant access
     // idempotently and go straight to the success page — no re-verification needed.
     if (order.status === 'success') {
-      const fin = await finalizeSuccessfulOrder(orderId, { signals: capiSignalsFromRequest(req) });
+      const fin = await finalizeSuccessfulOrder(orderId, {
+        signals: capiSignalsFromRequest(req),
+        tiktokSignals: tiktokSignalsFromRequest(req),
+      });
       return redirectSuccess(baseUrl, orderId, fin);
     }
 
@@ -77,6 +81,7 @@ export async function GET(req: NextRequest) {
     const fin = await finalizeSuccessfulOrder(orderId, {
       epsTransactionId,
       signals: capiSignalsFromRequest(req),
+      tiktokSignals: tiktokSignalsFromRequest(req),
     });
     return redirectSuccess(baseUrl, orderId, fin);
   } catch (err) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { trackPixel } from '@/lib/meta-pixel';
+import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 interface ViewContentTrackerProps {
@@ -43,6 +44,17 @@ export default function ViewContentTracker({
     };
 
     trackPixel('ViewContent', customData, eventId);
+
+    trackTikTok(
+      'ViewContent',
+      {
+        contents: [{ content_id: contentId, content_type: 'product', content_name: contentName }],
+        content_type: 'product',
+        value,
+        currency,
+      },
+      eventId
+    );
 
     pushToDataLayer(GTM_EVENT.viewItem, {
       content_id: contentId,

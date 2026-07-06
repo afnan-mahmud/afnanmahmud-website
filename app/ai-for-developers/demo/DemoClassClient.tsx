@@ -6,6 +6,7 @@ import { Terminal, Rocket, ArrowLeft, PlayCircle, Lock, Clock } from 'lucide-rea
 import EnrollModal from '../EnrollModal';
 import VdoPlayer from '@/components/VdoPlayer';
 import { trackCustomPixel } from '@/lib/meta-pixel';
+import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const COURSE_SLUG = 'ai-for-developers';
@@ -72,6 +73,15 @@ export default function DemoClassClient({
     trackCustomPixel(
       'ViewDemoClass',
       { content_ids: [COURSE_SLUG], content_name: courseTitle, content_type: 'product' },
+      eventId
+    );
+
+    trackTikTok(
+      'ViewDemoClass',
+      {
+        contents: [{ content_id: COURSE_SLUG, content_type: 'product', content_name: courseTitle }],
+        content_type: 'product',
+      },
       eventId
     );
 

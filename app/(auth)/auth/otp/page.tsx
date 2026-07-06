@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Space_Grotesk } from 'next/font/google';
 import OtpInput from '@/components/shared/OtpInput';
 import { trackPixel, setPixelAdvancedMatching } from '@/lib/meta-pixel';
+import { trackTikTok, identifyTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
@@ -116,6 +117,8 @@ function OtpPageContent() {
       const amPhone = amDigits.startsWith('88') ? amDigits : `88${amDigits}`;
       if (amDigits) setPixelAdvancedMatching({ ph: amPhone });
       trackPixel('CompleteRegistration', { status: true }, eventId);
+      if (amDigits) identifyTikTok({ phone: phone.trim() });
+      trackTikTok('CompleteRegistration', {}, eventId);
       pushToDataLayer(GTM_EVENT.signUp, {
         event_id: eventId,
         ...(amDigits ? { user_data: { phone: amPhone } } : {}),

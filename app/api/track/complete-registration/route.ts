@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
+import { sendTikTokEvent, tiktokSignalsFromRequest } from '@/lib/tiktok-events';
 
 /**
  * Fires a server-side CAPI CompleteRegistration for the logged-in user.
@@ -33,6 +34,19 @@ export async function POST(req: NextRequest) {
       },
       signals: capiSignalsFromRequest(req),
       customData: { status: true },
+    });
+
+    await sendTikTokEvent({
+      eventName: 'CompleteRegistration',
+      eventId,
+      user: {
+        phone: user?.phone,
+        email: user?.email,
+        name: user?.name,
+        externalId: String(session.user.id),
+      },
+      signals: tiktokSignalsFromRequest(req),
+      properties: {},
     });
 
     return NextResponse.json({ ok: true });

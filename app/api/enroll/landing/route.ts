@@ -5,6 +5,7 @@ import { Course } from '@/models/Course';
 import { Order } from '@/models/Order';
 import { User } from '@/models/User';
 import { sendCapiEvent, newEventId, capiSignalsFromRequest } from '@/lib/meta-capi';
+import { sendTikTokEvent, tiktokSignalsFromRequest } from '@/lib/tiktok-events';
 
 const DEFAULT_COURSE_SLUG = 'complete-website-and-mobile-application-development-course-by-ai';
 // Slugs the landing-enroll flow is allowed to enroll into.
@@ -100,6 +101,19 @@ export async function POST(req: NextRequest) {
         content_ids: [COURSE_SLUG],
         content_name: course.title,
         content_type: 'product',
+      },
+    });
+
+    await sendTikTokEvent({
+      eventName: 'InitiateCheckout',
+      eventId,
+      user: { phone: user.phone, email: user.email, name: user.name, externalId: String(user._id) },
+      signals: tiktokSignalsFromRequest(req),
+      properties: {
+        contents: [{ content_id: COURSE_SLUG, content_type: 'product', content_name: course.title }],
+        content_type: 'product',
+        value: course.price,
+        currency: 'BDT',
       },
     });
 

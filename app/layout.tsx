@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import MetaPixel from "@/components/tracking/MetaPixel";
 import Clarity from "@/components/tracking/Clarity";
 import GoogleTagManager from "@/components/tracking/GoogleTagManager";
+import TikTokPixel from "@/components/tracking/TikTokPixel";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,6 +37,7 @@ export default function RootLayout({
         <MetaPixel />
         <Clarity />
         <GoogleTagManager />
+        <TikTokPixel />
         <SessionProvider>
           {children}
         </SessionProvider>
