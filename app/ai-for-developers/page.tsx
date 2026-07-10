@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { type ComponentType } from 'react';
 import Image from 'next/image';
-import { CheckCircle2, XCircle, Code, Code2, Sparkles, Cpu, Layers, Zap, Brain, Terminal, Briefcase, Globe, MonitorPlay, Send, AtSign, Mail, Layout, Smartphone, Server } from 'lucide-react';
+import { Code, Code2, Sparkles, Cpu, Layers, Zap, Brain, Terminal, Briefcase, Globe, Send, AtSign, Mail, Layout, Smartphone, Server, Bug, ShieldCheck, GitBranch, Rocket, Store, MessagesSquare, Wallet } from 'lucide-react';
 import { EnrollProvider } from './EnrollContext';
 import ViewContentTracker from '@/components/tracking/ViewContentTracker';
 import {
@@ -11,6 +11,7 @@ import {
   HeroSection,
   CurriculumJourney,
   CtaBanner,
+  EnrollButton,
   PricingNeon,
   FAQDark,
 } from './LandingClient';
@@ -111,10 +112,10 @@ export default function AiForDevelopersPage() {
 
       <main className="relative z-10">
         <HeroSection />
-        <PainPointSection />
+        <WhatYouWillLearn />
         <CtaBanner
           headline={<>পুরোনো নিয়মে আর কত? <GradientText>Smart way</GradientText>-তে Software Development শুরু করুন।</>}
-          sub="AI হবে আপনার Assistant Programmer, আর আপনি হবেন একজন Software Architecture। আপনি System এবং Database ডিজাইন করবেন, Backend API Structure এবং Contract ডিজাইন করবেন Even এগুলোও আবার একটা AI কে দিয়ে করিয়ে নিবেন তারপর AI কে দিয়ে আপনি Code লিখাবেন।"
+          sub="AI হবে আপনার Assistant Programmer, আর আপনি হবেন একজন Software Architecture। আপনি System এবং Database ডিজাইন করবেন, Backend API Structure এবং Contract ডিজাইন করবেন তারপর AI কে দিয়ে আপনি Code লিখাবেন।"
         />
         <WhyAIWorkflow />
         <DevStack />
@@ -137,60 +138,92 @@ export default function AiForDevelopersPage() {
 
 // --- PAGE SECTIONS ---
 
-function PainPointSection() {
+function WhatYouWillLearn() {
+  const outcomes: { icon: IconType; title: string; desc: string }[] = [
+    {
+      icon: Globe,
+      title: "শূন্য থেকে পুরো একটা ওয়েবসাইট AI দিয়ে বিল্ড করবেন",
+      desc: "একদম খালি ফোল্ডার থেকে শুরু করে ফ্রন্টএন্ড, ব্যাকএন্ড, ডেটাবেজ — একটা কমপ্লিট ওয়েবসাইট AI-কে দিয়ে ধাপে ধাপে দাঁড় করানো শিখানো হবে।"
+    },
+    {
+      icon: Smartphone,
+      title: "শূন্য থেকে মোবাইল App ধাপে ধাপে AI দিয়ে বানাবেন",
+      desc: "React Native (Expo) দিয়ে অ্যান্ড্রয়েড ও iOS দুটোতেই চলে এমন অ্যাপ — স্ক্রিন ডিজাইন থেকে API কানেক্ট করা পর্যন্ত পুরোটা ধাপে ধাপে শিখানো হবে।"
+    },
+    {
+      icon: Bug,
+      title: "বাগ ও এরর ফিক্স করা শিখবেন AI দিয়ে",
+      desc: "Software Development-এ একটা কমন সমস্যা হচ্ছে বাগ ও এরর ফিক্স করা। আমরা এই কঠিন কাজটাও AI-কে দিয়ে খুব সহজেই কিভাবে করিয়ে নিতে পারবো তার সম্পূর্ণ প্রসেস শেখানো হবে।"
+    },
+    {
+      icon: ShieldCheck,
+      title: "সিকিউরিটি ভালনারেবিলিটি ফিক্স করা শিখবেন",
+      desc: "AI-কে কাজে লাগিয়ে নিজের কোডের দুর্বলতা খুঁজে বের করা আর সেগুলো ঠিক করা, যাতে আপনার অ্যাপ হ্যাক হয়ে না যায় এটাও শিখানো হবে।"
+    },
+    {
+      icon: GitBranch,
+      title: "কোডবেজ প্রফেশনালি ম্যানেজ করবেন GitHub-এর মাধ্যমে",
+      desc: "টিম বা একা, ইন্ডাস্ট্রি এক্সপার্ট অন্যরা যেভাবে কোড ম্যানেজ করে ঠিক সেভাবে আপনি আপনার এই কোডগুলো কিভাবে সেইফলি ম্যানেজ করতে পারবেন তা শিখানো হবে।"
+    },
+    {
+      icon: Rocket,
+      title: "সার্ভারে ডিপ্লয় করে নিজের ডোমেইনে অ্যাপ লাইভ করবেন",
+      desc: "প্রজেক্টতো আমাদের কম্পিউটারে বানাবো এবং টেস্টিং করবো তারপর আপনার কম্পিউটার থেকে কিভাবে সার্ভার মানে হোস্টিং এ সেটআপ, ডোমেইন কানেক্ট, SSL কানেক্ট করে লাইভ করার পুরো প্রসেসটাই স্টেপ বাই স্টেপ দেখানো হবে।"
+    },
+    {
+      icon: Store,
+      title: "মোবাইল অ্যাপ Play Store ও App Store-এ পাবলিশ করবেন",
+      desc: "মোবাইল অ্যাপের Android বা iOS এর ষ্টোরে পাবলিশের জন্য বিল্ড বানানো, অ্যাকাউন্ট সেটআপ, স্টোর লিস্টিং, টেস্টিং এবং রিভিউ পার করে — Google Play Store ও App Store দুটো স্টোরেই পাবলিশ করার সম্পূর্ণ প্রসেস শেখানো হবে।"
+    },
+  ];
+
   return (
-    <section className="py-24 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
+    <section id="learn" className="py-24 relative overflow-hidden border-t border-slate-800/50 bg-[#060b19]">
+      <div className="absolute right-1/4 top-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-[110px] pointer-events-none"></div>
+
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
         <Reveal>
           <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/20 text-indigo-400 mb-4 border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+              <Sparkles size={32} />
+            </div>
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
-              <span className="text-red-500">কেন</span> আপনি আটকে যাচ্ছেন?
+              এখানে <GradientText>আপনি শিখতে পারবেন</GradientText>
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              কোর্স দেখছেন, AI দিয়ে নাড়াচাড়াও করছেন — কিন্তু নিজে একটা পুরো, real প্রজেক্ট দাঁড় করাতে গেলেই কোথাও না কোথাও আটকে যাচ্ছেন। দোষটা আপনার না, দোষটা পুরোনো নিয়মে শেখার।
+              আইডিয়া থেকে শুরু করে লাইভ মোবাইল App এবং ওয়েবসাইট বানানো পর্যন্ত — পুরো জার্নিটা AI-কে সাথে নিয়ে, স্টেপ বাই স্টেপ শিখুন।
             </p>
           </div>
         </Reveal>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {/* The Old Way */}
-          <Reveal delay={100} direction="right">
-            <div className="bg-red-950/20 border border-red-900/50 rounded-3xl p-8 relative overflow-hidden h-full group hover:bg-red-900/20 transition-colors">
-              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                <XCircle size={100} className="text-red-500" />
+        <div className="grid md:grid-cols-2 gap-6">
+          {outcomes.map((o, i) => (
+            <Reveal
+              key={i}
+              delay={(i % 2) * 100}
+              direction={i % 2 === 0 ? 'right' : 'left'}
+              className={i === outcomes.length - 1 ? 'md:col-span-2' : ''}
+            >
+              <div className="glass-panel p-7 rounded-2xl border border-slate-800 hover:border-indigo-500/50 hover:-translate-y-1 transition-all duration-300 group h-full">
+                <div className="flex items-start gap-5">
+                  <div className="shrink-0 w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/10 group-hover:scale-110 transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                    <o.icon size={24} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-xs font-mono font-bold text-cyan-400/80">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="h-px flex-1 bg-slate-800 group-hover:bg-indigo-500/30 transition-colors"></span>
+                    </div>
+                    <h3 className="text-lg md:text-xl font-bold text-white mb-3 leading-snug">{o.title}</h3>
+                    <p className="text-slate-400 leading-relaxed text-sm">{o.desc}</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-red-400 mb-6 flex items-center gap-3">
-                <XCircle size={24} /> The Old Way (কোথায় আপনার সমস্যা হচ্ছে?)
-              </h3>
-              <ul className="space-y-4 text-slate-300">
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> একদম নতুনদের জন্য (The Fear of Code): কোডিং ব্যাকগ্রাউন্ড বা সিএসই ডিগ্রি নেই বলে শুরু করার আগেই মনে হয়—“প্রোগ্রামিং তো আমার জন্য নয়, এত সিনট্যাক্স কি মনে থাকবে?”</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> হালকা জানা ও ভাইব কোডারদের জন্য (The Gap): AI প্রম্পট দিয়ে বা হালকা কোড জোড়াতালি দিয়ে সুন্দর ফ্রন্টএন্ড বা UI বানিয়ে ফেলছেন; কিন্তু যখনই সার্ভার কানেক্ট করা, ডেটাবেজ ম্যানেজ করা বা সাইট লাইভ (Deployment) করার কথা আসে—সেখানেই আটকে যাচ্ছেন।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> আসল প্রসেস না জানা (The Lost Architect): ইউটিউব দেখে টুকটাক প্রজেক্ট বানাতে পারেন, কিন্তু একটা প্রফেশনাল অ্যাপের শুরু থেকে শেষ পর্যন্ত (Full Development Cycle) কীভাবে সাজাতে হয়, সেই আসল রোডম্যাপটাই জানা নেই।</li>
-                <li className="flex gap-3"><span className="text-red-500 font-bold mt-1">✗</span> টাইম কিলিং এরর (The Error Loop): কোড করতে গিয়ে একটা অদ্ভুত Error আসলেই মাথা গরম হয়ে যায়। গুগল বা স্ট্যাক-ওভারফ্লোতে সমাধান খুঁজতে খুঁজতেই পুরো দিন শেষ, একসময় আগ্রহটাই হারিয়ে ফেলেন।</li>
-              </ul>
-            </div>
-          </Reveal>
-
-          {/* The AI Way */}
-          <Reveal delay={200} direction="left">
-            <div className="bg-emerald-950/20 border border-emerald-900/50 rounded-3xl p-8 relative overflow-hidden h-full group hover:bg-emerald-900/20 transition-colors shadow-[0_0_30px_rgba(16,185,129,0.1)] hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Sparkles size={100} className="text-emerald-500" />
-              </div>
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-500/20 blur-2xl"></div>
-
-              <h3 className="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
-                <CheckCircle2 size={24} /> The Modern AI Way (আমরা যেভাবে সমাধান করব)
-              </h3>
-              <ul className="space-y-4 text-slate-200">
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> জিরো থেকে মেন্টরশিপ: কোনো কোডিং ব্যাকগ্রাউন্ড লাগবে না। আমরা ধরে নেব আপনার শুধু টেকনোলজির প্রতি আগ্রহ আছে—বাকিটা স্ক্র্যাচ থেকে দেখানোর দায়িত্ব আমাদের।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> কমপ্লিট ফুল-স্ট্যাক রোডম্যাপ: শুধু ফ্রন্টএন্ড বা ভাইব কোডিং নয়; ডেটাবেজ ডিজাইন, সার্ভার আর্কিটেকচার এবং কীভাবে একটা প্রজেক্টকে প্রফেশনালি ডিপ্লয় (Live) করতে হয়—তার পুরো এ-টু-জেড প্রসেস আপনি শিখবেন।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> AI-কে বানান আপনার পার্সোনাল মেন্টর: Gemini এবং Claude-কে কীভাবে আপনার অ্যাসিস্ট্যান্ট বানিয়ে সেকেন্ডের মধ্যে জটিল এরর সলভ করতে হয় এবং প্রোডাকশন-গ্রেড কোড লিখতে হয়, সেই স্মার্ট হ্যাকস শিখবেন।</li>
-                <li className="flex gap-3"><span className="text-emerald-500 font-bold mt-1">✓</span> লজিক ও আর্কিটেকচারে ফোকাস: সিনট্যাক্স মুখস্থ করার দিন শেষ, ওটা AI করবে। আপনি শিখবেন কীভাবে প্রজেক্টের লজিক সাজাতে হয় এবং বড় অ্যাপ ডিজাইন করতে হয়।</li>
-              </ul>
-            </div>
-          </Reveal>
+            </Reveal>
+          ))}
         </div>
+
+        <EnrollButton className="mt-14" />
       </div>
     </section>
   );
@@ -199,24 +232,29 @@ function PainPointSection() {
 function WhyAIWorkflow() {
   const values: { icon: IconType; title: string; desc: string }[] = [
     {
-      icon: Terminal,
-      title: "১০০% ফ্রি টুল",
-      desc: "কোনো সাবস্ক্রিপশন ফি নেই। AntiGravity, Gemini আর Claude Code-এর ফ্রি ভার্সন দিয়েই কিভাবে প্রো-লেভেলের কাজ করবেন, সেটা হাতে-কলমে দেখানো হবে।"
+      icon: Sparkles,
+      title: "একদম বিগেনার ফ্রেন্ডলি",
+      desc: "এই বিষয়ে আগের কোনো ধারণা না থাকলেও কোনো সমস্যা নেই — আমরা একদম বেসিক থেকে ক্লাস শুরু করেছি। কম্পিউটারের বেসিক ধারণা থাকলে, ইন্টারনেটে ব্রাউজ করতে জানলে আর কিবোর্ড দেখে দেখে টাইপ করতে পারলেই আপনি নিশ্চিন্তে এই কোর্সে জয়েন করতে পারেন।"
     },
     {
-      icon: Layers,
-      title: "জিরো থেকে প্রোডাকশন",
-      desc: "শুধু লোকালহোস্টে আটকে থাকা নয়। স্ক্র্যাচ থেকে কোড করে GitHub হয়ে লাইভ সার্ভারে অ্যাপ চালু করা পর্যন্ত — পুরোটা এখানে স্টেপ বাই স্টেপ দেখানো হবে।"
+      icon: MessagesSquare,
+      title: "সার্বক্ষণিক সাপোর্ট গ্রুপ",
+      desc: "কোর্স করা অবস্থায় কোথাও আটকে গেলে আপনার জন্য রয়েছে ডেডিকেটেড WhatsApp ও Facebook সাপোর্ট গ্রুপ। সেখানে আমাদের সাপোর্ট মেম্বাররা সর্বক্ষণ অ্যাক্টিভ। এটা Recorded কোর্স এর জন্য এই Journey-তে আপনার নিজেকে একা ভাবার কিছু নেই, আপনি কোথায় সমস্যায় পড়েছেন লিখে আমাদের গ্রুপে মেসেজ করলেই হেল্প পাবেন।"
     },
     {
-      icon: MonitorPlay,
-      title: "প্রপার আর্কিটেকচার",
-      desc: "AI দিয়ে এলোমেলো কোড নয়। সিস্টেম ডিজাইন আর স্কেলেবল আর্কিটেকচার কিভাবে প্ল্যান করতে হয়, সেটাও শিখবেন।"
+      icon: Brain,
+      title: "ফান্ডামেন্টালস সহ শেখা",
+      desc: "এখানে শুধু AI দিয়ে ডেভেলপমেন্ট কমপ্লিট করবো এমন না — আমরা বিভিন্ন ফান্ডামেন্টালস সম্পর্কেও জানবো। কারণ ফান্ডামেন্টাল জানা না থাকলে আপনি বেশিদূর আগাতে পারবেন না। ফান্ডামেন্টালসগুলো জানা থাকলে ক্রিটিক্যাল থিংকিং, একটা আইডিয়া থেকে সেটাকে একটা সফটওয়্যারের রূপ দেওয়া — এই বিষয়গুলো খুব সহজ হবে আপনার জন্য।"
     },
     {
-      icon: Globe,
+      icon: Wallet,
+      title: "ফ্রি AI মডেল দিয়ে শেখা",
+      desc: "শেখার জন্য একটা টাকাও খরচ করতে হবে না — একদম ফ্রি AI মডেল দিয়েই পুরো ডেভেলপমেন্ট প্রসেস শিখবেন। পরবর্তীতে প্রোডাকশনে নিজের বা ক্লায়েন্টের কাজ আরও সহজে ও দ্রুত শেষ করার জন্য পেইড মডেলগুলোর ব্যবহারও দেখানো হবে এবং এই পেইড মডেলের জন্য যে অনেক টাকা খরচ হবে এমন না ২০ ডলারের একটা সাবক্রিপশনে সহজেই আপনার অফিস বা ক্লাইন্টের ডেইলি কাজগুলো কমপ্লিট করে ফেলা যায়।"
+    },
+    {
+      icon: Briefcase,
       title: "জব আর ক্লায়েন্ট রেডি",
-      desc: "Software Engineer হিসেবে জবের প্রস্তুতি, আর ক্লায়েন্টের নতুন বা পুরোনো যেকোনো প্রজেক্ট AI দিয়ে সহজে ডেলিভার করার সিক্রেট।"
+      desc: "কোর্স শেষে আপনি যেন জব মার্কেট অথবা মার্কেটপ্লেসে ক্লায়েন্টের কাজ করার মতো রেডি হয়ে উঠতে পারেন — এটাই আমাদের এই কোর্সের একমাত্র চেষ্টা।"
     }
   ];
 
@@ -231,9 +269,9 @@ function WhyAIWorkflow() {
           </div>
         </Reveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           {values.map((v, i) => (
-            <Reveal key={i} delay={i * 100}>
+            <Reveal key={i} delay={i * 100} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
               <div className="glass-panel p-6 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group border border-slate-800 hover:border-cyan-500/50 h-full">
                 <div className="w-12 h-12 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-cyan-400 mb-6 group-hover:bg-cyan-500/10 group-hover:scale-110 transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.3)]">
                   <v.icon size={24} />
@@ -244,6 +282,8 @@ function WhyAIWorkflow() {
             </Reveal>
           ))}
         </div>
+
+        <EnrollButton className="mt-14" />
       </div>
     </section>
   );
@@ -252,28 +292,22 @@ function WhyAIWorkflow() {
 function DevStack() {
   const stack: { name: string; tag: string; icon: IconType; desc: string }[] = [
     {
-      name: "Cursor IDE",
+      name: "Cursor & Antigravity IDE",
       tag: "Code Editor",
       icon: Terminal,
-      desc: "আপনার মূল কোড এডিটর, যার ভেতরেই AI বসানো। চ্যাট, এডিট আর অটো-কমপ্লিট — সব এক জায়গায়। আগে VS Code চালিয়ে থাকলে নতুন করে কিছু শেখাই লাগবে না।"
+      desc: "এই দুটো হবে আমাদের মূল কোড এডিটর, যার ভেতরে AI সেটআপ করবো। এখানেই আমরা প্রজেক্ট বানাবো তারপর ফোল্ডার এবং ফাইল তৈরি করে আমাদের কোড লিখবো"
     },
     {
       name: "Claude Code",
       tag: "AI Agent",
       icon: Cpu,
-      desc: "টার্মিনালের পাওয়ারফুল AI এজেন্ট। পুরো প্রজেক্ট ধরে নিজে ফাইল পড়ে, কোড লেখে, কমান্ড চালায় — অনেকটা একজন জুনিয়র ডেভেলপারের মতো।"
+      desc: "এটা টার্মিনালের পাওয়ারফুল AI এজেন্ট। অনেকটা একজন জুনিয়র ডেভেলপারের মতো। অফিস বা ক্লাইন্টের কাজ করার জন্য এটা খুবই দরকারি একটা জিনিস"
     },
     {
-      name: "Gemini",
+      name: "Google AI Studio",
       tag: "Planning & Reasoning",
       icon: Brain,
-      desc: "Google-এর ফ্রি মডেল। ডেটাবেস ডিজাইন, সিস্টেম ডিজাইন আর প্ল্যানিং-এর মতো চিন্তা-নির্ভর কাজে সবচেয়ে কাজের।"
-    },
-    {
-      name: "AntiGravity",
-      tag: "Agentic Workflow",
-      icon: Code,
-      desc: "বড় একটা ফিচার একসাথে প্ল্যান করে জেনারেট করে দেয়। পুরো প্রজেক্ট দাঁড় করানোর কাজটা অনেক দ্রুত হয়ে যায়।"
+      desc: "Google-এর ফ্রি মডেলগুলো আমরা কোড এডিটরের সাথে কানেক্ট করে আমাদের কোড এডিটরকে আমরা আরো অনেক বেশি পাওয়ারফুল করে তুলি। ডেটাবেস ডিজাইন, সিস্টেম ডিজাইন আর প্ল্যানিং-এর মতো কাজে সবচেয়ে ভালো রেজাল্ট দেয় Google এর Gemini এর মডেল গুলো।"
     }
   ];
 
@@ -300,7 +334,7 @@ function DevStack() {
               আপনার <GradientText>AI Dev Stack</GradientText>
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              মাত্র ৪টি টুল, সবগুলোই ১০০% ফ্রি। নিচে দেখুন কোন টুল কোন কাজে লাগে, আর এই কোর্সে আপনি ঠিক কোন প্রোগ্রামিং ভাষা ও টেকনোলজিতে কোড করবেন — একদম পরিষ্কার করে।
+              মাত্র ৪টি টুল। নিচে দেখুন কোন টুল কোন কাজে লাগে, আর এই কোর্সে আপনি ঠিক কোন প্রোগ্রামিং ভাষা ও টেকনোলজিতে কোড করবেন
             </p>
           </div>
         </Reveal>
@@ -354,9 +388,11 @@ function DevStack() {
 
         <Reveal delay={200}>
           <p className="text-center text-slate-500 text-sm mt-10 max-w-2xl mx-auto">
-            <span className="text-cyan-400 font-semibold">এক কথায়:</span> JavaScript ও TypeScript-ই মূল ভাষা। ফ্রন্টএন্ডে React/Next.js, ব্যাকএন্ডে Node.js, ডেটার জন্য MongoDB, আর মোবাইল অ্যাপের জন্য React Native — পুরোটা একসাথে, শূন্য থেকে।
+            <span className="text-cyan-400 font-semibold">এক কথায়:</span> JavaScript ও TypeScript-ই মূল ভাষা। ফ্রন্টএন্ডে React/Next.js, ব্যাকএন্ডে Node.js, ডেটার জন্য MongoDB, আর মোবাইল অ্যাপের জন্য React Native।
           </p>
         </Reveal>
+
+        <EnrollButton className="mt-12" />
       </div>
     </section>
   );

@@ -14,9 +14,10 @@ type RevealProps = {
   children?: ReactNode;
   delay?: number;
   direction?: 'up' | 'down' | 'left' | 'right';
+  className?: string;
 };
 
-export const Reveal = ({ children, delay = 0, direction = 'up' }: RevealProps) => {
+export const Reveal = ({ children, delay = 0, direction = 'up', className = '' }: RevealProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -49,7 +50,7 @@ export const Reveal = ({ children, delay = 0, direction = 'up' }: RevealProps) =
     <div
       ref={ref}
       className={`transition duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'
-        } ${getTransform()}`}
+        } ${getTransform()} ${className}`}
       style={{ transitionDelay: `${delay}ms`, transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
     >
       {children}
@@ -169,15 +170,15 @@ export function HeroSection() {
                 AI-পাওয়ার্ড <GradientText>Software Development</GradientText>
               </h1>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-6 leading-snug text-slate-200">
-                ১-২ মাসেই কাস্টম ওয়েব এবং মোবাইল অ্যাপ বিল্ড করা শিখুন
+                AI এর সাহায্যে মোবাইল App এবং কাস্টম Website বানানো শিখুন খুব সহজেই এই Recorded কোর্সের মাধ্যমে
               </p>
             </Reveal>
 
             <Reveal delay={300} direction="right">
               <p className="mt-5 sm:mt-6 max-w-2xl text-[15px] sm:text-base md:text-lg lg:text-xl text-slate-300/90 leading-relaxed sm:leading-loose tracking-wide [text-wrap:pretty] border-l-2 border-indigo-500/40 pl-4 sm:pl-5">
-                Coding এর ঝামেলা এখন <span className="bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent font-semibold">AI এর কাঁধে</span>, মডার্ন AI-কে বানান আপনার পার্সোনাল প্রোগ্রামার।
-                কোড লেখার কাজ করবে AI, আর আপনি হয়ে উঠবেন এমন এক
-                <span className="text-white font-semibold"> Full Stack Developer</span>—যে যেকোনো ক্লায়েন্টের
+                Coding এর ঝামেলা এখন <span className="bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent font-semibold">AI উপর ছেড়ে দিন</span>, মডার্ন AI হবে আপনার পার্সোনাল প্রোগ্রামার।
+                নির্ভুল ভাবে আপনার জন্য কোড লিখবে AI, আর তাকে গাইড করে আপনি হয়ে উঠবেন এমন এক
+                <span className="text-white font-semibold"> Full Stack Developer</span>— আপনি যে কোন আইডিয়ার উপর মোবাইল App এবং কাস্টম Website বানাতে পারবেন এবং যে যেকোনো ক্লায়েন্টের
                 <strong className="text-indigo-400 font-semibold"> Existing বা New</strong> প্রজেক্ট
                 হ্যান্ডেল করতে পারবেন এবং যেকোনো কোম্পানিতে
                 <strong className="text-pink-400 font-semibold"> Software Developer</strong> হিসেবে আপনার ক্যারিয়ার শুরু করতে পারবেন।
@@ -610,6 +611,29 @@ export function CtaBanner({ headline, sub }: { headline: ReactNode; sub: string 
   );
 }
 
+export function EnrollButton({
+  label = 'এখনই Enroll করুন — ৳990',
+  className = '',
+}: {
+  label?: string;
+  className?: string;
+}) {
+  const { openEnroll } = useEnroll();
+  return (
+    <div className={`text-center ${className}`}>
+      <Reveal>
+        <button
+          onClick={openEnroll}
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all group cursor-pointer"
+        >
+          <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
+          {label}
+        </button>
+      </Reveal>
+    </div>
+  );
+}
+
 export function PricingNeon() {
   const { openEnroll } = useEnroll();
   return (
@@ -704,11 +728,11 @@ export function FAQDark() {
     },
     {
       q: "কোর্স করতে কি টাকা দিয়ে AI টুল কিনতে হবে?",
-      a: "না। আমরা পুরো প্রজেক্ট দাঁড় করাবো সম্পূর্ণ ফ্রি টুল দিয়ে — Gemini, Claude Code, AntiGravity আর Cursor-এর ফ্রি ভার্সন। বাড়তি কোনো খরচ নেই।"
+      a: "শেখার জন্য একটা টাকাও খরচ করতে হবে না — একদম ফ্রি AI মডেল দিয়েই পুরো ডেভেলপমেন্ট প্রসেস শিখবেন। পরবর্তীতে প্রোডাকশনে নিজের বা ক্লায়েন্টের কাজ আরও সহজে ও দ্রুত শেষ করার জন্য পেইড মডেলগুলোর ব্যবহারও দেখানো হবে এবং এই পেইড মডেলের জন্য যে অনেক টাকা খরচ হবে এমন না ২০ ডলারের একটা সাবক্রিপশনে সহজেই আপনার অফিস বা ক্লাইন্টের ডেইলি কাজগুলো কমপ্লিট করে ফেলা যায়।"
     },
     {
       q: "ওয়েবসাইট আর মোবাইল অ্যাপ — দুটোই কি শেখাবেন?",
-      a: "হ্যাঁ। প্রথমে একটা ফুল ওয়েবসাইট বানিয়ে লাইভ সার্ভারে দেবো, তারপর সেই প্রজেক্ট থেকেই মোবাইল অ্যাপ বানিয়ে Google Play Store আর Apple App Store-এ পাবলিশ করা পর্যন্ত পুরোটা দেখানো হবে।"
+      a: "হ্যাঁ। প্রথমে একটা ফুল ওয়েবসাইট বানিয়ে লাইভ সার্ভারে ডেপলয় করা হবে, তারপর সেই প্রজেক্ট থেকেই মোবাইল অ্যাপ বানিয়ে Google Play Store আর Apple App Store-এ পাবলিশ করা পর্যন্ত পুরোটা দেখানো হবে।"
     },
     {
       q: "প্রজেক্ট লাইভ করা কিভাবে শেখাবেন?",
@@ -716,14 +740,14 @@ export function FAQDark() {
     },
     {
       q: "ওয়েবসাইট কি হ্যাক হয়ে যেতে পারে? সিকিউরিটি শেখাবেন?",
-      a: "হ্যাঁ। একটা পুরো লেসনে দেখানো হবে কিভাবে Claude Code দিয়ে নিজের অ্যাপের দুর্বলতা খুঁজে বের করে ফিক্স করতে হয় — যাতে লাইভ করার আগেই অ্যাপটা সিকিউর থাকে।"
+      a: "হ্যাঁ। একটা পুরো লেসনে দেখানো হবে কিভাবে AI কে দিয়ে অ্যাপের দুর্বলতা খুঁজে বের করে ফিক্স করতে হয় — যাতে লাইভ করার আগেই অ্যাপটা সিকিউর থাকে।"
     },
     {
       q: "কোর্সটি কি লাইভ নাকি রেকর্ডেড?",
-      a: "কোর্সটি হাই-কোয়ালিটি রেকর্ডেড ভিডিওতে তৈরি, যাতে নিজের সময়মতো শিখতে পারেন। আর কোথাও আটকে গেলে প্রাইভেট কমিউনিটি সাপোর্ট তো আছেই।"
+      a: "কোর্সটি হাই-কোয়ালিটি রেকর্ডেড ভিডিওতে তৈরি, যাতে নিজের সময়মতো শিখতে পারেন। আর কোথাও আটকে গেলে Facebook এবং WhatsApp সাপোর্ট গ্রুপ আছে।"
     },
     {
-      q: "এত প্রিমিউম কোর্স এত কম দামে কেন?",
+      q: "এত প্রিমিয়াম কোর্স এত কম দামে কেন?",
       a: "খুবই যৌক্তিক প্রশ্ন! বাজারে যেখানে নরমাল কোর্সের দাম ৫ থেকে ১০ হাজার টাকা, সেখানে আমরা এত কম দামে কেন নিচ্ছি — এটার কারণ একটাই, সবার জন্য এক্সেসিবল করা। আমরা চাই সিএসই ডিগ্রি বা মোটা অঙ্কের টাকা না থাকা সত্ত্বেও দেশের যেকোনো প্রান্ত থেকে একজন তরুণ যেন মাত্র ১-২ মাসে মডার্ন টেকনোলজিতে নিজের ক্যারিয়ার গড়তে পারে। টাকার জন্য শিখতে পারি নাই — এমন যেন কোনো কারণ না হয়ে দাঁড়ায়।"
     }
   ];
