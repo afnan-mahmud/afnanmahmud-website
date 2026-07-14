@@ -53,6 +53,14 @@ export async function sendOtp(phone: string, code: string): Promise<boolean> {
   return sendSms(phone, `Your Afnan Mahmud OTP is: ${code}. Valid for 5 minutes.`);
 }
 
+/** Account-deletion OTP message. Wording makes the destructive intent clear. */
+export async function sendDeleteOtp(phone: string, code: string): Promise<boolean> {
+  return sendSms(
+    phone,
+    `Your Afnan Mahmud account DELETE OTP is: ${code}. Valid for 5 minutes. Ei code diye apnar account permanently delete hobe. Apni na chaile keu ke share korben na.`
+  );
+}
+
 /** Course purchase confirmation, sent after a successful payment. */
 export async function sendPurchaseConfirmation(
   phone: string,
