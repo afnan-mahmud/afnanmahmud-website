@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, BookOpen, Users, UserX, ShoppingCart, Wallet, LogOut, X, ShieldCheck, RotateCcw,
+  MessageCircle,
   type LucideIcon,
 } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
@@ -21,6 +23,7 @@ const ICONS: Record<string, LucideIcon> = {
   '/admin/orders': ShoppingCart,
   '/admin/refunds': RotateCcw,
   '/admin/accounts': Wallet,
+  '/admin/whatsapp': MessageCircle,
   '/admin/users': ShieldCheck,
 };
 
@@ -33,6 +36,30 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ access, open, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const NAV = visibleNav(access);
+  const canSeeWhatsApp = NAV.some((item) => item.href === '/admin/whatsapp');
+
+  // Poll the WhatsApp unread count for the sidebar badge (only if visible).
+  const [waUnread, setWaUnread] = useState(0);
+  useEffect(() => {
+    if (!canSeeWhatsApp) return;
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/admin/whatsapp/unread-count');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (alive) setWaUnread(data.count ?? 0);
+      } catch {
+        /* ignore transient errors */
+      }
+    };
+    load();
+    const id = setInterval(load, 10000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [canSeeWhatsApp]);
 
   const content = (
     <div
@@ -86,9 +113,14 @@ export default function AdminSidebar({ access, open, onClose }: AdminSidebarProp
               }}
             >
               <Icon size={16} color={isActive ? '#6366f1' : '#52525b'} />
-              <span className={sg.className} style={{ color: isActive ? '#a5b4fc' : '#71717a', fontWeight: isActive ? 600 : 500, fontSize: '0.875rem' }}>
+              <span className={sg.className} style={{ color: isActive ? '#a5b4fc' : '#71717a', fontWeight: isActive ? 600 : 500, fontSize: '0.875rem', flex: 1 }}>
                 {label}
               </span>
+              {href === '/admin/whatsapp' && waUnread > 0 && (
+                <span className={sg.className} style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, background: '#22c55e', color: '#fff', fontSize: '0.6875rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {waUnread > 99 ? '99+' : waUnread}
+                </span>
+              )}
             </Link>
           );
         })}

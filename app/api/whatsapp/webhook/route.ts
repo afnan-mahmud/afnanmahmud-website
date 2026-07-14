@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { ingestWebhook } from '@/lib/whatsapp-ingest';
 
 /**
  * WhatsApp Cloud API webhook.
@@ -77,26 +78,9 @@ export async function POST(req: NextRequest) {
 
     const payload = JSON.parse(rawBody);
 
-    // Payload shape: entry[].changes[].value.{ statuses[] | messages[] }
-    for (const entry of payload.entry ?? []) {
-      for (const change of entry.changes ?? []) {
-        const value = change.value ?? {};
-
-        for (const status of value.statuses ?? []) {
-          // status.status: sent | delivered | read | failed
-          console.log(
-            `[whatsapp/webhook] status=${status.status} to=${status.recipient_id} id=${status.id}`,
-            status.errors ? JSON.stringify(status.errors) : ''
-          );
-        }
-
-        for (const message of value.messages ?? []) {
-          console.log(
-            `[whatsapp/webhook] inbound from=${message.from} type=${message.type}`
-          );
-        }
-      }
-    }
+    // Persist inbound messages + delivery statuses (idempotent). Any failure is
+    // swallowed below so we still ACK 200 and Meta doesn't hammer retries.
+    await ingestWebhook(payload);
 
     // Always ACK 200 fast; Meta retries on non-2xx.
     return NextResponse.json({ received: true });
