@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Code, Code2, Sparkles, Cpu, Layers, Zap, Brain, Terminal, Briefcase, Globe, Send, AtSign, Mail, Layout, Smartphone, Server, Bug, ShieldCheck, GitBranch, Rocket, Store, MessagesSquare, Wallet } from 'lucide-react';
 import { EnrollProvider } from './EnrollContext';
 import ViewContentTracker from '@/components/tracking/ViewContentTracker';
+import WhatsAppFab from '@/components/whatsapp/WhatsAppFab';
 import {
   Reveal,
   GradientText,
@@ -131,6 +132,8 @@ export default function AiForDevelopersPage() {
       </main>
 
       <FooterDark />
+
+      <WhatsAppFab />
     </div>
     </EnrollProvider>
   );

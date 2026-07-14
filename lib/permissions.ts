@@ -73,6 +73,15 @@ export const PERMISSIONS: PermSection[] = [
     path: '/admin/refunds',
     actions: [{ key: 'refunds.manage', label: 'View & confirm/reject refunds' }],
   },
+  {
+    id: 'whatsapp',
+    label: 'WhatsApp',
+    path: '/admin/whatsapp',
+    actions: [
+      { key: 'whatsapp.view', label: 'View WhatsApp inbox' },
+      { key: 'whatsapp.reply', label: 'Send WhatsApp replies' },
+    ],
+  },
 ];
 
 /** Every valid permission string (used to filter unknown input on the API). */
@@ -131,6 +140,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/admin/orders', label: 'Orders', perm: 'orders.view' },
   { href: '/admin/refunds', label: 'Refunds', perm: 'refunds.manage' },
   { href: '/admin/accounts', label: 'Accounts', perm: 'accounts.view' },
+  { href: '/admin/whatsapp', label: 'WhatsApp', perm: 'whatsapp.view' },
   { href: '/admin/users', label: 'Users', ownerOnly: true },
 ];
 
