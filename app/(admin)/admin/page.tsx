@@ -6,7 +6,7 @@ import { Course } from '@/models/Course';
 import { User } from '@/models/User';
 import { Order } from '@/models/Order';
 import { Space_Grotesk, Inter } from 'next/font/google';
-import { DollarSign, Users, UserCheck, BookOpen, ShoppingCart } from 'lucide-react';
+import { Users, UserCheck, BookOpen, ShoppingCart } from 'lucide-react';
 import type { IUser } from '@/models/User';
 import type { ICourse } from '@/models/Course';
 import { formatDhakaDate, dhakaToday, dhakaMonthStart, dhakaDayStart, dhakaDayEnd, isValidYmd, shiftDay } from '@/lib/date';
@@ -36,12 +36,17 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
 
   await connectDB();
 
-  const { from, to } = await searchParams;
+  // First load (no query params at all) defaults to today's data; an explicit
+  // `?from=&to=` (the "All" preset) opts back into the all-time view.
+  const { from: rawFrom, to: rawTo } = await searchParams;
+  const today = dhakaToday();
+  const noParams = rawFrom === undefined && rawTo === undefined;
+  const from = noParams ? today : rawFrom;
+  const to = noParams ? today : rawTo;
   const range = buildDateRange(from, to);
   const hasRange = Object.keys(range).length > 0;
 
   // Quick presets (all computed in Bangladesh time).
-  const today = dhakaToday();
   const yesterday = shiftDay(today, -1);
   const monthStart = dhakaMonthStart();
   const PRESETS = [
@@ -77,14 +82,12 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   ]);
 
   const successOrders = orders.filter((o) => o.status === 'success');
-  const totalRevenue = successOrders.reduce((s, o) => s + o.amount, 0);
   const totalStudents = distinctBuyers.length;
   const recentOrders = orders.slice(0, 10);
 
   // Each card is shown only if the viewer can view that card's section, so
   // granting dashboard access never leaks another section's sensitive data.
   const STATS = [
-    { perm: 'accounts.view', label: 'Total Revenue', value: `৳${totalRevenue.toLocaleString()}`, icon: DollarSign, color: '#4ade80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)' },
     { perm: 'students.view', label: 'Total Students', value: totalStudents, icon: UserCheck, color: '#6366f1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)' },
     { perm: 'students.view', label: 'Total Users', value: totalUsers, icon: Users, color: '#f472b6', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
     { perm: 'courses.view', label: 'Total Courses', value: courses, icon: BookOpen, color: '#22d3ee', bg: 'rgba(34,211,238,0.07)', border: 'rgba(34,211,238,0.18)' },
@@ -111,7 +114,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
         {PRESETS.map((p) => {
           const isActive = activePreset === p.label;
-          const href = p.from ? `/admin?from=${p.from}&to=${p.to}` : '/admin';
+          const href = p.from ? `/admin?from=${p.from}&to=${p.to}` : '/admin?from=&to=';
           return (
             <Link
               key={p.label}
