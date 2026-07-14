@@ -7,15 +7,21 @@ import { can } from '@/lib/permissions';
 
 const PAGE_SIZE = 20;
 
+// Escape user input so it can be safely used inside a MongoDB regex.
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export default async function AdminStudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string }>;
 }) {
   const access = await requirePage('students.view');
 
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, q: qParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
+  const q = (qParam ?? '').trim();
 
   await connectDB();
   type LeanUser = {
@@ -30,7 +36,11 @@ export default async function AdminStudentsPage({
   type LeanCourse = { _id: unknown; title: string; price: number };
 
   // Only students who have purchased at least one course.
-  const filter = { role: 'student', 'purchasedCourses.0': { $exists: true } };
+  const filter: Record<string, unknown> = { role: 'student', 'purchasedCourses.0': { $exists: true } };
+  if (q) {
+    const rx = new RegExp(escapeRegex(q), 'i');
+    filter.$or = [{ name: rx }, { phone: rx }];
+  }
   const [total, raw, coursesRaw] = await Promise.all([
     User.countDocuments(filter),
     User.find(filter)
@@ -70,6 +80,7 @@ export default async function AdminStudentsPage({
       total={total}
       pageSize={PAGE_SIZE}
       basePath="/admin/students"
+      searchQuery={q}
     />
   );
 }
