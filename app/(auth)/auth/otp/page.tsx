@@ -14,6 +14,13 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
 const RESEND_SECONDS = 120;
 
+// Master switch for WhatsApp OTP delivery (same env var the API route reads, so
+// UI and server stay in sync). OFF (default) = login is SIM/SMS only, which is
+// the safe state for deploy. Flip to 'true' once the WhatsApp authentication
+// template is approved in Meta — then WhatsApp becomes primary and the SMS
+// fallback link appears. No other code change needed.
+const WHATSAPP_OTP_ENABLED = process.env.NEXT_PUBLIC_WHATSAPP_OTP_ENABLED === 'true';
+
 // Decide where to land after sign-in. Admins go to the admin portal, everyone
 // else to the student dashboard. A `returnUrl` is honoured only when it's a
 // safe same-origin path AND it belongs to the user's own portal — this stops
@@ -64,7 +71,10 @@ function OtpPageContent() {
   const formatCountdown = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-  const handleSendOtp = useCallback(async () => {
+  // Default channel is WhatsApp; the OTP step offers 'sms' as a manual fallback.
+  // The server may auto-fall back to SMS (e.g. number not on WhatsApp), so the
+  // toast reflects the channel the server actually used, not the one requested.
+  const handleSendOtp = useCallback(async (channel: 'whatsapp' | 'sms' = WHATSAPP_OTP_ENABLED ? 'whatsapp' : 'sms') => {
     const trimmed = phone.trim();
     if (!/^01[3-9]\d{8}$/.test(trimmed)) {
       toast.error('Enter a valid BD phone number (01XXXXXXXXX)');
@@ -75,19 +85,22 @@ function OtpPageContent() {
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: trimmed }),
+        body: JSON.stringify({ phone: trimmed, channel }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error ?? 'Failed to send OTP');
-      toast.success('OTP sent to ' + trimmed);
-      setAnimating(true);
-      setTimeout(() => { setStep('otp'); setAnimating(false); }, 350);
+      const via = data.channel === 'sms' ? 'SMS' : 'WhatsApp';
+      toast.success(`OTP ${via} e pathano hoyeche: ${trimmed}`);
+      setAnimating((prev) => (step === 'otp' ? prev : true));
+      if (step !== 'otp') {
+        setTimeout(() => { setStep('otp'); setAnimating(false); }, 350);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
-  }, [phone]);
+  }, [phone, step]);
 
   const handleVerify = useCallback(async () => {
     const code = digits.join('');
@@ -297,7 +310,7 @@ function OtpPageContent() {
               />
             </div>
             <button
-              onClick={handleSendOtp}
+              onClick={() => handleSendOtp()}
               disabled={loading}
               style={{
                 padding: '13px',
@@ -314,8 +327,11 @@ function OtpPageContent() {
                 letterSpacing: '0.02em',
               }}
             >
-              {loading ? 'Sending…' : 'Send OTP'}
+              {loading ? 'Sending…' : WHATSAPP_OTP_ENABLED ? 'Send OTP via WhatsApp' : 'Send OTP'}
             </button>
+            <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(148,163,184,0.55)', margin: 0 }}>
+              {WHATSAPP_OTP_ENABLED ? 'OTP tomar WhatsApp e jabe' : 'OTP tomar phone e SMS e jabe'}
+            </p>
           </div>
         ) : (
           /* ── STEP B: OTP entry ── */
@@ -340,10 +356,35 @@ function OtpPageContent() {
                     textDecoration: 'underline',
                   }}
                 >
-                  Resend OTP
+                  {WHATSAPP_OTP_ENABLED ? 'Resend on WhatsApp' : 'Resend OTP'}
                 </button>
               )}
             </p>
+
+            {/* SMS fallback — only in WhatsApp mode, and only after the resend
+                timer elapses. For students whose signup number has no WhatsApp,
+                this delivers the code over the old SIM/SMS path instead. */}
+            {WHATSAPP_OTP_ENABLED && countdown === 0 && (
+              <p style={{ textAlign: 'center', fontSize: '0.8125rem', color: 'rgba(148,163,184,0.7)', margin: '-6px 0 0' }}>
+                WhatsApp e OTP paw nai?{' '}
+                <button
+                  onClick={() => { setDigits(Array(6).fill('')); handleSendOtp('sms'); }}
+                  disabled={loading}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#22c55e',
+                    fontWeight: 600,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    fontSize: '0.8125rem',
+                    fontFamily: 'inherit',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  SMS e OTP nao
+                </button>
+              </p>
+            )}
 
             <button
               onClick={handleVerify}
