@@ -11,7 +11,7 @@ export interface IOrder extends Document {
   /** EPS-side transaction id returned on success. */
   transactionId?: string;
   epsOrderId?: string;
-  status: 'pending' | 'success' | 'failed';
+  status: 'pending' | 'success' | 'failed' | 'refunded';
   failReason?: string;
   createdAt: Date;
 }
@@ -28,7 +28,7 @@ const OrderSchema = new Schema<IOrder>(
     epsOrderId: { type: String },
     status: {
       type: String,
-      enum: ['pending', 'success', 'failed'],
+      enum: ['pending', 'success', 'failed', 'refunded'],
       default: 'pending',
     },
     failReason: { type: String },

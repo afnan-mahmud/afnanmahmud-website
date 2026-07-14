@@ -49,6 +49,7 @@ export const PERMISSIONS: PermSection[] = [
     actions: [
       { key: 'students.view', label: 'View students & abandoned' },
       { key: 'students.add', label: 'Add / manually enroll student' },
+      { key: 'students.refund', label: 'Request course refund' },
     ],
   },
   {
@@ -65,6 +66,12 @@ export const PERMISSIONS: PermSection[] = [
       { key: 'accounts.view', label: 'View accounts & ledger' },
       { key: 'accounts.expense', label: 'Add expense / manage categories' },
     ],
+  },
+  {
+    id: 'refunds',
+    label: 'Refunds',
+    path: '/admin/refunds',
+    actions: [{ key: 'refunds.manage', label: 'View & confirm/reject refunds' }],
   },
 ];
 
@@ -122,6 +129,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/admin/students', label: 'Students', perm: 'students.view', exact: true },
   { href: '/admin/abandoned-students', label: 'Abandoned Students', perm: 'students.view' },
   { href: '/admin/orders', label: 'Orders', perm: 'orders.view' },
+  { href: '/admin/refunds', label: 'Refunds', perm: 'refunds.manage' },
   { href: '/admin/accounts', label: 'Accounts', perm: 'accounts.view' },
   { href: '/admin/users', label: 'Users', ownerOnly: true },
 ];
