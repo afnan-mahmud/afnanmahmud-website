@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { Course } from '@/models/Course';
+import { Refund } from '@/models/Refund';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { BookOpen, CheckCircle, Clock, ArrowRight } from 'lucide-react';
 import type { ICourse } from '@/models/Course';
@@ -41,6 +42,14 @@ export default async function DashboardPage() {
     .lean<PopulatedUser>();
 
   if (!user) redirect('/auth/otp');
+
+  const refunds = await Refund.find({
+    student: session.user.id,
+    status: { $in: ['requested', 'confirmed'] },
+  })
+    .select('courseTitle status')
+    .sort({ createdAt: -1 })
+    .lean<{ courseTitle: string; status: 'requested' | 'confirmed' }[]>();
 
   const courses = user.purchasedCourses ?? [];
   const progress = user.progress ?? [];
@@ -323,6 +332,46 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Refunds */}
+      {refunds.length > 0 && (
+        <div style={{ marginTop: '48px' }}>
+          <h2
+            className={sg.className}
+            style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.01em', marginBottom: '20px' }}
+          >
+            Refunds
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {refunds.map((r, i) => {
+              const done = r.status === 'confirmed';
+              return (
+                <div
+                  key={`${r.courseTitle}-${i}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                    padding: '16px 18px', background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px',
+                  }}
+                >
+                  <span className={inter.className} style={{ color: '#e2e8f0', fontSize: '0.9375rem' }}>{r.courseTitle || 'Course'}</span>
+                  <span
+                    className={sg.className}
+                    style={{
+                      padding: '3px 10px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap',
+                      background: done ? 'rgba(74,222,128,0.1)' : 'rgba(251,191,36,0.1)',
+                      border: `1px solid ${done ? 'rgba(74,222,128,0.25)' : 'rgba(251,191,36,0.25)'}`,
+                      color: done ? '#4ade80' : '#fbbf24',
+                    }}
+                  >
+                    {done ? 'Refunded' : 'Refund processing'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 640px) {

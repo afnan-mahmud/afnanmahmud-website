@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  LayoutDashboard, BookOpen, Users, UserX, ShoppingCart, Wallet, LogOut, X, ShieldCheck,
+  LayoutDashboard, BookOpen, Users, UserX, ShoppingCart, Wallet, LogOut, X, ShieldCheck, RotateCcw,
   type LucideIcon,
 } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
@@ -19,6 +19,7 @@ const ICONS: Record<string, LucideIcon> = {
   '/admin/students': Users,
   '/admin/abandoned-students': UserX,
   '/admin/orders': ShoppingCart,
+  '/admin/refunds': RotateCcw,
   '/admin/accounts': Wallet,
   '/admin/users': ShieldCheck,
 };
