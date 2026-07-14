@@ -46,16 +46,32 @@ function makeHash(data: string): string {
 }
 
 /**
- * API No. 01 — GetToken. Returns a bearer token for the other endpoints.
+ * Short-lived token cache.
  *
- * We deliberately do NOT cache/reuse the token. Despite the long `expireDate`
- * EPS reports, a reused token gets rejected at the EPS gateway with a bare 404
- * (no app headers, empty body) after a short while — which surfaced as
- * intermittent "InitializeEPS failed: 404" for users hitting the server some
- * minutes after the previous successful payment. Fetching a fresh token per
- * call is cheap and the only reliably-working pattern.
+ * History: we used to fetch a fresh token on EVERY EPS call and never cache it,
+ * because reusing a token for *minutes* got it rejected at the gateway with a
+ * bare 404 ("InitializeEPS failed: 404"). But fetching per-call means a single
+ * enroll plus its later verify-poll burst fires many GetToken requests, and EPS
+ * now rate-limits that endpoint — surfacing as "GetToken failed: 429" and a
+ * broken enroll.
+ *
+ * The fix caches the token for a short TTL (well under the "minutes" that caused
+ * the old 404) so a burst of calls reuses one token, while it still refreshes
+ * often enough to never go stale. `invalidateToken()` drops the cache the moment
+ * a downstream call smells a stale token, restoring the old per-call freshness
+ * exactly when it matters.
  */
-async function getToken(): Promise<string> {
+const TOKEN_TTL_MS = 90_000;
+let cachedToken: { token: string; expiresAt: number } | null = null;
+let inFlightToken: Promise<string> | null = null;
+
+/** Drop any cached token so the next getToken() fetches a fresh one. */
+function invalidateToken(): void {
+  cachedToken = null;
+}
+
+/** API No. 01 — GetToken. One raw fetch of a fresh bearer token, with retries. */
+async function fetchFreshToken(): Promise<string> {
   const userName = process.env.EPS_USERNAME;
   const password = process.env.EPS_PASSWORD;
   if (!userName || !password) {
@@ -79,7 +95,11 @@ async function getToken(): Promise<string> {
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`EPS GetToken failed: ${res.status} — ${text}`);
+        const err = new Error(`EPS GetToken failed: ${res.status} — ${text}`) as Error & {
+          status?: number;
+        };
+        err.status = res.status;
+        throw err;
       }
 
       const data = (await res.json()) as {
@@ -96,11 +116,41 @@ async function getToken(): Promise<string> {
       return data.token;
     } catch (err) {
       lastErr = err;
-      if (attempt < 2) await sleep(800);
+      if (attempt < 2) {
+        // 429 = rate limited. Firing again in 800ms only deepens the limit, so
+        // back off hard and give EPS room; other errors keep the quick retry.
+        const rateLimited = (err as { status?: number })?.status === 429;
+        await sleep(rateLimited ? 3000 : 800);
+      }
     }
   }
 
   throw lastErr instanceof Error ? lastErr : new Error('EPS GetToken failed');
+}
+
+/**
+ * Returns a bearer token, served from a short-lived cache when possible. A single
+ * in-flight fetch is shared across concurrent callers so a burst of simultaneous
+ * enrolls triggers at most one GetToken request instead of one each.
+ */
+async function getToken(): Promise<string> {
+  if (cachedToken && Date.now() < cachedToken.expiresAt) {
+    return cachedToken.token;
+  }
+
+  // Dedupe concurrent misses onto one fetch.
+  if (inFlightToken) return inFlightToken;
+
+  inFlightToken = fetchFreshToken()
+    .then((token) => {
+      cachedToken = { token, expiresAt: Date.now() + TOKEN_TTL_MS };
+      return token;
+    })
+    .finally(() => {
+      inFlightToken = null;
+    });
+
+  return inFlightToken;
 }
 
 export interface EpsInitParams {
@@ -128,8 +178,6 @@ export interface EpsInitResult {
 
 /** API No. 02 — InitializeEPS. Returns the hosted-page redirect URL. */
 export async function initiatePayment(params: EpsInitParams): Promise<EpsInitResult> {
-  const token = await getToken();
-
   const merchantId = process.env.EPS_MERCHANT_ID;
   const storeId = process.env.EPS_STORE_ID;
   if (!merchantId || !storeId) {
@@ -171,19 +219,34 @@ export async function initiatePayment(params: EpsInitParams): Promise<EpsInitRes
     ProductCategory: 'Online Course',
   };
 
-  const res = await fetch(`${baseUrl()}/v1/EPSEngine/InitializeEPS`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-hash': makeHash(params.merchantTransactionId),
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
+  // A cached token that has gone stale is rejected here with a 404. Recover once
+  // by dropping the cache and retrying with a guaranteed-fresh token.
+  let res: Response | undefined;
+  let text = '';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const token = await getToken();
+    res = await fetch(`${baseUrl()}/v1/EPSEngine/InitializeEPS`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-hash': makeHash(params.merchantTransactionId),
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    const text = await res.text();
+    if (res.ok) break;
+
+    text = await res.text();
+    if (res.status === 404 && attempt === 0) {
+      invalidateToken();
+      continue;
+    }
     throw new Error(`EPS InitializeEPS failed: ${res.status} — ${text}`);
+  }
+
+  if (!res || !res.ok) {
+    throw new Error(`EPS InitializeEPS failed: ${res?.status ?? 'no response'} — ${text}`);
   }
 
   const data = (await res.json()) as {
@@ -257,7 +320,10 @@ async function checkStatusOnce(merchantTransactionId: string): Promise<EpsVerify
   });
 
   if (!res.ok) {
-    // Transient gateway error — not a decision. Let the caller retry/reconcile.
+    // Transient gateway error — not a decision. It may be a stale cached token
+    // (surfaces as 404), so drop the cache and let the caller's next poll fetch
+    // a fresh one. Either way this is not a verdict; retry/reconcile.
+    invalidateToken();
     return { outcome: 'pending' };
   }
 
