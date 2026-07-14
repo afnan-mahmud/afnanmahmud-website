@@ -2,8 +2,42 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomInt } from 'crypto';
 import { connectDB } from '@/lib/db';
 import { sendOtp } from '@/lib/sms';
+import { sendOtpTemplate, isConfigured as whatsappConfigured } from '@/lib/whatsapp';
 import { OtpCode } from '@/models/OtpCode';
 import { rateLimit, clientIp } from '@/lib/rate-limit';
+
+type Channel = 'whatsapp' | 'sms';
+
+/**
+ * Master switch for WhatsApp OTP delivery. OFF (default) keeps login on the
+ * proven SIM/SMS path so deploys are safe; flip to `true` (same var on the
+ * client, so the OTP page UI matches) once the `login_otp` authentication
+ * template is APPROVED in Meta — no code change needed. See
+ * scripts/submit-whatsapp-otp-template.ts.
+ */
+const WHATSAPP_OTP_ENABLED = process.env.NEXT_PUBLIC_WHATSAPP_OTP_ENABLED === 'true';
+
+/**
+ * Deliver the OTP. When WhatsApp OTP is enabled the default channel is WhatsApp
+ * (via the approved authentication template) with SMS as the manual/auto
+ * fallback; when disabled every code goes over SMS. A WhatsApp failure for any
+ * reason — not configured, template not yet approved, recipient not on WhatsApp,
+ * network — auto-falls back to SMS so a login attempt never dead-ends. Returns
+ * the channel that actually delivered, or null if every attempt failed.
+ */
+async function deliverOtp(phone: string, code: string, requested: Channel): Promise<Channel | null> {
+  const wantWhatsapp = requested !== 'sms' && WHATSAPP_OTP_ENABLED && whatsappConfigured();
+  if (wantWhatsapp) {
+    try {
+      await sendOtpTemplate(phone, code);
+      return 'whatsapp';
+    } catch (err) {
+      console.warn('[send-otp] WhatsApp delivery failed, falling back to SMS:', err);
+    }
+  }
+  const sent = await sendOtp(phone, code);
+  return sent ? 'sms' : null;
+}
 
 const BD_PHONE_RE = /^01[3-9]\d{8}$/;
 
@@ -23,6 +57,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const phone: string = (typeof body.phone === 'string' ? body.phone : '').trim();
+    const channel: Channel = body.channel === 'sms' ? 'sms' : 'whatsapp';
 
     if (!BD_PHONE_RE.test(phone)) {
       return NextResponse.json(
@@ -52,15 +87,15 @@ export async function POST(req: NextRequest) {
 
     await OtpCode.create({ phone, code, expiresAt, used: false });
 
-    const sent = await sendOtp(phone, code);
-    if (!sent) {
+    const usedChannel = await deliverOtp(phone, code, channel);
+    if (!usedChannel) {
       return NextResponse.json(
-        { success: false, error: 'Failed to send SMS. Please try again.' },
+        { success: false, error: 'Failed to send OTP. Please try again.' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, message: 'OTP sent' });
+    return NextResponse.json({ success: true, message: 'OTP sent', channel: usedChannel });
   } catch (err) {
     console.error('[send-otp]', err);
     return NextResponse.json(

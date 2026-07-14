@@ -17,12 +17,75 @@ const GRAPH_VERSION = 'v21.0';
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
+/**
+ * Authentication template used for login OTP delivery. Must stay in sync with
+ * `scripts/submit-whatsapp-otp-template.ts` (the script that submits it to Meta).
+ */
+const OTP_TEMPLATE_NAME = 'login_otp';
+const OTP_TEMPLATE_LANG = 'en_US';
+
 /** 24 hours in ms — WhatsApp's free-form customer-service window. */
 export const WINDOW_MS = 24 * 60 * 60 * 1000;
 
 /** True when we can talk to the Graph API (token + phone number id present). */
 export function isConfigured(): boolean {
   return Boolean(ACCESS_TOKEN && PHONE_NUMBER_ID);
+}
+
+/**
+ * Convert a BD local phone (`01XXXXXXXXX`, as stored on `User.phone`) to a
+ * WhatsApp wa_id (`8801XXXXXXXXX`). Mirrors the `88` prefixing in `lib/sms.ts`.
+ */
+function localPhoneToWaId(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  return digits.startsWith('88') ? digits : `88${digits}`;
+}
+
+/**
+ * Deliver a login OTP via the approved WhatsApp AUTHENTICATION template.
+ *
+ * A first-contact login message has no open 24h window, so free-form text is not
+ * allowed — it must go through the `login_otp` authentication template. The code
+ * is passed both as the body parameter and as the copy-code button parameter
+ * (WhatsApp requires both). Throws on any failure (not configured, template not
+ * yet approved, recipient not on WhatsApp, network) so the caller can fall back
+ * to SMS. Returns the WhatsApp message id on success.
+ */
+export async function sendOtpTemplate(phone: string, code: string): Promise<string> {
+  if (!isConfigured()) throw new Error('WhatsApp not configured');
+
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: localPhoneToWaId(phone),
+        type: 'template',
+        template: {
+          name: OTP_TEMPLATE_NAME,
+          language: { code: OTP_TEMPLATE_LANG },
+          components: [
+            { type: 'body', parameters: [{ type: 'text', text: code }] },
+            // Copy-code OTP button: WhatsApp echoes the same code into the button.
+            { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: code }] },
+          ],
+        },
+      }),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data?.error?.message ?? `HTTP ${res.status}`;
+    throw new Error(`WhatsApp OTP send failed: ${msg}`);
+  }
+  return data?.messages?.[0]?.id as string;
 }
 
 /** True when `lastInboundAt` is within the 24h free-form reply window. */
