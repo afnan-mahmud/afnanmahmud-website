@@ -116,12 +116,11 @@ async function fetchFreshToken(): Promise<string> {
       return data.token;
     } catch (err) {
       lastErr = err;
-      if (attempt < 2) {
-        // 429 = rate limited. Firing again in 800ms only deepens the limit, so
-        // back off hard and give EPS room; other errors keep the quick retry.
-        const rateLimited = (err as { status?: number })?.status === 429;
-        await sleep(rateLimited ? 3000 : 800);
-      }
+      // 429 = rate limited. Retrying only adds load and keeps the limit tripped,
+      // so give up immediately and let the EPS window clear. Other transient
+      // errors (bare 404 / 5xx glitches) still get the quick retry.
+      if ((err as { status?: number })?.status === 429) break;
+      if (attempt < 2) await sleep(800);
     }
   }
 
