@@ -1,7 +1,8 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import AddStudentModal, { type CourseOption } from './AddStudentModal';
 import Pagination from './Pagination';
@@ -46,6 +47,8 @@ interface StudentsTableProps {
   total?: number;
   pageSize?: number;
   basePath?: string;
+  /** When provided, renders a search box that filters by name/phone via ?q=. */
+  searchQuery?: string;
 }
 
 export default function StudentsTable({
@@ -59,11 +62,20 @@ export default function StudentsTable({
   total,
   pageSize,
   basePath = '/admin/students',
+  searchQuery,
 }: StudentsTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const router = useRouter();
+  const searchable = searchQuery !== undefined;
+  const [query, setQuery] = useState(searchQuery ?? '');
 
   const toggle = (id: string) =>
     setExpanded((p) => { const n = new Set(p); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
+
+  const runSearch = (value: string) => {
+    const trimmed = value.trim();
+    router.push(trimmed ? `${basePath}?q=${encodeURIComponent(trimmed)}` : basePath);
+  };
 
   const headers = showEnrolled ? ['', 'Name', 'Phone', 'Enrolled', 'Joined'] : ['Name', 'Phone', 'Joined'];
   const colCount = headers.length;
@@ -74,6 +86,36 @@ export default function StudentsTable({
         <h1 className={sg.className} style={{ color: '#f1f5f9', fontWeight: 800, fontSize: '1.625rem', letterSpacing: '-0.02em', margin: 0 }}>{title}</h1>
         {addStudentCourses && <AddStudentModal courses={addStudentCourses} />}
       </div>
+      {searchable && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); runSearch(query); }}
+          style={{ position: 'relative', maxWidth: 360, marginBottom: 20 }}
+        >
+          <Search size={15} color="#52525b" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or phone…"
+            className={inter.className}
+            style={{
+              width: '100%', padding: '9px 34px 9px 34px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)',
+              color: '#e2e8f0', fontSize: '0.875rem', outline: 'none',
+            }}
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); runSearch(''); }}
+              aria-label="Clear search"
+              style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', padding: 4 }}
+            >
+              <X size={15} color="#71717a" />
+            </button>
+          )}
+        </form>
+      )}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -86,7 +128,7 @@ export default function StudentsTable({
             </thead>
             <tbody>
               {students.length === 0 ? (
-                <tr><td colSpan={colCount} className={inter.className} style={{ padding: '48px 16px', textAlign: 'center', color: '#52525b' }}>{emptyMessage}</td></tr>
+                <tr><td colSpan={colCount} className={inter.className} style={{ padding: '48px 16px', textAlign: 'center', color: '#52525b' }}>{searchQuery ? `No students match “${searchQuery}”` : emptyMessage}</td></tr>
               ) : students.map((s, i) => {
                 const canExpand = showEnrolled && s.enrolledCount > 0;
                 const isExpanded = expanded.has(s._id);
@@ -146,7 +188,7 @@ export default function StudentsTable({
             </tbody>
           </table>
         </div>
-        <Pagination currentPage={page} totalPages={totalPages} basePath={basePath} total={total} pageSize={pageSize} />
+        <Pagination currentPage={page} totalPages={totalPages} basePath={basePath} total={total} pageSize={pageSize} extraParams={searchQuery ? { q: searchQuery } : undefined} />
       </div>
       <style>{`@media (max-width: 640px) { .admin-content { padding: 20px 16px !important; } }`}</style>
     </div>
