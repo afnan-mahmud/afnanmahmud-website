@@ -1,9 +1,13 @@
 // PM2 process definition for the Next.js production server.
-// Started/reloaded by scripts/deploy.sh via `pm2 startOrReload ecosystem.config.js`.
+// NOTE: scripts/deploy.sh does NOT use this file — it reloads the running
+// `afnan-website` process by name. This file documents the process config and
+// is here for a manual `pm2 start ecosystem.config.js` on a fresh box. The web
+// app name is kept in sync with the live process (`afnan-website`) so a manual
+// startOrReload reloads it instead of spawning a duplicate server on port 3000.
 module.exports = {
   apps: [
     {
-      name: 'afnan-web',
+      name: 'afnan-website',
       // Run the Next.js CLI directly (more reliable under PM2 than `npm start`).
       script: 'node_modules/next/dist/bin/next',
       args: 'start',

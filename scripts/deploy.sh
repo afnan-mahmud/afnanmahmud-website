@@ -16,8 +16,10 @@ echo "▶ Building…"
 npm run build
 
 echo "▶ Reloading PM2 process…"
-# startOrReload: starts the app on first deploy, graceful zero-downtime reload after.
-pm2 startOrReload ecosystem.config.js --update-env
+# Reload only the existing web process by name — mirrors the manual deploy
+# (`pm2 restart afnan-website`) and never spawns a duplicate server or touches
+# the reconcile cron. `reload` is the graceful variant of restart.
+pm2 reload afnan-website --update-env
 pm2 save
 
 echo "✅ Deploy complete."
