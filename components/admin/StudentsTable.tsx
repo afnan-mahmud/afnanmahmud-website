@@ -2,16 +2,18 @@
 
 import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, X, Eye, RotateCcw } from 'lucide-react';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import AddStudentModal, { type CourseOption } from './AddStudentModal';
+import RefundModal from './RefundModal';
+import StudentDetailsModal from './StudentDetailsModal';
 import Pagination from './Pagination';
 import { formatDhakaDate } from '@/lib/date';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
 
-interface EnrolledCourse { title: string; slug: string; }
+interface EnrolledCourse { courseId: string; title: string; slug: string; amount: number; purchaseDate: string; }
 interface StudentRow {
   _id: string;
   name: string;
@@ -49,6 +51,8 @@ interface StudentsTableProps {
   basePath?: string;
   /** When provided, renders a search box that filters by name/phone via ?q=. */
   searchQuery?: string;
+  /** Enables the per-row Refund button (needs students.refund). */
+  canRefund?: boolean;
 }
 
 export default function StudentsTable({
@@ -63,11 +67,14 @@ export default function StudentsTable({
   pageSize,
   basePath = '/admin/students',
   searchQuery,
+  canRefund = false,
 }: StudentsTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const router = useRouter();
   const searchable = searchQuery !== undefined;
   const [query, setQuery] = useState(searchQuery ?? '');
+  const [refundFor, setRefundFor] = useState<StudentRow | null>(null);
+  const [detailsFor, setDetailsFor] = useState<string | null>(null);
 
   const toggle = (id: string) =>
     setExpanded((p) => { const n = new Set(p); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
@@ -77,7 +84,7 @@ export default function StudentsTable({
     router.push(trimmed ? `${basePath}?q=${encodeURIComponent(trimmed)}` : basePath);
   };
 
-  const headers = showEnrolled ? ['', 'Name', 'Phone', 'Enrolled', 'Joined'] : ['Name', 'Phone', 'Joined'];
+  const headers = showEnrolled ? ['', 'Name', 'Phone', 'Enrolled', 'Joined', ''] : ['Name', 'Phone', 'Joined'];
   const colCount = headers.length;
 
   return (
@@ -168,11 +175,35 @@ export default function StudentsTable({
                       <td className={inter.className} style={{ padding: '12px 16px', color: '#52525b', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                         {formatDhakaDate(s.createdAt)}
                       </td>
+                      {showEnrolled && (
+                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: 8 }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setDetailsFor(s._id); }}
+                              className={sg.className}
+                              title="View details"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#a1a1aa', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              <Eye size={13} /> Details
+                            </button>
+                            {canRefund && s.enrolledCount > 0 && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setRefundFor(s); }}
+                                className={sg.className}
+                                title="Request refund"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                <RotateCcw size={13} /> Refund
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                     {isExpanded && (
                       <tr key={`${s._id}-expand`} style={{ borderBottom: !isLast ? '1px solid rgba(255,255,255,0.04)' : 'none', background: 'rgba(99,102,241,0.03)' }}>
                         <td />
-                        <td colSpan={4} style={{ padding: '10px 16px 14px' }}>
+                        <td colSpan={colCount - 1} style={{ padding: '10px 16px 14px' }}>
                           <p className={sg.className} style={{ color: '#52525b', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Enrolled Courses</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                             {s.enrolledCourses.map((c) => (
@@ -190,6 +221,16 @@ export default function StudentsTable({
         </div>
         <Pagination currentPage={page} totalPages={totalPages} basePath={basePath} total={total} pageSize={pageSize} extraParams={searchQuery ? { q: searchQuery } : undefined} />
       </div>
+
+      {refundFor && (
+        <RefundModal
+          student={{ _id: refundFor._id, name: refundFor.name, phone: refundFor.phone }}
+          courses={refundFor.enrolledCourses.map((c) => ({ courseId: c.courseId, title: c.title, amount: c.amount, purchaseDate: c.purchaseDate }))}
+          onClose={() => setRefundFor(null)}
+        />
+      )}
+      {detailsFor && <StudentDetailsModal studentId={detailsFor} onClose={() => setDetailsFor(null)} />}
+
       <style>{`@media (max-width: 640px) { .admin-content { padding: 20px 16px !important; } }`}</style>
     </div>
   );

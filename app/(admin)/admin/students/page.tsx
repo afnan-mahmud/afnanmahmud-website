@@ -1,6 +1,7 @@
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
 import { Course, type ICourse } from '@/models/Course';
+import { Order } from '@/models/Order';
 import StudentsTable from '@/components/admin/StudentsTable';
 import { requirePage } from '@/lib/permissions.server';
 import { can } from '@/lib/permissions';
@@ -53,6 +54,23 @@ export default async function AdminStudentsPage({
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  // Per-course paid amount + purchase date, for the refund modal. One query for
+  // all students on this page, keyed by student:course → latest success order.
+  const studentIds = raw.map((u) => u._id);
+  const orders = await Order.find({ student: { $in: studentIds }, status: 'success' })
+    .select('student course amount createdAt')
+    .lean<{ student: unknown; course: unknown; amount: number; createdAt: Date }[]>();
+
+  const orderKey = (s: unknown, c: unknown) => `${String(s)}:${String(c)}`;
+  const orderMap = new Map<string, { amount: number; createdAt: Date }>();
+  for (const o of orders) {
+    const k = orderKey(o.student, o.course);
+    const prev = orderMap.get(k);
+    if (!prev || new Date(o.createdAt) > new Date(prev.createdAt)) {
+      orderMap.set(k, { amount: o.amount, createdAt: o.createdAt });
+    }
+  }
+
   const courseOptions = coursesRaw.map((c) => ({
     _id: String(c._id),
     title: c.title,
@@ -65,7 +83,17 @@ export default async function AdminStudentsPage({
     phone: u.phone,
     avatar: u.avatar,
     enrolledCount: (u.purchasedCourses as ICourse[]).length,
-    enrolledCourses: (u.purchasedCourses as ICourse[]).map((c) => ({ title: c.title, slug: c.slug })),
+    enrolledCourses: (u.purchasedCourses as ICourse[]).map((c) => {
+      const ord = orderMap.get(orderKey(u._id, c._id));
+      const purchaseDate = ord?.createdAt ?? u.createdAt ?? new Date();
+      return {
+        courseId: String(c._id),
+        title: c.title,
+        slug: c.slug,
+        amount: ord?.amount ?? 0,
+        purchaseDate: new Date(purchaseDate).toISOString(),
+      };
+    }),
     createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
   }));
 
@@ -75,6 +103,7 @@ export default async function AdminStudentsPage({
       title="Students"
       emptyMessage="No purchased students yet"
       addStudentCourses={can(access, 'students.add') ? courseOptions : undefined}
+      canRefund={can(access, 'students.refund')}
       page={page}
       totalPages={totalPages}
       total={total}
