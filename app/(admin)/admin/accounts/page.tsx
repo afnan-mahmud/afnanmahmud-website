@@ -1,5 +1,6 @@
 import { connectDB } from '@/lib/db';
 import { Order } from '@/models/Order';
+import { Refund } from '@/models/Refund';
 import { Expense } from '@/models/Expense';
 import { ExpenseCategory } from '@/models/ExpenseCategory';
 import { Space_Grotesk, Inter } from 'next/font/google';
@@ -46,18 +47,32 @@ export default async function AccountsPage({
     createdAt: Date;
   };
 
-  const [successOrders, expenses, categoriesRaw] = await Promise.all([
-    Order.find({ status: 'success' })
+  type LeanRefund = {
+    _id: unknown;
+    courseTitle: string;
+    phone: string;
+    amount: number;
+    resolvedAt?: Date;
+    createdAt: Date;
+  };
+
+  const [successOrders, expenses, categoriesRaw, refunds] = await Promise.all([
+    // Refunded orders keep counting as income; the refund itself is a debit below.
+    Order.find({ status: { $in: ['success', 'refunded'] } })
       .populate<{ student: IUser }>('student', 'name')
       .populate<{ course: ICourse }>('course', 'title')
       .lean<LeanOrder[]>(),
     Expense.find().lean<LeanExpense[]>(),
     ExpenseCategory.find().sort({ name: 1 }).lean(),
+    Refund.find({ status: 'confirmed' })
+      .select('courseTitle phone amount resolvedAt createdAt')
+      .lean<LeanRefund[]>(),
   ]);
 
   const totalOrders = successOrders.reduce((s, o) => s + o.amount, 0);
   const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
-  const mainAccount = totalOrders - totalExpense;
+  const totalRefunds = refunds.reduce((s, r) => s + r.amount, 0);
+  const mainAccount = totalOrders - totalExpense - totalRefunds;
 
   const categories = categoriesRaw.map((c) => ({
     _id: String(c._id),
@@ -81,6 +96,13 @@ export default async function AccountsPage({
       particulars: `Expense — ${e.category}${e.subcategory ? ` / ${e.subcategory}` : ''}${e.note ? ` · ${e.note}` : ''}`,
       credit: 0,
       debit: e.amount,
+    })),
+    ...refunds.map((r) => ({
+      id: `refund-${String(r._id)}`,
+      date: new Date(r.resolvedAt ?? r.createdAt),
+      particulars: `Refund — ${r.courseTitle || 'Course'}${r.phone ? ` (${r.phone})` : ''}`,
+      credit: 0,
+      debit: r.amount,
     })),
   ].sort((a, b) => a.date.getTime() - b.date.getTime());
 
