@@ -59,7 +59,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ waI
       direction: m.direction,
       type: m.type,
       text: m.text ?? '',
-      mediaPath: m.mediaPath ?? null,
+      // Serve media through the auth-gated media route (see that route for why
+      // the raw /uploads/... path 404s under `output: standalone`).
+      mediaPath: m.mediaPath ? `/api/admin/whatsapp/media/${m.mediaPath.split('/').pop()}` : null,
       mediaMime: m.mediaMime ?? null,
       status: m.status ?? null,
       error: m.error ?? null,
