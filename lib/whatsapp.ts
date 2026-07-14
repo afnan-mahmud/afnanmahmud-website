@@ -24,6 +24,13 @@ const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 const OTP_TEMPLATE_NAME = 'login_otp';
 const OTP_TEMPLATE_LANG = 'en_US';
 
+/**
+ * UTILITY template for the abandoned-enrollment follow-up (no variables). Must
+ * stay in sync with `scripts/submit-whatsapp-followup-template.ts`.
+ */
+const FOLLOWUP_TEMPLATE_NAME = 'enroll_followup';
+const FOLLOWUP_TEMPLATE_LANG = 'en';
+
 /** 24 hours in ms — WhatsApp's free-form customer-service window. */
 export const WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -84,6 +91,44 @@ export async function sendOtpTemplate(phone: string, code: string): Promise<stri
   if (!res.ok) {
     const msg = data?.error?.message ?? `HTTP ${res.status}`;
     throw new Error(`WhatsApp OTP send failed: ${msg}`);
+  }
+  return data?.messages?.[0]?.id as string;
+}
+
+/**
+ * Send the abandoned-enrollment follow-up via the `enroll_followup` UTILITY
+ * template. The template body is fixed (no variables), so no components are
+ * sent. Throws on any failure (not configured, template not yet approved,
+ * recipient not on WhatsApp, network). Returns the WhatsApp message id.
+ */
+export async function sendEnrollFollowup(phone: string): Promise<string> {
+  if (!isConfigured()) throw new Error('WhatsApp not configured');
+
+  const res = await fetch(
+    `https://graph.facebook.com/${GRAPH_VERSION}/${PHONE_NUMBER_ID}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: localPhoneToWaId(phone),
+        type: 'template',
+        template: {
+          name: FOLLOWUP_TEMPLATE_NAME,
+          language: { code: FOLLOWUP_TEMPLATE_LANG },
+        },
+      }),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data?.error?.message ?? `HTTP ${res.status}`;
+    throw new Error(`WhatsApp follow-up send failed: ${msg}`);
   }
   return data?.messages?.[0]?.id as string;
 }

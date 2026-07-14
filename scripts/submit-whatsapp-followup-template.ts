@@ -1,25 +1,28 @@
 /**
- * Submit (and check the status of) the WhatsApp authentication template used for
- * login OTP delivery.
+ * Submit (and check the status of) the WhatsApp UTILITY template used for the
+ * abandoned-enrollment follow-up message.
  *
- * WhatsApp does not allow free-form text as a first-contact message, so login
- * OTPs must go through an approved AUTHENTICATION template. This script creates
- * that template via the WhatsApp Business Management API; approval is Meta's
- * decision (authentication templates are usually auto-approved within minutes).
+ * A business-initiated message to a cold contact needs an approved template
+ * (no open 24h window). This creates that template via the WhatsApp Business
+ * Management API; approval is Meta's decision. Meta may recategorize a
+ * re-engagement message to MARKETING — the send works regardless of category.
  *
  * Run:
- *   node --env-file=.env.local --env-file=.env scripts/submit-whatsapp-otp-template.ts
- *   node --env-file=.env.local --env-file=.env scripts/submit-whatsapp-otp-template.ts --status
+ *   node --env-file=.env.local --env-file=.env scripts/submit-whatsapp-followup-template.ts
+ *   node --env-file=.env.local --env-file=.env scripts/submit-whatsapp-followup-template.ts --status
  *
- * Needs WHATSAPP_ACCESS_TOKEN (with whatsapp_business_management permission) and
- * WHATSAPP_BUSINESS_ACCOUNT_ID. Keep TEMPLATE_NAME / TEMPLATE_LANG in sync with
- * lib/whatsapp.ts `sendOtpTemplate`.
+ * Needs WHATSAPP_ACCESS_TOKEN (whatsapp_business_management) and
+ * WHATSAPP_BUSINESS_ACCOUNT_ID. Keep TEMPLATE_NAME / TEMPLATE_LANG / BODY_TEXT in
+ * sync with lib/whatsapp.ts `sendEnrollFollowup`.
  */
 export {}; // isolate module scope (this is a standalone script, not global)
 
 const GRAPH_VERSION = 'v21.0';
-const TEMPLATE_NAME = 'login_otp';
-const TEMPLATE_LANG = 'en_US';
+const TEMPLATE_NAME = 'enroll_followup';
+const TEMPLATE_LANG = 'en';
+const BODY_TEXT =
+  'Assalamualaikum. Amader AI powered software development course er jonno apni ' +
+  'enroll korte cheyechilen, kintu enroll shofol hoy ni. Kono shomossa hoyechilo ki?';
 
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const WABA_ID = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
@@ -27,7 +30,7 @@ const WABA_ID = process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
 if (!ACCESS_TOKEN || !WABA_ID) {
   console.error(
     '❌ Missing WHATSAPP_ACCESS_TOKEN or WHATSAPP_BUSINESS_ACCOUNT_ID.\n' +
-      '   Run with: node --env-file=.env.local --env-file=.env scripts/submit-whatsapp-otp-template.ts'
+      '   Run with: node --env-file=.env.local --env-file=.env scripts/submit-whatsapp-followup-template.ts'
   );
   process.exit(1);
 }
@@ -49,7 +52,7 @@ async function getStatus(): Promise<void> {
   }
   for (const t of rows) {
     console.log(
-      `• ${t.name} [${t.language}] — status: ${t.status}` +
+      `• ${t.name} [${t.language}] — status: ${t.status}, category: ${t.category}` +
         (t.rejected_reason && t.rejected_reason !== 'NONE' ? ` (reason: ${t.rejected_reason})` : '')
     );
   }
@@ -59,12 +62,8 @@ async function create(): Promise<void> {
   const body = {
     name: TEMPLATE_NAME,
     language: TEMPLATE_LANG,
-    category: 'AUTHENTICATION',
-    components: [
-      { type: 'BODY', add_security_recommendation: true },
-      { type: 'FOOTER', code_expiration_minutes: 5 },
-      { type: 'BUTTONS', buttons: [{ type: 'OTP', otp_type: 'COPY_CODE' }] },
-    ],
+    category: 'UTILITY',
+    components: [{ type: 'BODY', text: BODY_TEXT }],
   };
 
   const res = await fetch(`${BASE}/${WABA_ID}/message_templates`, {
@@ -79,8 +78,6 @@ async function create(): Promise<void> {
 
   if (!res.ok) {
     const msg: string = data?.error?.message ?? `HTTP ${res.status}`;
-    // A template with this name+language already exists — treat as success and
-    // just report its current status instead of failing.
     if (/already exists/i.test(msg) || data?.error?.error_subcode === 2388023) {
       console.log(`ℹ️  Template "${TEMPLATE_NAME}" already exists. Current status:`);
       await getStatus();
@@ -92,8 +89,9 @@ async function create(): Promise<void> {
   }
 
   console.log(`✅ Submitted template "${TEMPLATE_NAME}" [${TEMPLATE_LANG}].`);
-  console.log(`   id: ${data?.id ?? '?'}  status: ${data?.status ?? 'PENDING'}  category: ${data?.category ?? 'AUTHENTICATION'}`);
-  console.log('   Approval is Meta’s decision; re-run with --status to check.');
+  console.log(`   id: ${data?.id ?? '?'}  status: ${data?.status ?? 'PENDING'}  category: ${data?.category ?? 'UTILITY'}`);
+  console.log('   Approval is Meta’s decision; re-run with --status to check. Once');
+  console.log('   APPROVED, set WHATSAPP_ABANDONED_ENABLED=true and rebuild/restart.');
 }
 
 async function main() {

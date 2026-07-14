@@ -42,5 +42,25 @@ module.exports = {
         PORT: '3000',
       },
     },
+    {
+      // Abandoned-enrollment WhatsApp follow-up sweep. Runs the one-shot script
+      // every 2 minutes (autorestart off; cron_restart drives it), which hits
+      // the in-app /api/whatsapp/abandoned-sweep endpoint over localhost. No-op
+      // until WHATSAPP_ABANDONED_ENABLED=true (i.e. the enroll_followup template
+      // is approved).
+      name: 'afnan-abandoned-whatsapp',
+      script: 'scripts/abandoned-whatsapp.mjs',
+      interpreter: 'node',
+      interpreter_args: '--env-file=.env.local --env-file=.env',
+      cwd: __dirname,
+      exec_mode: 'fork',
+      instances: 1,
+      autorestart: false,
+      cron_restart: '*/2 * * * *',
+      env: {
+        NODE_ENV: 'production',
+        PORT: '3000',
+      },
+    },
   ],
 };

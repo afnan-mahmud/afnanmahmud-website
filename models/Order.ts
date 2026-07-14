@@ -13,6 +13,8 @@ export interface IOrder extends Document {
   epsOrderId?: string;
   status: 'pending' | 'success' | 'failed' | 'refunded';
   failReason?: string;
+  /** When the abandoned-enrollment WhatsApp follow-up was sent (dedupe flag). */
+  enrollFollowupSentAt?: Date;
   createdAt: Date;
 }
 
@@ -32,6 +34,7 @@ const OrderSchema = new Schema<IOrder>(
       default: 'pending',
     },
     failReason: { type: String },
+    enrollFollowupSentAt: { type: Date },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
