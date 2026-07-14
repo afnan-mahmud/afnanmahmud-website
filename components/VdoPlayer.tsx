@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Play, Loader2 } from 'lucide-react';
 
 /**
@@ -54,13 +54,13 @@ export default function VdoPlayer({ videoId, title, onReady }: { videoId: string
 
   // Fire onReady once per video. Track the id it last fired for so a reused
   // player instance that swaps videoId fires again for the new video.
-  const readyFired = useState(() => ({ forId: '' as string }))[0];
+  const readyFiredForId = useRef('');
   useEffect(() => {
-    if (state.status === 'ready' && readyFired.forId !== videoId) {
-      readyFired.forId = videoId;
+    if (state.status === 'ready' && readyFiredForId.current !== videoId) {
+      readyFiredForId.current = videoId;
       onReady?.();
     }
-  }, [state.status, videoId, onReady, readyFired]);
+  }, [state.status, videoId, onReady]);
 
   const fill: React.CSSProperties = {
     position: 'absolute',
