@@ -31,7 +31,7 @@ module.exports = {
       // Load the same env files the standalone scripts use, so RECONCILE_SECRET /
       // EPS creds are available without baking secrets into this file.
       interpreter: 'node',
-      interpreter_args: '--env-file=.env.local --env-file=.env',
+      interpreter_args: '--env-file=.env.local --env-file-if-exists=.env',
       cwd: __dirname,
       exec_mode: 'fork',
       instances: 1,
@@ -51,7 +51,7 @@ module.exports = {
       name: 'afnan-abandoned-whatsapp',
       script: 'scripts/abandoned-whatsapp.mjs',
       interpreter: 'node',
-      interpreter_args: '--env-file=.env.local --env-file=.env',
+      interpreter_args: '--env-file=.env.local --env-file-if-exists=.env',
       cwd: __dirname,
       exec_mode: 'fork',
       instances: 1,
