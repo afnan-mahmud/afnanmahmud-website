@@ -5,6 +5,8 @@ import { Code, Code2, Sparkles, Cpu, Layers, Zap, Brain, Terminal, Briefcase, Gl
 import { EnrollProvider } from './EnrollContext';
 import ViewContentTracker from '@/components/tracking/ViewContentTracker';
 import WhatsAppFab from '@/components/whatsapp/WhatsAppFab';
+import { connectDB } from '@/lib/db';
+import { Course } from '@/models/Course';
 import {
   Reveal,
   GradientText,
@@ -90,7 +92,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AiForDevelopersPage() {
+// Round the real enrolled count UP to the next 500 boundary for social proof:
+// <=500 -> 500+, 501..1000 -> 1000+, 1001..1500 -> 1500+, and so on.
+function enrolledDisplay(count: number): string {
+  const rounded = Math.max(500, Math.ceil(count / 500) * 500);
+  return `${rounded}+`;
+}
+
+export default async function AiForDevelopersPage() {
+  await connectDB();
+  const course = await Course.findOne({ slug: COURSE_SLUG })
+    .select('enrolledCount')
+    .lean<{ enrolledCount?: number }>();
+  const enrolledLabel = enrolledDisplay(course?.enrolledCount ?? 0);
+
   return (
     <EnrollProvider>
     <div className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
@@ -113,6 +128,7 @@ export default function AiForDevelopersPage() {
 
       <main className="relative z-10">
         <HeroSection />
+        <SocialProof enrolledLabel={enrolledLabel} />
         <WhatYouWillLearn />
         <CtaBanner
           headline={<>পুরোনো নিয়মে আর কত? <GradientText>Smart way</GradientText>-তে Software Development শুরু করুন।</>}
@@ -127,6 +143,7 @@ export default function AiForDevelopersPage() {
         />
         <TargetAudience />
         <InstructorProfile />
+        <StudentFeedback />
         <PricingNeon />
         <FAQDark />
       </main>
@@ -140,6 +157,133 @@ export default function AiForDevelopersPage() {
 }
 
 // --- PAGE SECTIONS ---
+
+// Small social-proof strip between the hero and the "what you'll learn" section:
+// three overlapping student avatars + a rounded enrolled count.
+function SocialProof({ enrolledLabel }: { enrolledLabel: string }) {
+  const avatars = [
+    { initials: 'RH', gradient: 'from-cyan-500 to-indigo-600' },
+    { initials: 'SA', gradient: 'from-pink-500 to-purple-600' },
+    { initials: 'TK', gradient: 'from-emerald-500 to-teal-600' },
+  ];
+  return (
+    <section className="relative py-10 sm:py-12">
+      <div className="max-w-6xl mx-auto px-4">
+        <Reveal>
+          <div className="mx-auto flex max-w-2xl flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 rounded-2xl glass-panel border border-slate-700/70 px-5 py-4 shadow-[0_0_25px_rgba(99,102,241,0.15)]">
+            <a
+              href="#feedback"
+              className="order-2 sm:order-1 group inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-cyan-500 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(99,102,241,0.35)] hover:shadow-[0_0_28px_rgba(99,102,241,0.55)] hover:-translate-y-0.5 active:scale-95 transition-all"
+            >
+              <MessagesSquare size={16} className="group-hover:scale-110 transition-transform" />
+              স্টুডেন্টদের ফিডব্যাক দেখুন
+            </a>
+            <div className="order-1 sm:order-2 flex items-center gap-4">
+              <div className="flex -space-x-3">
+                {avatars.map((a) => (
+                  <div
+                    key={a.initials}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${a.gradient} text-sm font-bold text-white ring-2 ring-slate-900 shadow-lg`}
+                  >
+                    {a.initials}
+                  </div>
+                ))}
+              </div>
+              <p className="text-left text-sm sm:text-base font-semibold leading-snug text-slate-200">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-200 font-black">{enrolledLabel}</span> স্টুডেন্ট আমাদের এই সেশনে জয়েন করেছেন
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// Student feedback / testimonials. Placeholder reviews — swap `reviews` with real
+// student names + feedback (or screenshots) when available.
+function StudentFeedback() {
+  const reviews: { name: string; role?: string; initials: string; gradient: string; text: string }[] = [
+    {
+      name: 'Akter',
+      initials: 'A',
+      gradient: 'from-cyan-500 to-indigo-600',
+      text: 'You are doing great. I thoroughly enjoyed your lessons so far. Please ignore the negative comments. Best wishes!',
+    },
+    {
+      name: 'Tanvir Ahmed',
+      initials: 'TA',
+      gradient: 'from-pink-500 to-purple-600',
+      text: 'Project Architecture module shesh kore ekhon backend part e achi. AI ke diye API ar database design kora eto shohoje bujhbo bhabini.',
+    },
+    {
+      name: 'Farhana Islam',
+      initials: 'FI',
+      gradient: 'from-emerald-500 to-teal-600',
+      text: 'Just finished the backend module and the step-by-step explanations are so clear. Everything makes sense even as a beginner. Really looking forward to the next lessons!',
+    },
+    {
+      name: 'Sabbir Hossain',
+      initials: 'SH',
+      gradient: 'from-amber-500 to-orange-600',
+      text: 'Course ekhono full shesh hoy nai, but module 3 porjonto kore ja shikhlam tai onek kaje lagse. AI diye ekta project er idea theke requirements ber kore seta theke architecture banano database er relation ber kora database kivabe kaj kore seta buja then backend banano ekhon onek clear amar kache. So practice er jonno nijer project banacchi.',
+    },
+    {
+      name: 'Sumaiya Rahman',
+      initials: 'SR',
+      gradient: 'from-rose-500 to-fuchsia-600',
+      text: 'Loving the sessions so far! The backend part really cleared up a lot of my confusions. Ekdom beginner-friendly — jekono keu shuru korte parbe. Highly recommended!',
+    },
+  ];
+  return (
+    <section id="feedback" className="scroll-mt-24 py-24 relative overflow-hidden border-t border-slate-800/50">
+      <div className="absolute left-1/4 top-1/3 w-80 h-80 bg-cyan-500/10 rounded-full blur-[110px] pointer-events-none"></div>
+      <div className="absolute right-1/4 bottom-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-[110px] pointer-events-none"></div>
+
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <Reveal>
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 mb-4 border border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+              <MessagesSquare size={32} />
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
+              স্টুডেন্টদের <GradientText>ফিডব্যাক</GradientText>
+            </h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              যারা ইতিমধ্যে এই সেশনে জয়েন করেছেন — তাদের অভিজ্ঞতা নিজেই পড়ে দেখুন।
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="grid sm:grid-cols-2 gap-6">
+          {reviews.map((r, i) => (
+            <Reveal key={r.initials} delay={i * 100}>
+              <div className="h-full flex flex-col gap-4 rounded-2xl glass-panel border border-slate-700/70 p-6 shadow-[0_0_25px_rgba(99,102,241,0.1)] hover:border-indigo-500/40 hover:shadow-[0_0_30px_rgba(99,102,241,0.25)] transition-all">
+                <div className="text-amber-400 text-lg tracking-wide" aria-label="৫ তারকা রেটিং">★★★★★</div>
+                <p className="text-slate-300 leading-relaxed [text-wrap:pretty] flex-1">“{r.text}”</p>
+                <div className="flex items-center gap-3 pt-2 border-t border-slate-800/70">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br ${r.gradient} text-sm font-bold text-white shadow-lg`}>
+                    {r.initials}
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-sm leading-tight">{r.name}</p>
+                    {r.role && <p className="text-slate-400 text-xs">{r.role}</p>}
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal delay={200}>
+          <p className="mt-8 text-center text-base sm:text-lg font-semibold text-slate-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-200 font-black">+৫২ জন</span> আরো ফিডব্যাক দিয়েছেন
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
 
 function WhatYouWillLearn() {
   const outcomes: { icon: IconType; title: string; desc: string }[] = [
@@ -451,6 +595,32 @@ function TargetAudience() {
 }
 
 function InstructorProfile() {
+  const ventures: { name: string; role: string; icon: IconType; desc: string }[] = [
+    {
+      name: 'Cholo Bohudur',
+      role: 'Co-Founder',
+      icon: Code2,
+      desc: 'একটি সফটওয়্যার ফার্ম — যেখানে রিয়েল ক্লায়েন্টের জন্য প্রোডাকশন-গ্রেড সফটওয়্যার তৈরি করা হয়।',
+    },
+    {
+      name: 'Gowaay',
+      role: 'Founder',
+      icon: Globe,
+      desc: 'ট্যুর অ্যান্ড ট্রাভেল ইন্ডাস্ট্রির জন্য তৈরি একটি প্রোডাক্ট ও প্ল্যাটফর্ম।',
+    },
+    {
+      name: 'Niyoog',
+      role: 'Founder & CTO',
+      icon: Briefcase,
+      desc: 'জব মার্কেট প্রোডাক্ট — চাকরিপ্রার্থীরা প্রোফাইল সাবমিট করলেই বেস্ট-ম্যাচিং জবে অটোমেটিক CV চলে যায়; আর নিয়োগদাতারা জব পোস্ট করার ২৪ ঘন্টার মধ্যেই খুব সহজে সেরা এমপ্লয়ি হায়ার করতে পারেন।',
+    },
+    {
+      name: 'Sujog',
+      role: 'Founder',
+      icon: Store,
+      desc: 'মূলত বাংলাদেশের ই-কমার্সদের জন্য ওয়েব ও মোবাইল অ্যাপ্লিকেশন ডেভেলপ করার একটি প্ল্যাটফর্ম।',
+    },
+  ];
   return (
     <section id="instructor" className="py-24 relative overflow-hidden">
       <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-indigo-900/10 to-transparent pointer-events-none"></div>
@@ -499,6 +669,30 @@ function InstructorProfile() {
                     <h4 className="font-bold text-white">AI Workflow Expert</h4>
                     <p className="text-xs text-slate-400">Master of Prompts</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Ventures / products the mentor has founded & built */}
+              <div className="mt-10">
+                <h4 className="text-cyan-400 font-bold tracking-widest uppercase mb-5 text-sm">Founder & Builder Of</h4>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {ventures.map((v) => (
+                    <div
+                      key={v.name}
+                      className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-300 flex gap-4 h-full"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-cyan-400 flex-shrink-0">
+                        <v.icon size={22} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h5 className="font-bold text-white leading-tight">{v.name}</h5>
+                          <span className="text-[10px] uppercase tracking-wide font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full px-2 py-0.5">{v.role}</span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed [text-wrap:pretty]">{v.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </Reveal>

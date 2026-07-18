@@ -120,6 +120,11 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
     const successUrl = `${baseUrl}/api/payment/success?orderId=${order._id}`;
     const failUrl = `${baseUrl}/api/payment/fail?orderId=${order._id}`;
+    // ai-for-developers has a standalone landing page (/ai-for-developers),
+    // not a /courses/<slug> page, so send cancels back there.
+    const cancelUrl = COURSE_SLUG === 'ai-for-developers'
+      ? `${baseUrl}/ai-for-developers`
+      : `${baseUrl}/courses/${COURSE_SLUG}`;
 
     // Dev mode: if EPS credentials not set, bypass payment and go straight to success
     if (!epsConfigured()) {
@@ -139,7 +144,7 @@ export async function POST(req: NextRequest) {
       totalAmount: course.price,
       successUrl,
       failUrl,
-      cancelUrl: `${baseUrl}/courses/${COURSE_SLUG}`,
+      cancelUrl,
       customerName: user.name,
       customerPhone: user.phone,
       customerEmail: user.email,
