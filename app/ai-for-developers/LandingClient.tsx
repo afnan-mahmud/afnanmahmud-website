@@ -113,8 +113,15 @@ const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false }: 
 
 // --- MAIN PAGE COMPONENT ---
 
+// CTA buttons across the landing page scroll the visitor to the pricing
+// section (#pricing) instead of opening the enroll modal directly. The enroll
+// modal is opened only from the pricing section's own "Start Mission Now"
+// button (see PricingNeon).
+function scrollToPricing() {
+  document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+}
+
 export function Navbar() {
-  const { openEnroll } = useEnroll();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -136,7 +143,7 @@ export function Navbar() {
           <a href="#faq" className="hover:text-cyan-400 hover:-translate-y-0.5 transition-all">FAQ</a>
         </div>
         <div>
-          <button onClick={openEnroll} className="bg-white hover:bg-slate-200 text-slate-900 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:scale-95 inline-block cursor-pointer">
+          <button onClick={scrollToPricing} className="bg-white hover:bg-slate-200 text-slate-900 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:-translate-y-0.5 active:scale-95 inline-block cursor-pointer">
             Start Mission
           </button>
         </div>
@@ -146,7 +153,7 @@ export function Navbar() {
 }
 
 export function HeroSection() {
-  const { openEnroll, openDemo } = useEnroll();
+  const { openDemo } = useEnroll();
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 overflow-hidden border-b border-slate-800/50 min-h-[90vh] flex items-center">
       {/* Cyberpunk Glow Effects */}
@@ -199,7 +206,7 @@ export function HeroSection() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                <button onClick={openEnroll} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
+                <button onClick={scrollToPricing} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
                   <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
                   Enroll Now - ৳990
                 </button>
@@ -582,7 +589,6 @@ export function CurriculumJourney() {
 }
 
 export function CtaBanner({ headline, sub }: { headline: ReactNode; sub: string }) {
-  const { openEnroll } = useEnroll();
   return (
     <section className="py-16 relative">
       <div className="max-w-4xl mx-auto px-4 relative z-10">
@@ -593,7 +599,7 @@ export function CtaBanner({ headline, sub }: { headline: ReactNode; sub: string 
               <h3 className="text-2xl md:text-4xl font-black text-white mb-3">{headline}</h3>
               <p className="text-slate-400 mb-8 max-w-xl mx-auto leading-relaxed">{sub}</p>
               <button
-                onClick={openEnroll}
+                onClick={scrollToPricing}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all group cursor-pointer"
               >
                 <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
@@ -618,12 +624,11 @@ export function EnrollButton({
   label?: string;
   className?: string;
 }) {
-  const { openEnroll } = useEnroll();
   return (
     <div className={`text-center ${className}`}>
       <Reveal>
         <button
-          onClick={openEnroll}
+          onClick={scrollToPricing}
           className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all group cursor-pointer"
         >
           <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
@@ -667,9 +672,46 @@ export function PricingNeon() {
               <h3 className="text-2xl font-bold text-white mb-2">Zero to Production Masterclass</h3>
               <p className="text-slate-400 mb-8 text-sm">No monthly fees. 100% Free Tools Taught.</p>
 
-              <div className="mb-6 flex items-end justify-center gap-3">
-                <span className="text-2xl text-slate-500 line-through font-bold">৳5000</span>
-                <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight drop-shadow-sm">৳990</span>
+              {/* Value breakdown — shows how the real value adds up to ৳10,000 */}
+              <div className="mb-6 rounded-2xl border border-slate-700/60 bg-slate-950/40 p-5 text-left">
+                <p className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-slate-400">
+                  এই কোর্সে আপনি যা যা পাচ্ছেন — আসল ভ্যালু
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center justify-between gap-3">
+                    <span className="text-slate-300">৮টি মডিউল, ৪০+ লেসন (জিরো → লাইভ অ্যাপ)</span>
+                    <span className="font-semibold text-slate-400 whitespace-nowrap">৳4,000</span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className="text-slate-300">মোবাইল অ্যাপ + Play Store ও App Store পাবলিশ</span>
+                    <span className="font-semibold text-slate-400 whitespace-nowrap">৳2,500</span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className="text-slate-300">রিয়েল প্রজেক্টের সোর্স কোড + AI Prompts লাইব্রেরি</span>
+                    <span className="font-semibold text-slate-400 whitespace-nowrap">৳2,000</span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3">
+                    <span className="text-slate-300">লাইফটাইম কমিউনিটি সাপোর্ট + আপডেট</span>
+                    <span className="font-semibold text-slate-400 whitespace-nowrap">৳1,500</span>
+                  </li>
+                </ul>
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-700/60 pt-3">
+                  <span className="text-sm font-bold text-white">সর্বমোট আসল ভ্যালু</span>
+                  <span className="text-lg font-black text-slate-500 line-through decoration-rose-400/70">৳10,000</span>
+                </div>
+              </div>
+
+              {/* Today's price — highlighted */}
+              <div className="mb-6 text-center">
+                <p className="mb-1 text-sm font-semibold text-cyan-300">কিন্তু আজ আপনি পাচ্ছেন মাত্র</p>
+                <div className="flex items-end justify-center gap-3">
+                  <span className="text-2xl text-slate-500 line-through font-bold">৳10,000</span>
+                  <span className="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-300 tracking-tight drop-shadow-[0_0_25px_rgba(34,211,238,0.45)]">৳990</span>
+                </div>
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-gradient-to-r from-cyan-500/15 to-indigo-500/15 px-4 py-1.5 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                  <Zap size={14} className="text-cyan-300" />
+                  <span className="text-xs font-black uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-indigo-200">৯০% ছাড় — ৳9,010 সাশ্রয়</span>
+                </div>
               </div>
 
               <div className="mb-8 flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-left">

@@ -1,4 +1,5 @@
-import { Rocket } from 'lucide-react';
+import Link from 'next/link';
+import { Rocket, MonitorPlay } from 'lucide-react';
 import { Reveal, GradientText, EnrollButton } from '../../LandingClient';
 import type { HeroContent } from '../content';
 
@@ -29,7 +30,19 @@ export function Hero({ content }: { content: HeroContent }) {
               <Rocket size={16} style={{ color: 'rgb(var(--seg-accent))' }} />
               <span>এই কোর্সে ভর্তি হয়ে আজই শুরু করুন — মাত্র ৳৯৯০</span>
             </div>
-            <EnrollButton className="mt-6" />
+            <div className="mt-6 flex flex-col sm:flex-row items-center gap-4">
+              <EnrollButton />
+              <Link
+                href="/ai-for-developers/demo"
+                className="group relative inline-flex rounded-xl p-[2px] shadow-lg hover:-translate-y-1 active:scale-95 transition-all"
+                style={{ backgroundImage: 'linear-gradient(to right, rgb(var(--seg-accent)), rgb(var(--seg-accent-2)))' }}
+              >
+                <span className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-slate-950 px-8 py-4 text-white font-bold text-lg group-hover:bg-slate-900 transition-colors">
+                  <MonitorPlay size={20} style={{ color: 'rgb(var(--seg-accent))' }} />
+                  ডেমো ক্লাস দেখুন
+                </span>
+              </Link>
+            </div>
           </Reveal>
         </div>
       </div>
