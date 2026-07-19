@@ -12,6 +12,25 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
       <div className="pointer-events-none absolute -top-32 right-0 h-[28rem] w-[28rem] rounded-full bg-[rgb(var(--seg-accent)/0.12)] blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-40 -left-24 h-[26rem] w-[26rem] rounded-full bg-[rgb(var(--seg-accent-2)/0.12)] blur-[130px]" />
 
+      {/* Concentric circles — radiating accent rings behind the hero content,
+          masked so they fade out toward the edges. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(circle,black_8%,transparent_70%)]"
+      >
+        {[240, 420, 600, 800, 1020, 1280].map((size, i) => (
+          <div
+            key={size}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+            style={{
+              width: size,
+              height: size,
+              borderColor: `rgb(var(--seg-accent) / ${Math.max(0.05, 0.18 - i * 0.022)})`,
+            }}
+          />
+        ))}
+      </div>
+
       <Container className="relative z-10">
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
