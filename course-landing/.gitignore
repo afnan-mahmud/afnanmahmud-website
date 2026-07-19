@@ -1,0 +1,5 @@
+# This app shares the repo-root node_modules — none should exist here.
+/node_modules
+/.next
+/out
+next-env.d.ts

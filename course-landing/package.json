@@ -1,0 +1,12 @@
+{
+  "name": "afnan-mahmud-course-landing",
+  "version": "0.1.0",
+  "private": true,
+  "comment": "This app intentionally has NO node_modules of its own. It shares the repo-root install: npm run scripts add ancestor node_modules/.bin to PATH, and all @/* imports resolve to repo-root files that resolve their deps (mongoose, next, react) against the ROOT node_modules — guaranteeing a single mongoose instance. Do NOT run `npm install` inside this folder. Build/run from here after a root `npm install`.",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "eslint"
+  }
+}
