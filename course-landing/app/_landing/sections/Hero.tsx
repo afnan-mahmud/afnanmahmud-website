@@ -15,8 +15,8 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
       <Container className="relative z-10">
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--seg-accent)/0.3)] bg-white px-4 py-1.5 text-sm font-semibold text-[var(--ink-soft)] shadow-sm">
-              <ShieldCheck size={16} className="accent-text" />
+            <span className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-[rgb(var(--seg-accent)/0.3)] bg-white px-4 py-1.5 text-center text-sm font-semibold leading-snug text-[var(--ink-soft)] shadow-sm">
+              <ShieldCheck size={16} className="shrink-0 accent-text" />
               AI-First Web + Mobile App Development — বাংলায়
             </span>
           </Reveal>

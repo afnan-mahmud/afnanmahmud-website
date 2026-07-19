@@ -49,7 +49,7 @@ export function LightSegmentLanding({
 
   return (
     <EnrollProvider>
-      <div className="min-h-screen" style={themeStyle(content.key)}>
+      <div className="min-h-screen overflow-x-clip" style={themeStyle(content.key)}>
         <ViewContentTracker contentId={COURSE_SLUG} contentName={COURSE_NAME} value={COURSE_PRICE} currency="BDT" />
         <Navbar onChangeCategory={onChangeCategory} />
         <main>

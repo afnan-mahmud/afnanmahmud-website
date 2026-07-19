@@ -14,12 +14,12 @@ export function Audience({ heading, items }: { heading: string; items: AudienceI
               <div className="card-soft h-full p-6">
                 <div className="flex items-center gap-3">
                   <div
-                    className="grid h-11 w-11 place-items-center rounded-xl"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
                     style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}
                   >
                     <item.icon size={22} />
                   </div>
-                  <h3 className="font-bold text-[var(--ink)]">{item.title}</h3>
+                  <h3 className="min-w-0 font-bold text-[var(--ink)]">{item.title}</h3>
                 </div>
                 <p className="mt-3 text-sm leading-relaxed text-[var(--ink-soft)]">{item.desc}</p>
               </div>

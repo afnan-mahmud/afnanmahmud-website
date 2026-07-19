@@ -1,7 +1,7 @@
 // Single flagship course this subdomain sells. Must match a Course.slug in the
-// shared DB and be present in the enroll route's ALLOWED_SLUGS.
-export const COURSE_SLUG = 'complete-website-and-mobile-application-development-course-by-ai';
-export const COURSE_NAME = 'Complete Website & Mobile App Development by AI';
+// shared DB (same slug the main app's ai-for-developers landing enrolls into).
+export const COURSE_SLUG = 'ai-for-developers';
+export const COURSE_NAME = 'AI for Developers — Web & Mobile App Development';
 export const COURSE_PRICE = 990;
 
 // Display-only social-proof count for the landing hero / social-proof strip.

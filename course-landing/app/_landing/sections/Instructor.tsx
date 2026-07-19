@@ -51,10 +51,10 @@ export function Instructor() {
                   { icon: Zap, title: 'AI Workflow Expert', sub: 'Master of Prompts' },
                 ].map((s) => (
                   <div key={s.title} className="card-soft flex items-center gap-3 p-4">
-                    <div className="grid h-11 w-11 place-items-center rounded-lg" style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}>
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg" style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}>
                       <s.icon size={22} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h4 className="font-bold text-[var(--ink)]">{s.title}</h4>
                       <p className="text-xs text-[var(--ink-muted)]">{s.sub}</p>
                     </div>
@@ -70,7 +70,7 @@ export function Instructor() {
                       <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg" style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}>
                         <v.icon size={20} />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h5 className="font-bold leading-tight text-[var(--ink)]">{v.name}</h5>
                           <span className="rounded-full border border-[rgb(var(--seg-accent)/0.3)] bg-[rgb(var(--seg-accent)/0.08)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide accent-text">

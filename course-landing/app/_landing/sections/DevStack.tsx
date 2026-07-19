@@ -48,10 +48,10 @@ export function DevStack() {
             <Reveal key={i} delay={i * 80}>
               <div className="card-soft h-full p-6 transition-transform duration-300 hover:-translate-y-1">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 place-items-center rounded-xl" style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}>
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl" style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}>
                     <s.icon size={24} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="font-bold leading-tight text-[var(--ink)]">{s.name}</h3>
                     <span className="text-xs font-semibold uppercase tracking-wider accent-text">{s.tag}</span>
                   </div>
@@ -75,7 +75,7 @@ export function DevStack() {
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style={{ background: 'rgb(var(--seg-accent-2) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}>
                   <t.icon size={22} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h4 className="font-bold leading-tight text-[var(--ink)]">{t.name}</h4>
                   <p className="mt-1 text-xs leading-relaxed text-[var(--ink-muted)]">{t.role}</p>
                 </div>

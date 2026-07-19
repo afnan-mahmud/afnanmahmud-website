@@ -23,10 +23,10 @@ export function Feedback({ heading, sub, items }: { heading: string; sub: string
                   ))}
                 </div>
                 <figcaption className="mt-4 flex items-center gap-3 border-t border-[var(--line)] pt-4">
-                  <span className={`grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br ${t.gradient} text-sm font-bold text-white`}>
+                  <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br ${t.gradient} text-sm font-bold text-white`}>
                     {t.initials}
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-bold text-[var(--ink)]">{t.name}</div>
                     {t.role && <div className="text-xs text-[var(--ink-muted)]">{t.role}</div>}
                   </div>
