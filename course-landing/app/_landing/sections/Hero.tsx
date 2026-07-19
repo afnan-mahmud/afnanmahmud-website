@@ -12,11 +12,16 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
       <div className="pointer-events-none absolute -top-32 right-0 h-[28rem] w-[28rem] rounded-full bg-[rgb(var(--seg-accent)/0.12)] blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-40 -left-24 h-[26rem] w-[26rem] rounded-full bg-[rgb(var(--seg-accent-2)/0.12)] blur-[130px]" />
 
-      {/* Concentric circles — radiating accent rings behind the hero content,
-          masked so they fade out toward the edges. */}
+      {/* Concentric circles — radiating accent rings behind the hero content.
+          The wrapper is sized to the largest ring so the radial mask (which fades
+          the rings toward the edges) has an area to apply over. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 [mask-image:radial-gradient(circle,black_8%,transparent_70%)]"
+        className="pointer-events-none absolute left-1/2 top-[46%] h-[1280px] w-[1280px] -translate-x-1/2 -translate-y-1/2"
+        style={{
+          maskImage: 'radial-gradient(circle, #000 6%, transparent 62%)',
+          WebkitMaskImage: 'radial-gradient(circle, #000 6%, transparent 62%)',
+        }}
       >
         {[240, 420, 600, 800, 1020, 1280].map((size, i) => (
           <div
@@ -25,7 +30,7 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
             style={{
               width: size,
               height: size,
-              borderColor: `rgb(var(--seg-accent) / ${Math.max(0.05, 0.18 - i * 0.022)})`,
+              borderColor: `rgb(var(--seg-accent) / ${Math.max(0.06, 0.22 - i * 0.026)})`,
             }}
           />
         ))}
