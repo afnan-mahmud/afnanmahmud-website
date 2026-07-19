@@ -1,4 +1,4 @@
-import { Reveal } from '../../LandingClient';
+import { Reveal, GradientText } from '../../LandingClient';
 import type { AudienceItem } from '../content';
 
 export function Audience({ heading, items }: { heading: string; items: AudienceItem[] }) {
@@ -12,7 +12,7 @@ export function Audience({ heading, items }: { heading: string; items: AudienceI
         <Reveal>
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
-              {heading}
+              <GradientText>{heading}</GradientText>
             </h2>
           </div>
         </Reveal>

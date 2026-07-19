@@ -25,7 +25,7 @@ export const developer: SegmentContent = {
     ogDescription:
       'প্রপার AI ওয়ার্কফ্লো, সিকিউরিটি, প্রোডাকশন ডিপ্লয়মেন্ট আর মোবাইল অ্যাপ ডেভেলপমেন্ট — অভিজ্ঞ ডেভেলপারদের জন্য অ্যাডভান্সড লেভেলে।',
   },
-  sectionOrder: ['devStack', 'painPoints', 'outcomes', 'curriculum', 'feedback', 'cta2', 'faq'],
+  sectionOrder: ['devStack', 'painPoints', 'outcomes', 'curriculum', 'instructor', 'feedback', 'cta2', 'faq'],
   hero: {
     headlineLead: 'কোড তো আগে থেকেই জানেন —',
     headlineAccent: 'এবার ১০x দ্রুত',

@@ -25,7 +25,7 @@ export const freelancer: SegmentContent = {
     ogDescription:
       'AI-কে সহকারী বানিয়ে অনেক কম সময়ে ক্লায়েন্টের কাজ শেষ করুন, বেশি প্রজেক্ট নিন, বেশি ইনকাম করুন — সম্পূর্ণ প্রসেস শেখানো হবে বাংলায়।',
   },
-  sectionOrder: ['painPoints', 'outcomes', 'devStack', 'curriculum', 'feedback', 'cta2', 'faq'],
+  sectionOrder: ['painPoints', 'outcomes', 'devStack', 'curriculum', 'instructor', 'feedback', 'cta2', 'faq'],
   hero: {
     headlineLead: 'একটা প্রজেক্ট শেষ করতে করতে আরেকটা মিস?',
     headlineAccent: '১০x দ্রুত ক্লায়েন্ট ডেলিভারি',

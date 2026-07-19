@@ -4,8 +4,8 @@ import { Reveal } from '../../LandingClient';
 export function SocialProof({ enrolledLabel }: { enrolledLabel: string }) {
   const avatars = [
     { initials: 'RH', gradient: 'from-[rgb(var(--seg-accent))] to-[rgb(var(--seg-accent-2))]' },
-    { initials: 'SA', gradient: 'from-pink-500 to-purple-600' },
-    { initials: 'TK', gradient: 'from-emerald-500 to-teal-600' },
+    { initials: 'SA', gradient: 'from-slate-500 to-slate-700' },
+    { initials: 'TK', gradient: 'from-slate-600 to-slate-800' },
   ];
   return (
     <section className="relative py-10 sm:py-12">

@@ -1,5 +1,5 @@
 import { Sparkles } from 'lucide-react';
-import { Reveal, EnrollButton } from '../../LandingClient';
+import { Reveal, EnrollButton, GradientText } from '../../LandingClient';
 import type { OutcomeItem } from '../content';
 
 export function Outcomes({ heading, sub, items }: { heading: string; sub: string; items: OutcomeItem[] }) {
@@ -25,7 +25,7 @@ export function Outcomes({ heading, sub, items }: { heading: string; sub: string
               <Sparkles size={32} />
             </div>
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
-              {heading}
+              <GradientText>{heading}</GradientText>
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
               {sub}

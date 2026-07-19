@@ -25,7 +25,7 @@ export const beginner: SegmentContent = {
     ogDescription:
       'কোডিং না জানলেও AI-কে গাইড করে ওয়েবসাইট ও মোবাইল অ্যাপ বানানো শিখুন — একদম বেসিক থেকে, স্টেপ বাই স্টেপ।',
   },
-  sectionOrder: ['painPoints', 'socialProof', 'whyBest', 'outcomes', 'curriculum', 'audience', 'feedback', 'cta2', 'faq'],
+  sectionOrder: ['painPoints', 'socialProof', 'whyBest', 'outcomes', 'curriculum', 'audience', 'instructor', 'feedback', 'cta2', 'faq'],
   hero: {
     headlineLead: 'কোডিং ভয়? এবার',
     headlineAccent: 'AI-ই আপনার প্রোগ্রামার',

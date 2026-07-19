@@ -1,5 +1,5 @@
 import { MessagesSquare } from 'lucide-react';
-import { Reveal } from '../../LandingClient';
+import { Reveal, GradientText } from '../../LandingClient';
 import type { Testimonial } from '../content';
 
 export function Feedback({ heading, sub, items }: { heading: string; sub: string; items: Testimonial[] }) {
@@ -29,7 +29,7 @@ export function Feedback({ heading, sub, items }: { heading: string; sub: string
               <MessagesSquare size={32} />
             </div>
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
-              {heading}
+              <GradientText>{heading}</GradientText>
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
               {sub}
