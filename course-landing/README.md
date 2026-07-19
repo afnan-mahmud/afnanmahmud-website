@@ -79,6 +79,13 @@ npm install
 cd course-landing
 npm run build
 
+# REQUIRED: the standalone output does NOT include static assets or /public.
+# Copy them next to the standalone server or every JS/CSS chunk 404s and the
+# page renders BLANK (the gate/landing never hydrate). This step is mandatory
+# on every deploy.
+cp -r .next/static .next/standalone/course-landing/.next/static
+[ -d public ] && cp -r public .next/standalone/course-landing/public || true
+
 # the standalone entrypoint (verified path):
 #   .next/standalone/course-landing/server.js
 # run it on port 3001, with NEXTAUTH_URL set for this subdomain:
@@ -88,9 +95,11 @@ NEXTAUTH_URL=https://course.afnanmahmud.com PORT=3001 \
 
 Standalone bundles only what file-tracing reaches. `next.config.ts` sets
 `outputFileTracingRoot` to the repo root so `../models`, `../lib`, and the shared
-`node_modules` are included. **After building, boot the bundle and hit it directly
-(`curl http://127.0.0.1:3001/`) before switching nginx traffic**, to confirm tracing
-succeeded.
+`node_modules` are included — but **static assets (`.next/static`) and `public/` are
+never bundled and must be copied in manually (see the `cp` step above).** After
+building and copying, boot the bundle and hit it directly
+(`curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3001/_next/static/…`) to
+confirm a chunk returns `200`, before switching nginx traffic.
 
 ### pm2
 
@@ -99,7 +108,8 @@ succeeded.
 NEXTAUTH_URL=https://course.afnanmahmud.com PORT=3001 \
   pm2 start .next/standalone/course-landing/server.js --name course-landing
 
-# on redeploy: build FULLY, then
+# on redeploy: build FULLY, copy static assets in (the required cp step above),
+# THEN restart
 pm2 restart course-landing
 pm2 save
 ```
