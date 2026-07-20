@@ -2,7 +2,7 @@
 
 import { Layers, Infinity as InfinityIcon, Rocket, Smartphone, Globe, Briefcase } from 'lucide-react';
 import type { IconType } from '@/app/ai-for-developers/_landing/content';
-import { Container, GradientText, Reveal, SectionHeading } from '../ui';
+import { cardAccent, Container, GradientText, Reveal, SectionHeading } from '../ui';
 
 /**
  * Course deliverables — what the buyer gets, as opposed to Outcomes (what they
@@ -13,12 +13,12 @@ const ITEMS: { icon: IconType; title: string; desc: string }[] = [
   {
     icon: Layers,
     title: '৮টি পূর্ণাঙ্গ মডিউল',
-    desc: 'AI dev stack সেটআপ থেকে শুরু করে App Store লঞ্চ — পুরো জার্নি ধাপে ধাপে সাজানো।',
+    desc: 'AI dev stack সেটআপ থেকে শুরু করে App Store লঞ্চ, পুরো জার্নি ধাপে ধাপে সাজানো।',
   },
   {
     icon: Rocket,
     title: '৩টি রিয়েল প্রজেক্ট',
-    desc: 'ই-কমার্স সাইট, ফ্লাইট ট্র্যাকার আর Bikroy-এর মতো একটি পূর্ণাঙ্গ মার্কেটপ্লেস — নিজের হাতে।',
+    desc: 'ই-কমার্স সাইট, ফ্লাইট ট্র্যাকার আর Bikroy-এর মতো একটি পূর্ণাঙ্গ মার্কেটপ্লেস, নিজের হাতে।',
   },
   {
     icon: Smartphone,
@@ -38,7 +38,7 @@ const ITEMS: { icon: IconType; title: string; desc: string }[] = [
   {
     icon: InfinityIcon,
     title: 'লাইফটাইম অ্যাক্সেস',
-    desc: 'একবার পেমেন্ট, বারবার নয় — সব ভিডিও আর রিসোর্সে আজীবন অ্যাক্সেস।',
+    desc: 'একবার পেমেন্ট, বারবার নয়, সব ভিডিও আর রিসোর্সে আজীবন অ্যাক্সেস।',
   },
 ];
 
@@ -46,30 +46,29 @@ export function CourseIncludes() {
   return (
     <section id="includes" className="bg-white py-16 sm:py-24">
       <Container>
-        <SectionHeading eyebrow="যা যা পাচ্ছেন" sub="একটা কোর্স নয় — শুরু থেকে শিপিং পর্যন্ত পুরো একটা প্যাকেজ।">
+        <SectionHeading eyebrow="যা যা পাচ্ছেন" sub="একটা কোর্স নয়, শুরু থেকে শিপিং পর্যন্ত পুরো একটা প্যাকেজ।">
           কোর্সে <GradientText>আপনি যা পাচ্ছেন</GradientText>
         </SectionHeading>
 
-        {/* Hairline grid (no card borders), matching the reference layout. */}
-        <Reveal>
-          <div className="mt-12 grid overflow-hidden rounded-2xl border border-[var(--line)] bg-white sm:grid-cols-2 lg:grid-cols-3">
-            {ITEMS.map((item) => (
+        {/* Colorful cards. Compact horizontal rows on mobile, centered on desktop. */}
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {ITEMS.map((item, i) => (
+            <Reveal key={item.title} delay={i * 60}>
               <div
-                key={item.title}
-                className="border-b border-[var(--line)] p-7 text-center last:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0"
+                className="card-color flex h-full flex-row items-center gap-4 p-4 text-left transition-transform duration-300 hover:-translate-y-1 sm:flex-col sm:items-center sm:gap-0 sm:p-6 sm:text-center"
+                style={cardAccent(i)}
               >
-                <div
-                  className="mx-auto grid h-14 w-14 place-items-center rounded-2xl"
-                  style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}
-                >
-                  <item.icon size={26} />
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20 text-white sm:h-14 sm:w-14">
+                  <item.icon size={24} />
                 </div>
-                <h3 className="mt-4 text-lg font-bold text-[var(--ink)]">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">{item.desc}</p>
+                <div className="min-w-0 sm:mt-4">
+                  <h3 className="text-base font-bold text-white sm:text-lg">{item.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-white/85 sm:mt-2">{item.desc}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </Reveal>
+            </Reveal>
+          ))}
+        </div>
       </Container>
     </section>
   );

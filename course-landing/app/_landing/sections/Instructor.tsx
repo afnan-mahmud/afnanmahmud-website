@@ -7,9 +7,9 @@ import { Container, Reveal } from '../ui';
 // Invariant across all segments — same instructor profile & ventures for every audience.
 export function Instructor() {
   const ventures: { name: string; role: string; icon: IconType; desc: string }[] = [
-    { name: 'Cholo Bohudur', role: 'Co-Founder', icon: Code2, desc: 'একটি সফটওয়্যার ফার্ম — রিয়েল ক্লায়েন্টের জন্য প্রোডাকশন-গ্রেড সফটওয়্যার তৈরি করা হয়।' },
+    { name: 'Cholo Bohudur', role: 'Co-Founder', icon: Code2, desc: 'একটি সফটওয়্যার ফার্ম, রিয়েল ক্লায়েন্টের জন্য প্রোডাকশন-গ্রেড সফটওয়্যার তৈরি করা হয়।' },
     { name: 'Gowaay', role: 'Founder', icon: Globe, desc: 'ট্যুর অ্যান্ড ট্রাভেল ইন্ডাস্ট্রির জন্য তৈরি একটি প্রোডাক্ট ও প্ল্যাটফর্ম।' },
-    { name: 'Niyoog', role: 'Founder & CTO', icon: Briefcase, desc: 'জব মার্কেট প্রোডাক্ট — প্রোফাইল সাবমিট করলেই বেস্ট-ম্যাচিং জবে অটো CV যায়, আর নিয়োগদাতারা ২৪ ঘন্টায় সেরা এমপ্লয়ি হায়ার করতে পারেন।' },
+    { name: 'Niyoog', role: 'Founder & CTO', icon: Briefcase, desc: 'জব মার্কেট প্রোডাক্ট, প্রোফাইল সাবমিট করলেই বেস্ট-ম্যাচিং জবে অটো CV যায়, আর নিয়োগদাতারা ২৪ ঘন্টায় সেরা এমপ্লয়ি হায়ার করতে পারেন।' },
     { name: 'Sujog', role: 'Founder', icon: Store, desc: 'বাংলাদেশের ই-কমার্সদের জন্য ওয়েব ও মোবাইল অ্যাপ্লিকেশন ডেভেলপ করার একটি প্ল্যাটফর্ম।' },
   ];
 
@@ -27,7 +27,7 @@ export function Instructor() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://afnanmahmud.com/mentor.jpeg"
-                  alt="Afnan Mahmud — Instructor"
+                  alt="Afnan Mahmud, Instructor"
                   className="relative z-10 aspect-square w-full rounded-3xl border border-[var(--line)] object-cover shadow-xl"
                 />
                 <div className="absolute -bottom-4 -right-4 z-20 flex items-center gap-2 rounded-xl border border-[var(--line)] bg-white px-3 py-2 shadow-lg">
@@ -44,7 +44,7 @@ export function Instructor() {
               <h2 className="mt-2 text-3xl font-black text-[var(--ink)] sm:text-4xl">Afnan Mahmud</h2>
               <p className="mt-5 text-base leading-relaxed text-[var(--ink-soft)]">
                 দীর্ঘদিন ধরে MERN Stack-এ প্রোডাকশন-গ্রেড অ্যাপ বানাচ্ছি, রিয়েল ক্লায়েন্ট প্রজেক্ট ডেলিভার করছি। এখন AI
-                কাজে লাগিয়ে সবচেয়ে দ্রুত ও স্মার্ট ওয়েতে ওয়েব ও মোবাইল অ্যাপ বানাই — ঠিক যা প্রতিদিন করি, সেটাই এই কোর্সে
+                কাজে লাগিয়ে সবচেয়ে দ্রুত ও স্মার্ট ওয়েতে ওয়েব ও মোবাইল অ্যাপ বানাই, ঠিক যা প্রতিদিন করি, সেটাই এই কোর্সে
                 স্ক্রিন শেয়ার করে ধাপে ধাপে শেখাবো। শুধু থিওরি নয়, পুরোটাই হাতে-কলমে।
               </p>
 

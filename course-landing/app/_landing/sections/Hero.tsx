@@ -6,11 +6,37 @@ import { Container, GradientText, Reveal } from '../ui';
 import { useEnroll } from '../EnrollContext';
 
 export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolledLabel: string }) {
-  const { openEnroll } = useEnroll();
+  const { goToPricing } = useEnroll();
   return (
     <section className="relative overflow-hidden pt-14 pb-16 sm:pt-20 sm:pb-24">
-      <div className="pointer-events-none absolute -top-32 right-0 h-[28rem] w-[28rem] rounded-full bg-[rgb(var(--seg-accent)/0.12)] blur-[130px]" />
-      <div className="pointer-events-none absolute -bottom-40 -left-24 h-[26rem] w-[26rem] rounded-full bg-[rgb(var(--seg-accent-2)/0.12)] blur-[130px]" />
+      {/* Grid texture — faint accent-tinted lines, strongest behind the hero
+          text and faded toward the edges via a radial mask. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgb(var(--seg-accent) / 0.16) 1px, transparent 1px), linear-gradient(to bottom, rgb(var(--seg-accent) / 0.16) 1px, transparent 1px)',
+          backgroundSize: '46px 46px',
+          maskImage:
+            'radial-gradient(ellipse 72% 62% at 50% 42%, #000 38%, transparent 82%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 72% 62% at 50% 42%, #000 38%, transparent 82%)',
+        }}
+      />
+
+      {/* Soft central spotlight so the text sits on a subtle bright core. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[38%] h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, rgb(var(--seg-accent) / 0.10), transparent 68%)',
+        }}
+      />
+
+      <div className="pointer-events-none absolute -top-32 right-0 h-[28rem] w-[28rem] rounded-full bg-[rgb(var(--seg-accent)/0.16)] blur-[130px]" />
+      <div className="pointer-events-none absolute -bottom-40 -left-24 h-[26rem] w-[26rem] rounded-full bg-[rgb(var(--seg-accent-2)/0.16)] blur-[130px]" />
 
       {/* Concentric circles — radiating accent rings behind the hero content.
           The wrapper is sized to the largest ring so the radial mask (which fades
@@ -30,7 +56,7 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
             style={{
               width: size,
               height: size,
-              borderColor: `rgb(var(--seg-accent) / ${Math.max(0.06, 0.22 - i * 0.026)})`,
+              borderColor: `rgb(var(--seg-accent) / ${Math.max(0.08, 0.28 - i * 0.03)})`,
             }}
           />
         ))}
@@ -41,7 +67,7 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
           <Reveal>
             <span className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-[rgb(var(--seg-accent)/0.3)] bg-white px-4 py-1.5 text-center text-sm font-semibold leading-snug text-[var(--ink-soft)] shadow-sm">
               <ShieldCheck size={16} className="shrink-0 accent-text" />
-              AI-First Web + Mobile App Development — বাংলায়
+              AI-First Web + Mobile App Development · বাংলায়
             </span>
           </Reveal>
 
@@ -63,10 +89,10 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <button
                 type="button"
-                onClick={openEnroll}
+                onClick={goToPricing}
                 className="btn-accent w-full rounded-full px-8 py-4 text-lg font-extrabold sm:w-auto"
               >
-                এখনই এনরোল করুন — ৳৯৯০
+                এখনই এনরোল করুন · ৳৯৯০
               </button>
               <a
                 href="#journey"

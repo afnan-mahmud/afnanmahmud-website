@@ -118,10 +118,10 @@ export function TimelineNav({
             data-chip={c.id}
             onClick={() => jumpTo(c.id)}
             aria-current={active ? 'true' : undefined}
-            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-bold transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-bold transition-all duration-200 ${
               active
-                ? 'border-[rgb(var(--seg-accent-2))] bg-white text-[rgb(var(--seg-accent-2))]'
-                : 'border-[rgb(var(--seg-accent)/0.35)] bg-white/70 text-[var(--ink-soft)] hover:border-[rgb(var(--seg-accent)/0.7)] hover:text-[var(--ink)]'
+                ? 'scale-[1.06] border-transparent bg-[linear-gradient(135deg,rgb(var(--seg-accent)),rgb(var(--seg-accent-2)))] text-white shadow-[0_6px_20px_-4px_rgb(var(--seg-accent-2)/0.6)] ring-2 ring-[rgb(var(--seg-accent-2)/0.35)] ring-offset-2 ring-offset-white'
+                : 'border-[rgb(var(--seg-accent)/0.35)] bg-white/70 text-[var(--ink-soft)] hover:border-[rgb(var(--seg-accent)/0.7)] hover:bg-[rgb(var(--seg-accent)/0.08)] hover:text-[var(--ink)]'
             }`}
           >
             <span aria-hidden="true">{c.emoji}</span>

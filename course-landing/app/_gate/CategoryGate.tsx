@@ -42,21 +42,18 @@ export function CategoryGate({ onChoose }: { onChoose: (key: SegmentKey) => void
                   ['--seg-accent' as string]: t.accent,
                   ['--seg-accent-2' as string]: t.accent2,
                 }}
-                className="group card-soft flex flex-col items-start gap-3 p-6 text-left outline-none transition-all duration-200 hover:-translate-y-1 hover:border-[rgb(var(--seg-accent)/0.5)] hover:shadow-[0_18px_40px_-16px_rgb(var(--seg-accent-2)/0.5)] focus-visible:ring-2 focus-visible:ring-[rgb(var(--seg-accent-2))]"
+                className="group flex flex-row items-center gap-3 rounded-2xl border border-white/10 bg-[linear-gradient(150deg,rgb(var(--seg-accent)),rgb(var(--seg-accent-2)))] p-4 text-left text-white shadow-[0_14px_34px_-14px_rgb(var(--seg-accent-2)/0.6)] outline-none transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_20px_44px_-14px_rgb(var(--seg-accent-2)/0.75)] focus-visible:ring-2 focus-visible:ring-white/70 sm:flex-col sm:items-start sm:p-6"
               >
-                <span
-                  className="grid h-12 w-12 place-items-center rounded-xl text-2xl"
-                  style={{ background: 'rgb(var(--seg-accent) / 0.12)' }}
-                >
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/20 text-2xl sm:h-12 sm:w-12">
                   {seg.emoji}
                 </span>
-                <span className="text-lg font-extrabold text-[var(--ink)]">
+                <span className="text-base font-extrabold text-white sm:text-lg">
                   {seg.title}
                 </span>
-                <span className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                  {seg.blurb}
-                </span>
-                <span className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold accent-text opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                {/* Mobile: arrow pinned to the right of the row */}
+                <ArrowRight size={18} className="ml-auto shrink-0 opacity-80 sm:hidden" />
+                {/* Desktop: reveal-on-hover CTA line */}
+                <span className="mt-1 hidden items-center gap-1.5 text-sm font-bold text-white opacity-80 transition-opacity duration-200 group-hover:opacity-100 sm:inline-flex">
                   এই পথে এগোই <ArrowRight size={15} />
                 </span>
               </button>

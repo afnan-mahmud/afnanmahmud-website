@@ -51,6 +51,19 @@ body {
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 30px -12px rgb(15 23 42 / 0.10);
 }
 
+/*
+ * Full-color feature card. Fills with the segment gradient and flips text to
+ * white — set --seg-accent / --seg-accent-2 per card (see cardAccent() in ui)
+ * to give a grid a fresh, multi-color energy.
+ */
+.card-color {
+  background: linear-gradient(150deg, rgb(var(--seg-accent)), rgb(var(--seg-accent-2)));
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 1rem;
+  color: #fff;
+  box-shadow: 0 14px 34px -14px rgb(var(--seg-accent-2) / 0.55);
+}
+
 /* Accent-tinted glass panel (light). */
 .panel-accent {
   background: linear-gradient(180deg, #ffffff 0%, rgb(var(--seg-accent) / 0.04) 100%);

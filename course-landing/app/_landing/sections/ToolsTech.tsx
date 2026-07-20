@@ -5,7 +5,7 @@ import {
   Smartphone, GitBranch, Cloud, ShieldCheck,
 } from 'lucide-react';
 import type { IconType } from '@/app/ai-for-developers/_landing/content';
-import { Container, EnrollButton, GradientText, Reveal, SectionHeading } from '../ui';
+import { cardAccent, Container, EnrollButton, GradientText, Reveal, SectionHeading } from '../ui';
 
 /**
  * The single tools/tech section. This absorbed the whole of the old DevStack
@@ -23,7 +23,7 @@ const CORE: { name: string; tag: string; icon: IconType; desc: string }[] = [
     name: 'Claude Code',
     tag: 'AI Agent',
     icon: Cpu,
-    desc: 'টার্মিনালের পাওয়ারফুল AI এজেন্ট — অনেকটা একজন জুনিয়র ডেভেলপারের মতো। অফিস বা ক্লায়েন্টের কাজে খুবই দরকারি।',
+    desc: 'টার্মিনালের পাওয়ারফুল AI এজেন্ট, অনেকটা একজন জুনিয়র ডেভেলপারের মতো। অফিস বা ক্লায়েন্টের কাজে খুবই দরকারি।',
   },
   {
     name: 'Google AI Studio',
@@ -48,27 +48,24 @@ export function ToolsTech() {
   return (
     <section id="tools" className="bg-white py-16 sm:py-24">
       <Container>
-        <SectionHeading eyebrow="টুলস ও টেকনোলজি" sub="মাত্র ৩টি মূল AI টুল দিয়েই পুরো ওয়ার্কফ্লো চলবে — আর নিচে দেখুন কোন স্ট্যাকে কোড করবেন।">
+        <SectionHeading eyebrow="টুলস ও টেকনোলজি" sub="মাত্র ৩টি মূল AI টুল দিয়েই পুরো ওয়ার্কফ্লো চলবে, আর নিচে দেখুন কোন স্ট্যাকে কোড করবেন।">
           যেসব <GradientText>টুলস ও টেকনোলজি</GradientText> শিখবেন
         </SectionHeading>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {CORE.map((s, i) => (
             <Reveal key={s.name} delay={i * 80}>
-              <div className="card-soft h-full p-6 transition-transform duration-300 hover:-translate-y-1">
+              <div className="card-color h-full p-6 transition-transform duration-300 hover:-translate-y-1" style={cardAccent(i)}>
                 <div className="flex items-center gap-3">
-                  <div
-                    className="grid h-12 w-12 shrink-0 place-items-center rounded-xl"
-                    style={{ background: 'rgb(var(--seg-accent) / 0.12)', color: 'rgb(var(--seg-accent-2))' }}
-                  >
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/20 text-white">
                     <s.icon size={24} />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-bold leading-tight text-[var(--ink)]">{s.name}</h3>
-                    <span className="text-xs font-semibold uppercase tracking-wider accent-text">{s.tag}</span>
+                    <h3 className="font-bold leading-tight text-white">{s.name}</h3>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-white/80">{s.tag}</span>
                   </div>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-[var(--ink-soft)]">{s.desc}</p>
+                <p className="mt-4 text-sm leading-relaxed text-white/85">{s.desc}</p>
               </div>
             </Reveal>
           ))}

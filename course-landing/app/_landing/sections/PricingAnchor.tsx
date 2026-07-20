@@ -31,14 +31,14 @@ export function PricingAnchor() {
                   <span className="flex items-center gap-2 text-[var(--ink-soft)]">
                     <Check size={16} className="accent-text" /> {item.label}
                   </span>
-                  <span className="shrink-0 text-[var(--ink-muted)] line-through">{item.price}</span>
+                  <span className="shrink-0 text-[var(--ink-muted)]">{item.price}</span>
                 </li>
               ))}
             </ul>
 
             <div className="mt-4 flex items-center justify-between font-bold text-[var(--ink)]">
               <span>টোটাল মার্কেট ভ্যালু</span>
-              <span className="text-lg text-[var(--ink-muted)] line-through">~৩০,০০০৳</span>
+              <span className="text-lg text-[var(--ink-muted)]">~৩০,০০০৳</span>
             </div>
 
             <div className="mt-8 text-center">
@@ -61,7 +61,7 @@ export function PricingAnchor() {
               >
                 👉 অফারটি এখনই নিন
               </button>
-              <p className="mt-3 text-xs text-[var(--ink-muted)]">⏳ সীমিত সময়ের অফার — দাম যেকোনো সময় বাড়তে পারে।</p>
+              <p className="mt-3 text-xs text-[var(--ink-muted)]">⏳ সীমিত সময়ের অফার, দাম যেকোনো সময় বাড়তে পারে।</p>
             </div>
           </div>
         </Reveal>

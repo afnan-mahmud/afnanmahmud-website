@@ -142,11 +142,11 @@ export function EnrollModal() {
 
         <div className="mb-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--seg-accent)/0.3)] bg-[rgb(var(--seg-accent)/0.08)] px-3 py-1 text-xs font-bold uppercase tracking-wider accent-text">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[rgb(var(--seg-accent-2))]" /> আজকের অফার — ৳৯৯০
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[rgb(var(--seg-accent-2))]" /> আজকের অফার · ৳৯৯০
           </span>
           <h2 className="mt-4 text-2xl font-black text-[var(--ink)]">এনরোলমেন্ট শুরু করুন 🚀</h2>
           <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
-            আপনার নাম ও ফোন নম্বর দিন — পেমেন্টের পর এই নাম্বারে কনফার্মেশন পাবেন এবং এই নাম্বার দিয়েই লগইন করে কোর্স শুরু করবেন।
+            আপনার নাম ও ফোন নম্বর দিন। পেমেন্টের পর এই নাম্বারে কনফার্মেশন পাবেন এবং এই নাম্বার দিয়েই লগইন করে কোর্স শুরু করবেন।
           </p>
         </div>
 

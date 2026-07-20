@@ -6,6 +6,10 @@ type EnrollContextValue = {
   open: boolean;
   openEnroll: () => void;
   closeEnroll: () => void;
+  /** Smooth-scroll to the pricing breakdown section (id="pricing"). Marketing
+   *  CTAs funnel here first; only the pricing button and the sticky bar open
+   *  the modal directly. */
+  goToPricing: () => void;
 };
 
 const EnrollContext = createContext<EnrollContextValue | null>(null);
@@ -14,7 +18,13 @@ export function EnrollProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const openEnroll = useCallback(() => setOpen(true), []);
   const closeEnroll = useCallback(() => setOpen(false), []);
-  const value = useMemo(() => ({ open, openEnroll, closeEnroll }), [open, openEnroll, closeEnroll]);
+  const goToPricing = useCallback(() => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+  const value = useMemo(
+    () => ({ open, openEnroll, closeEnroll, goToPricing }),
+    [open, openEnroll, closeEnroll, goToPricing],
+  );
   return <EnrollContext.Provider value={value}>{children}</EnrollContext.Provider>;
 }
 

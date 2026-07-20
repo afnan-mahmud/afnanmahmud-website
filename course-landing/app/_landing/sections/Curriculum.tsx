@@ -11,10 +11,10 @@ export function Curriculum() {
       title: 'The Modern AI Dev Stack Setup',
       icon: Target,
       points: [
-        'AI-first mindset — তুমি architect, AI builder',
-        'Cursor IDE setup — AI built-in code editor',
+        'AI-first mindset: তুমি architect, AI builder',
+        'Cursor IDE setup: AI built-in code editor',
         'Node, npm, Git আর dev environment তৈরি',
-        'Claude Code — terminal এর AI agent',
+        'Claude Code: terminal-এর AI agent',
         'Gemini free tier integration',
         'AntiGravity agentic workflow এর basics',
       ],
@@ -59,7 +59,7 @@ export function Curriculum() {
       title: 'Debugging & Version Control (GitHub)',
       icon: Zap,
       points: [
-        "The 'Error Loop' — AI error confidently fix",
+        "The 'Error Loop': AI error confidently fix",
         'Error log আর stack trace পড়া',
         'AI কে effective feedback দিয়ে fast fix',
         'Git আর GitHub fundamentals',
@@ -75,7 +75,7 @@ export function Curriculum() {
         'User authentication system (login/signup)',
         'User dashboard বানানো',
         'Zero থেকে production-ready codebase',
-        'Security hardening — app যেন কেউ hack করতে না পারে',
+        'Security hardening: app যেন কেউ hack করতে না পারে',
         'App কে mobile এর জন্য prepare করা',
       ],
     },
@@ -110,7 +110,7 @@ export function Curriculum() {
       <Container className="max-w-4xl">
         <SectionHeading
           eyebrow="কোর্স আউটলাইন"
-          sub="বোরিং সিলেবাস নয় — ৮টি লেভেল পার করে জিরো থেকে লাইভ ওয়েবসাইট আর পাবলিশ করা মোবাইল অ্যাপ পর্যন্ত নিজের পোর্টফোলিও দাঁড় করান।"
+          sub="বোরিং সিলেবাস নয়, ৮টি লেভেল পার করে জিরো থেকে লাইভ ওয়েবসাইট আর পাবলিশ করা মোবাইল অ্যাপ পর্যন্ত নিজের পোর্টফোলিও দাঁড় করান।"
         >
           Production পর্যন্ত আপনার <GradientText>জার্নি</GradientText>
         </SectionHeading>
@@ -156,13 +156,13 @@ export function Curriculum() {
                 <Sparkles size={22} />
               </span>
               <h3 className="text-lg font-black leading-snug text-[var(--ink)] sm:text-xl">
-                মনে প্রশ্ন জাগছে — <GradientText>&ldquo;এত কিছু মাত্র ৳৯৯০ টাকায় কীভাবে সম্ভব?&rdquo;</GradientText>
+                মনে প্রশ্ন জাগছে, <GradientText>&ldquo;এত কিছু মাত্র ৳৯৯০ টাকায় কীভাবে সম্ভব?&rdquo;</GradientText>
               </h3>
             </div>
             <p className="mt-4 leading-relaxed text-[var(--ink-soft)]">
-              বাজারে যেখানে নরমাল কোর্সের দাম ৫–১০ হাজার টাকা, সেখানে আমরা এত কম দামে নিচ্ছি একটাই কারণে —{' '}
+              বাজারে যেখানে নরমাল কোর্সের দাম ৫–১০ হাজার টাকা, সেখানে আমরা এত কম দামে নিচ্ছি একটাই কারণে:{' '}
               <span className="font-bold text-[var(--ink)]">সবার জন্য এক্সেসিবল করা।</span> দেশের যেকোনো প্রান্ত থেকে একজন
-              তরুণ যেন মাত্র ১–২ মাসে মডার্ন টেকনোলজিতে ক্যারিয়ার গড়তে পারে। টাকার জন্য শিখতে পারিনি — এমন যেন কোনো কারণ না হয়।
+              তরুণ যেন মাত্র ১–২ মাসে মডার্ন টেকনোলজিতে ক্যারিয়ার গড়তে পারে। টাকার জন্য শিখতে পারিনি, এমন যেন কোনো কারণ না হয়।
             </p>
           </div>
         </Reveal>

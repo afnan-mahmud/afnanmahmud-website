@@ -4,10 +4,34 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useEnroll } from './EnrollContext';
+
+/*
+ * Vibrant accent palette for the full-color feature cards (.card-color).
+ * Each entry is [accent, accent2] as raw "R G B" triples for our gradients.
+ * Rotate by card index so a grid reads fresh and multi-color, not monochrome.
+ */
+const CARD_PALETTE: readonly (readonly [string, string])[] = [
+  ['34 211 238', '99 102 241'],  // cyan → indigo
+  ['16 185 129', '20 184 166'],  // emerald → teal
+  ['139 92 246', '217 70 239'],  // violet → fuchsia
+  ['245 158 11', '234 88 12'],   // amber → orange
+  ['56 189 248', '99 102 241'],  // sky → indigo
+  ['236 72 153', '244 63 94'],   // pink → rose
+];
+
+/** CSS-var style for a colorful card at grid index `i` (cycles the palette). */
+export function cardAccent(i: number): CSSProperties {
+  const [accent, accent2] = CARD_PALETTE[i % CARD_PALETTE.length];
+  return {
+    ['--seg-accent' as string]: accent,
+    ['--seg-accent-2' as string]: accent2,
+  };
+}
 
 /** Scroll-reveal wrapper (light-theme; ported behavior from the main app). */
 export function Reveal({
@@ -94,12 +118,13 @@ export function SectionHeading({
   );
 }
 
-/** Primary enroll button — opens the modal. */
+/** Primary enroll CTA — funnels to the pricing breakdown section, where the
+ *  actual enroll button opens the modal. */
 export function EnrollButton({ className = '', label = 'এখনই এনরোল করুন' }: { className?: string; label?: string }) {
-  const { openEnroll } = useEnroll();
+  const { goToPricing } = useEnroll();
   return (
     <div className={`flex justify-center ${className}`}>
-      <button type="button" onClick={openEnroll} className="btn-accent rounded-full px-8 py-3.5 text-base font-extrabold sm:text-lg">
+      <button type="button" onClick={goToPricing} className="btn-accent rounded-full px-8 py-3.5 text-base font-extrabold sm:text-lg">
         {label}
       </button>
     </div>

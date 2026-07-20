@@ -12,7 +12,7 @@ export function Navbar({
   /** True once TimelineNav pins to the top — only one bar is shown at a time. */
   hidden?: boolean;
 }) {
-  const { openEnroll } = useEnroll();
+  const { goToPricing } = useEnroll();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function Navbar({
           </a>
           <button
             type="button"
-            onClick={openEnroll}
+            onClick={goToPricing}
             className="btn-accent rounded-full px-5 py-2.5 text-sm font-bold sm:px-6"
           >
             এনরোল করুন

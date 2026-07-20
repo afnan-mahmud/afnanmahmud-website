@@ -5,7 +5,7 @@ import { Container, GradientText } from '../ui';
 import { useEnroll } from '../EnrollContext';
 
 export function CtaBanner({ content }: { content: CtaBannerContent }) {
-  const { openEnroll } = useEnroll();
+  const { goToPricing } = useEnroll();
   return (
     <section className="py-14 sm:py-20">
       <Container>
@@ -19,10 +19,10 @@ export function CtaBanner({ content }: { content: CtaBannerContent }) {
             <p className="mx-auto mt-4 max-w-xl text-[var(--ink-soft)]">{content.sub}</p>
             <button
               type="button"
-              onClick={openEnroll}
+              onClick={goToPricing}
               className="btn-accent mt-8 rounded-full px-9 py-4 text-lg font-extrabold"
             >
-              এখনই এনরোল করুন — ৳৯৯০
+              এখনই এনরোল করুন · ৳৯৯০
             </button>
           </div>
         </div>
