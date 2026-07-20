@@ -21,7 +21,10 @@ export function Instructor() {
             <Reveal direction="right">
               <div className="relative">
                 <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-3xl bg-gradient-to-tr from-[rgb(var(--seg-accent))] to-[rgb(var(--seg-accent-2))] opacity-20" />
-                {/* mentor image is served from the main app's /public; falls back gracefully if absent */}
+                {/* Served from the main app's /public on another origin; using
+                    next/image here would require remotePatterns config for a
+                    single static portrait, so a plain <img> is intentional. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://afnanmahmud.com/mentor.jpeg"
                   alt="Afnan Mahmud — Instructor"

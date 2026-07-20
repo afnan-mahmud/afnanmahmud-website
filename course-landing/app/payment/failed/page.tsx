@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { RotateCcw, X } from 'lucide-react';
 
@@ -26,12 +27,12 @@ function FailedContent() {
         <h1 className="mt-8 text-3xl font-black text-[var(--ink)]">পেমেন্ট সম্পন্ন হয়নি</h1>
         <p className="mt-3 leading-relaxed text-[var(--ink-soft)]">{label} চিন্তার কিছু নেই — আবার চেষ্টা করতে পারেন।</p>
 
-        <a
+        <Link
           href="/"
           className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-white px-7 py-4 text-base font-bold text-[var(--ink)] transition-colors hover:border-[rgb(var(--seg-accent)/0.5)]"
         >
           <RotateCcw size={18} /> আবার চেষ্টা করুন
-        </a>
+        </Link>
         <p className="mt-4 text-xs text-[var(--ink-muted)]">
           টাকা কেটে থাকলেও চিন্তা নেই — আমরা অটোমেটিক ভেরিফাই করে অ্যাক্সেস দিয়ে দেবো।
         </p>

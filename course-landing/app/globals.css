@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 /*
+ * Tailwind v4 auto-detects sources relative to this app only, so classes used by
+ * shared components in the parent repo (e.g. StickyEnrollBar) never get emitted.
+ * Register that directory explicitly.
+ */
+@source "../../components";
+
+/*
  * Light theme for course.afnanmahmud.com.
  * Segment accent colors are injected per-page as --seg-accent / --seg-accent-2
  * (raw "R G B" triples) via themeStyle() so sections can build rgb(var(--..)/α).
@@ -85,4 +92,18 @@ body {
 }
 .btn-accent:active {
   transform: scale(0.98);
+}
+
+/* Horizontal chip scroller in TimelineNav — swipeable, no visible scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Keep anchor targets clear of the pinned TimelineNav when jumping to them. */
+section[id] {
+  scroll-margin-top: 5rem;
 }

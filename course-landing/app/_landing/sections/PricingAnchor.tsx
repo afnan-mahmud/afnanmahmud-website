@@ -43,7 +43,7 @@ export function PricingAnchor() {
 
             <div className="mt-8 text-center">
               <p className="text-sm font-semibold text-[var(--ink-soft)]">কিন্তু আপনার জন্য আজকের অফার!</p>
-              <div className="mt-1 text-5xl font-black accent-gradient sm:text-6xl">৯৯৯৳</div>
+              <div className="mt-1 text-5xl font-black accent-gradient sm:text-6xl">৯৯০৳</div>
 
               <div className="mt-4 flex flex-col items-center justify-center gap-2 text-sm text-[var(--ink-soft)] sm:flex-row sm:gap-6">
                 <span className="inline-flex items-center gap-1.5">

@@ -5,7 +5,7 @@ import { Container, Reveal, SectionHeading } from '../ui';
 
 export function Audience({ heading, items }: { heading: string; items: AudienceItem[] }) {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section id="audience" className="bg-white py-16 sm:py-24">
       <Container>
         <SectionHeading eyebrow="কাদের জন্য">{heading}</SectionHeading>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

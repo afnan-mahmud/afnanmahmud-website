@@ -18,6 +18,7 @@ import { Feedback } from './sections/Feedback';
 import { Faq } from './sections/Faq';
 import { SocialProof } from './sections/SocialProof';
 import { Footer } from './sections/Footer';
+import { StickyEnrollBarConnected } from './StickyEnrollBarConnected';
 
 const COURSE_SLUG = 'ai-for-developers';
 const COURSE_PRICE = 990;
@@ -50,7 +51,8 @@ export default function SegmentLanding({
   return (
     <EnrollProvider>
       <div
-        className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200"
+        /* pb-44 on mobile clears the fixed StickyEnrollBar so the footer stays reachable. */
+        className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden pb-44 lg:pb-0 selection:bg-indigo-500/30 selection:text-indigo-200"
         style={themeStyle(content.key)}
       >
         <ViewContentTracker contentId={COURSE_SLUG} contentName="AI for Developers" value={COURSE_PRICE} currency="BDT" />
@@ -69,7 +71,13 @@ export default function SegmentLanding({
         </main>
 
         <Footer />
-        <WhatsAppFab />
+        {/* Desktop keeps the round FAB; on mobile the sticky bar carries its own
+            WhatsApp button, so the two would otherwise overlap. */}
+        <WhatsAppFab desktopOnly />
+      </div>
+      {/* Kept outside the overflow-clipping wrapper — see LightSegmentLanding. */}
+      <div style={themeStyle(content.key)}>
+        <StickyEnrollBarConnected />
       </div>
     </EnrollProvider>
   );

@@ -5,7 +5,11 @@
  * an empty chat. lucide ships no brand icons, so the glyph is inline SVG.
  * Renders nothing when NEXT_PUBLIC_WHATSAPP_NUMBER is unset.
  */
-export default function WhatsAppFab() {
+/**
+ * `desktopOnly` hides the FAB below `lg`, for pages that render StickyEnrollBar —
+ * that bar carries its own WhatsApp button and the two would otherwise overlap.
+ */
+export default function WhatsAppFab({ desktopOnly = false }: { desktopOnly?: boolean } = {}) {
   const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   if (!number) return null;
 
@@ -15,6 +19,7 @@ export default function WhatsAppFab() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
+      className={desktopOnly ? 'hidden lg:flex' : 'flex'}
       style={{
         position: 'fixed',
         bottom: 24,
@@ -24,7 +29,6 @@ export default function WhatsAppFab() {
         height: 56,
         borderRadius: '50%',
         background: '#25D366',
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '0 6px 20px rgba(37,211,102,0.4)',

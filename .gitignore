@@ -43,3 +43,6 @@ next-env.d.ts
 
 # large media assets (too big for GitHub's 100MB limit)
 /public/course-demo.mp4
+
+# Design reference mockups — not part of the app.
+demo-landing.html

@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nested apps (e.g. course-landing/) have their own build output — the
+    // patterns above are cwd-relative and don't cover them.
+    "**/.next/**",
+    "**/out/**",
+    "**/next-env.d.ts",
   ]),
 ]);
 

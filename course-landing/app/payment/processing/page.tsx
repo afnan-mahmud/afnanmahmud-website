@@ -64,7 +64,6 @@ function ProcessingContent() {
       stopped.current = true;
       clearTimeout(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   return (

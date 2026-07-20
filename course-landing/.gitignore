@@ -6,3 +6,6 @@ next-env.d.ts
 
 # Keep the env template tracked (the repo-root .gitignore's ".env*" would hide it).
 !.env.example
+
+# Design reference screenshots — not used by the app.
+demo-design/

@@ -21,17 +21,27 @@ export function useSegment() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // The segment can only be resolved from the URL and localStorage, which exist
+    // solely on the client. Setting state here rather than during render is
+    // deliberate: it keeps the server render and the first client render
+    // identical (no hydration mismatch), and `ready` gates the UI until it runs.
+    /* eslint-disable react-hooks/set-state-in-effect */
     const fromUrl = new URLSearchParams(window.location.search).get('seg');
+    let resolved: SegmentKey | null = null;
+
     if (isSegmentKey(fromUrl)) {
-      setSegment(fromUrl);
+      resolved = fromUrl;
       // Keep storage in sync so a later visit without the param still resolves.
       try { window.localStorage.setItem(STORAGE_KEY, fromUrl); } catch {}
     } else {
       let stored: string | null = null;
       try { stored = window.localStorage.getItem(STORAGE_KEY); } catch {}
-      if (isSegmentKey(stored)) setSegment(stored);
+      if (isSegmentKey(stored)) resolved = stored;
     }
+
+    if (resolved) setSegment(resolved);
     setReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const choose = useCallback((key: SegmentKey) => {

@@ -5,9 +5,9 @@ import { X, Lock, Rocket, Loader2, ArrowRight } from 'lucide-react';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
 import { useEnroll } from './EnrollContext';
+import { OTP_URL } from './constants';
 
 const RETRY_KEY = 'devc_enroll_retry';
-const OTP_URL = 'https://afnanmahmud.com/auth/otp';
 
 const isValidName = (v: string) => v.trim().length >= 2;
 const isValidPhone = (v: string) => /^01[3-9]\d{8}$/.test(v);

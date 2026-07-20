@@ -5,7 +5,7 @@ import { Container, Reveal, SectionHeading } from '../ui';
 
 export function Outcomes({ heading, sub, items }: { heading: string; sub: string; items: OutcomeItem[] }) {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section id="outcomes" className="bg-white py-16 sm:py-24">
       <Container>
         <SectionHeading eyebrow="যা শিখবেন" sub={sub}>{heading}</SectionHeading>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

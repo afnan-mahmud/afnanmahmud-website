@@ -5,7 +5,7 @@ import { Accordion, Container, Reveal, SectionHeading } from '../ui';
 
 export function Faq({ heading, items }: { heading: string; items: FaqItem[] }) {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section id="faq" className="bg-white py-16 sm:py-24">
       <Container className="max-w-3xl">
         <SectionHeading eyebrow="প্রশ্নোত্তর">{heading}</SectionHeading>
         <div className="mt-10 space-y-3">
