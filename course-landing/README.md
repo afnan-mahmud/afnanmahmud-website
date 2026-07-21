@@ -44,7 +44,8 @@ use a dev database, not production).
 ## Environment
 
 Shares the repo-root `.env` / `.env.local` (same `MONGODB_URI`, `EPS_*`,
-`META_*`, `NEXT_PUBLIC_META_PIXEL_ID`, `TIKTOK_*`). The **one value that must differ
+`META_*`, `NEXT_PUBLIC_META_PIXEL_ID`, `TIKTOK_*`, `NEXT_PUBLIC_GTM_ID`,
+`NEXT_PUBLIC_CLARITY_ID`). The **one value that must differ
 for this process**:
 
 ```
@@ -58,7 +59,8 @@ runs here.)
 
 > **Runtime env in production:** the standalone server does **not** auto-load the
 > repo-root `.env` files (its CWD is `course-landing/`). Make the shared vars
-> (`MONGODB_URI`, `EPS_*`, `META_*`, `NEXT_PUBLIC_META_PIXEL_ID`, `TIKTOK_*`, plus the
+> (`MONGODB_URI`, `EPS_*`, `META_*`, `NEXT_PUBLIC_META_PIXEL_ID`, `TIKTOK_*`,
+> `NEXT_PUBLIC_GTM_ID`, `NEXT_PUBLIC_CLARITY_ID`, plus the
 > subdomain `NEXTAUTH_URL`) present in the process environment by ONE of:
 > - listing them in the pm2 `ecosystem.config.js` `env` block, or
 > - copying/symlinking the root `.env` / `.env.local` into `course-landing/` before
