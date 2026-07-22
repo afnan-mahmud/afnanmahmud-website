@@ -50,6 +50,7 @@ export const PERMISSIONS: PermSection[] = [
       { key: 'students.view', label: 'View students & abandoned' },
       { key: 'students.add', label: 'Add / manually enroll student' },
       { key: 'students.refund', label: 'Request course refund' },
+      { key: 'students.notes', label: 'Add call notes on a student' },
     ],
   },
   {

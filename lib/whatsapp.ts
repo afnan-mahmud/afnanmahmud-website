@@ -43,7 +43,7 @@ export function isConfigured(): boolean {
  * Convert a BD local phone (`01XXXXXXXXX`, as stored on `User.phone`) to a
  * WhatsApp wa_id (`8801XXXXXXXXX`). Mirrors the `88` prefixing in `lib/sms.ts`.
  */
-function localPhoneToWaId(phone: string): string {
+export function localPhoneToWaId(phone: string): string {
   const digits = phone.replace(/\D/g, '');
   return digits.startsWith('88') ? digits : `88${digits}`;
 }

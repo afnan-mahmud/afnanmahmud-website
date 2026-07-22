@@ -7,6 +7,7 @@ import { Space_Grotesk, Inter } from 'next/font/google';
 import AddStudentModal, { type CourseOption } from './AddStudentModal';
 import RefundModal from './RefundModal';
 import StudentDetailsModal from './StudentDetailsModal';
+import Avatar from './Avatar';
 import Pagination from './Pagination';
 import { formatDhakaDate } from '@/lib/date';
 
@@ -22,15 +23,6 @@ interface StudentRow {
   enrolledCount: number;
   enrolledCourses: EnrolledCourse[];
   createdAt: string;
-}
-
-function Avatar({ name, avatar }: { name: string; avatar?: string }) {
-  const initials = name.slice(0, 2).toUpperCase();
-  return (
-    <div style={{ width: 32, height: 32, borderRadius: '50%', background: avatar ? `url(${avatar}) center/cover` : 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundSize: 'cover' }}>
-      {!avatar && <span className={sg.className} style={{ color: 'white', fontWeight: 700, fontSize: '0.6875rem' }}>{initials}</span>}
-    </div>
-  );
 }
 
 interface StudentsTableProps {

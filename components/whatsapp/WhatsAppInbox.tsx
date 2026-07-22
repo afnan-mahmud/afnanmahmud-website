@@ -1,13 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { Space_Grotesk, Inter } from 'next/font/google';
-import { Send, MessageCircle } from 'lucide-react';
+import { Send, MessageCircle, ArrowLeft } from 'lucide-react';
+import SavedRepliesMenu from './SavedRepliesMenu';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
 
 const POLL_MS = 7000;
+/** Below this width the inbox switches to WhatsApp-style list → full-screen chat. */
+const MOBILE_QUERY = '(max-width: 720px)';
 
 interface Conversation {
   waId: string;
@@ -48,6 +51,45 @@ const dhakaTime = (iso: string) =>
     month: 'short',
   }).format(new Date(iso));
 
+/** True while the viewport matches `query`; false during SSR and first paint. */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [query]);
+  return matches;
+}
+
+/**
+ * The *visual* viewport — the part of the page not covered by the on-screen
+ * keyboard. Mobile Safari does not shrink the layout viewport (`100vh`/`100dvh`)
+ * when the keyboard opens, so a bottom-pinned composer ends up underneath it and
+ * you can't see what you're typing. Sizing the chat overlay to `visualViewport`
+ * (and offsetting it by `offsetTop`, which is non-zero while the page is pinch-
+ * scrolled) is the only reliable fix. Returns null where the API is missing —
+ * callers fall back to `100dvh`.
+ */
+function useVisualViewport(): { height: number; offsetTop: number } | null {
+  const [vv, setVv] = useState<{ height: number; offsetTop: number } | null>(null);
+  useEffect(() => {
+    const v = window.visualViewport;
+    if (!v) return;
+    const update = () => setVv({ height: v.height, offsetTop: v.offsetTop });
+    update();
+    v.addEventListener('resize', update);
+    v.addEventListener('scroll', update);
+    return () => {
+      v.removeEventListener('resize', update);
+      v.removeEventListener('scroll', update);
+    };
+  }, []);
+  return vv;
+}
+
 export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeWaId, setActiveWaId] = useState<string | null>(null);
@@ -57,6 +99,10 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const isMobile = useMediaQuery(MOBILE_QUERY);
+  const vv = useVisualViewport();
+  const chatOpen = isMobile && Boolean(activeWaId);
 
   const loadConversations = useCallback(async () => {
     try {
@@ -96,16 +142,32 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
     return () => clearInterval(id);
   }, [activeWaId, loadThread]);
 
-  // Keep the thread scrolled to the newest message.
+  // Keep the thread scrolled to the newest message — also when the keyboard
+  // opens and shrinks the visible area (vv.height changes).
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [messages]);
+  }, [messages, vv?.height]);
+
+  // The full-screen chat is a fixed overlay; stop the page behind it scrolling.
+  useEffect(() => {
+    if (!chatOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [chatOpen]);
 
   const openConversation = (waId: string) => {
     setActiveWaId(waId);
     setError(null);
     // Optimistically clear the unread dot in the list.
     setConversations((prev) => prev.map((c) => (c.waId === waId ? { ...c, unreadCount: 0 } : c)));
+  };
+
+  const closeConversation = () => {
+    setActiveWaId(null);
+    setContact(null);
+    setMessages([]);
+    setError(null);
   };
 
   const send = async () => {
@@ -144,9 +206,23 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
       ? '24-ghontar window shesh — customer notun message na dile reply pathano jabe na.'
       : null;
 
+  const composer = (
+    <Composer
+      draft={draft}
+      setDraft={setDraft}
+      onSend={send}
+      sending={sending}
+      disabled={replyDisabled}
+      note={replyNote}
+      error={error}
+      compact={isMobile}
+      canManageReplies={canReply}
+    />
+  );
+
   return (
-    <div className="wa-inbox" style={{ display: 'flex', height: 'calc(100vh - 0px)', minHeight: 0 }}>
-      {/* Conversation list */}
+    <div className="wa-inbox" style={{ display: 'flex', height: '100vh', minHeight: 0 }}>
+      {/* Conversation list — the only pane on mobile. */}
       <aside
         className="wa-list"
         style={{
@@ -169,7 +245,7 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
             </p>
           ) : (
             conversations.map((c) => {
-              const active = c.waId === activeWaId;
+              const active = !isMobile && c.waId === activeWaId;
               return (
                 <button
                   key={c.waId}
@@ -211,8 +287,8 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
         </div>
       </aside>
 
-      {/* Thread */}
-      <section style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+      {/* Desktop thread pane (hidden on mobile — the overlay below replaces it). */}
+      <section className="wa-thread-pane" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
         {!activeWaId ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#52525b' }}>
             <MessageCircle size={40} />
@@ -220,7 +296,6 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
           </div>
         ) : (
           <>
-            {/* Thread header */}
             <div style={{ padding: '14px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <p className={sg.className} style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '0.9375rem', margin: 0 }}>
                 {contact?.name ?? activeWaId}
@@ -229,75 +304,173 @@ export default function WhatsAppInbox({ canReply }: { canReply: boolean }) {
                 +{activeWaId}{contact?.studentName ? ` · ${contact.studentName} (student)` : ''}
               </p>
             </div>
-
-            {/* Messages */}
-            <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {messages.map((m) => (
-                <MessageBubble key={m.id} m={m} />
-              ))}
-            </div>
-
-            {/* Reply box */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '14px 24px' }}>
-              {replyNote && (
-                <p className={inter.className} style={{ color: '#f59e0b', fontSize: '0.75rem', margin: '0 0 8px' }}>
-                  {replyNote}
-                </p>
-              )}
-              {error && (
-                <p className={inter.className} style={{ color: '#f87171', fontSize: '0.75rem', margin: '0 0 8px' }}>
-                  {error}
-                </p>
-              )}
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      send();
-                    }
-                  }}
-                  disabled={replyDisabled || sending}
-                  placeholder={replyDisabled ? 'Reply disabled' : 'Message likhun…'}
-                  rows={1}
-                  className={inter.className}
-                  style={{
-                    flex: 1, resize: 'none', maxHeight: 120,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 10, color: '#e2e8f0', padding: '10px 14px',
-                    fontSize: '0.875rem', outline: 'none',
-                    opacity: replyDisabled ? 0.5 : 1,
-                  }}
-                />
-                <button
-                  onClick={send}
-                  disabled={replyDisabled || sending || !draft.trim()}
-                  className={sg.className}
-                  style={{
-                    background: '#22c55e', color: '#fff', border: 'none', borderRadius: 10,
-                    padding: '10px 16px', fontWeight: 700, fontSize: '0.875rem',
-                    cursor: replyDisabled || sending || !draft.trim() ? 'not-allowed' : 'pointer',
-                    opacity: replyDisabled || sending || !draft.trim() ? 0.5 : 1,
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}
-                >
-                  <Send size={15} /> {sending ? '…' : 'Send'}
-                </button>
-              </div>
-            </div>
+            {!isMobile && <MessageList listRef={scrollRef} messages={messages} />}
+            {!isMobile && composer}
           </>
         )}
       </section>
 
+      {/* Mobile: the chat is its own full-screen view, sized to the visual
+          viewport so the composer stays above the keyboard. */}
+      {chatOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            top: vv ? vv.offsetTop : 0,
+            height: vv ? vv.height : '100dvh',
+            zIndex: 120,
+            background: '#0a0a0a',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#111111', flexShrink: 0 }}>
+            <button onClick={closeConversation} aria-label="Back to conversations" style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', padding: 4, display: 'flex' }}>
+              <ArrowLeft size={20} />
+            </button>
+            <div style={{ minWidth: 0 }}>
+              <p className={sg.className} style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '0.9375rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {contact?.name ?? activeWaId}
+              </p>
+              <p className={inter.className} style={{ color: '#71717a', fontSize: '0.75rem', margin: '1px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                +{activeWaId}{contact?.studentName ? ` · ${contact.studentName} (student)` : ''}
+              </p>
+            </div>
+          </div>
+          <MessageList listRef={scrollRef} messages={messages} />
+          {composer}
+        </div>
+      )}
+
       <style>{`
         @media (max-width: 720px) {
-          .wa-inbox { flex-direction: column; height: auto !important; }
-          .wa-list { width: 100% !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07); max-height: 40vh; }
+          .wa-inbox { height: auto !important; }
+          .wa-list { width: 100% !important; border-right: none !important; }
+          .wa-thread-pane { display: none !important; }
         }
       `}</style>
+    </div>
+  );
+}
+
+function MessageList({ listRef, messages }: { listRef: RefObject<HTMLDivElement | null>; messages: Message[] }) {
+  return (
+    <div
+      ref={listRef}
+      className="wa-messages"
+      style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}
+    >
+      {messages.length === 0 ? (
+        <p className={inter.className} style={{ color: '#52525b', fontSize: '0.875rem', textAlign: 'center', margin: 'auto 0' }}>
+          Kono message nei
+        </p>
+      ) : (
+        messages.map((m) => <MessageBubble key={m.id} m={m} />)
+      )}
+    </div>
+  );
+}
+
+function Composer({
+  draft, setDraft, onSend, sending, disabled, note, error, compact, canManageReplies,
+}: {
+  draft: string;
+  setDraft: (v: string) => void;
+  onSend: () => void;
+  sending: boolean;
+  disabled: boolean;
+  note: string | null;
+  error: string | null;
+  compact: boolean;
+  canManageReplies: boolean;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const blocked = disabled || sending || !draft.trim();
+
+  // Grow with the text, like WhatsApp, up to ~5 lines.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }, [draft]);
+
+  return (
+    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: compact ? '10px 12px' : '14px 24px', background: '#111111', flexShrink: 0 }}>
+      {note && (
+        <p className={inter.className} style={{ color: '#f59e0b', fontSize: '0.75rem', margin: '0 0 8px' }}>{note}</p>
+      )}
+      {error && (
+        <p className={inter.className} style={{ color: '#f87171', fontSize: '0.75rem', margin: '0 0 8px' }}>{error}</p>
+      )}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <SavedRepliesMenu
+          canManage={canManageReplies}
+          onPick={(text) => {
+            setDraft(text);
+            // Land the caret at the end so the operator can keep typing.
+            requestAnimationFrame(() => {
+              const el = ref.current;
+              if (!el) return;
+              el.focus();
+              el.setSelectionRange(text.length, text.length);
+            });
+          }}
+        />
+        <textarea
+          ref={ref}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            // On mobile Enter inserts a newline (the send icon is the only way to
+            // send); on desktop Enter sends and Shift+Enter breaks the line.
+            if (!compact && e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              onSend();
+            }
+          }}
+          disabled={disabled || sending}
+          placeholder={disabled ? 'Reply disabled' : 'Message likhun…'}
+          rows={1}
+          className={inter.className}
+          style={{
+            flex: 1, resize: 'none', maxHeight: 120,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: compact ? 20 : 10,
+            color: '#e2e8f0',
+            padding: compact ? '10px 14px' : '10px 14px',
+            // <16px triggers iOS Safari's auto-zoom on focus, which breaks the layout.
+            fontSize: compact ? '1rem' : '0.875rem',
+            outline: 'none',
+            opacity: disabled ? 0.5 : 1,
+          }}
+        />
+        <button
+          onClick={onSend}
+          disabled={blocked}
+          aria-label="Send"
+          className={sg.className}
+          style={{
+            background: '#22c55e', color: '#fff', border: 'none',
+            borderRadius: compact ? '50%' : 10,
+            width: compact ? 42 : undefined,
+            height: compact ? 42 : undefined,
+            padding: compact ? 0 : '10px 16px',
+            fontWeight: 700, fontSize: '0.875rem',
+            cursor: blocked ? 'not-allowed' : 'pointer',
+            opacity: blocked ? 0.5 : 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            flexShrink: 0,
+          }}
+        >
+          <Send size={compact ? 18 : 15} />
+          {!compact && (sending ? '…' : 'Send')}
+        </button>
+      </div>
     </div>
   );
 }
@@ -308,7 +481,7 @@ function MessageBubble({ m }: { m: Message }) {
     <div style={{ display: 'flex', justifyContent: out ? 'flex-end' : 'flex-start' }}>
       <div
         style={{
-          maxWidth: '70%',
+          maxWidth: '78%',
           background: out ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
           border: `1px solid ${out ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.08)'}`,
           borderRadius: 12, padding: '8px 12px',
@@ -322,7 +495,7 @@ function MessageBubble({ m }: { m: Message }) {
           <video src={m.mediaPath} controls style={{ maxWidth: '100%', borderRadius: 8, marginBottom: m.text ? 6 : 0 }} />
         )}
         {m.type === 'audio' && m.mediaPath && (
-          <audio src={m.mediaPath} controls style={{ display: 'block', marginBottom: m.text ? 6 : 0 }} />
+          <audio src={m.mediaPath} controls style={{ display: 'block', maxWidth: '100%', marginBottom: m.text ? 6 : 0 }} />
         )}
         {m.type === 'document' && m.mediaPath && (
           <a href={m.mediaPath} target="_blank" rel="noopener noreferrer" className={inter.className} style={{ color: '#a5b4fc', fontSize: '0.8125rem', textDecoration: 'underline', display: 'block', marginBottom: m.text ? 6 : 0 }}>

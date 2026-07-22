@@ -1,7 +1,10 @@
 import { connectDB } from '@/lib/db';
 import { User } from '@/models/User';
-import StudentsTable from '@/components/admin/StudentsTable';
+import { Order } from '@/models/Order';
+import { StudentNote } from '@/models/StudentNote';
+import AbandonedStudentsTable, { type AbandonedRow } from '@/components/admin/AbandonedStudentsTable';
 import { requirePage } from '@/lib/permissions.server';
+import { can } from '@/lib/permissions';
 
 const PAGE_SIZE = 20;
 
@@ -10,7 +13,7 @@ export default async function AbandonedStudentsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  await requirePage('students.view');
+  const access = await requirePage('students.view');
 
   const { page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
@@ -36,27 +39,42 @@ export default async function AbandonedStudentsPage({
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const students = raw.map((u) => ({
+  // Per-row counts for just this page's students — how many times they hit
+  // checkout, and how many call notes we've logged against them.
+  const ids = raw.map((u) => u._id);
+  const [attemptAgg, noteAgg] = await Promise.all([
+    Order.aggregate<{ _id: unknown; count: number }>([
+      { $match: { student: { $in: ids } } },
+      { $group: { _id: '$student', count: { $sum: 1 } } },
+    ]),
+    StudentNote.aggregate<{ _id: unknown; count: number }>([
+      { $match: { student: { $in: ids } } },
+      { $group: { _id: '$student', count: { $sum: 1 } } },
+    ]),
+  ]);
+  const attempts = new Map(attemptAgg.map((a) => [String(a._id), a.count]));
+  const notes = new Map(noteAgg.map((n) => [String(n._id), n.count]));
+
+  const students: AbandonedRow[] = raw.map((u) => ({
     _id: String(u._id),
     name: u.name,
     phone: u.phone,
     avatar: u.avatar,
-    enrolledCount: 0,
-    enrolledCourses: [],
+    attempts: attempts.get(String(u._id)) ?? 0,
+    notes: notes.get(String(u._id)) ?? 0,
     createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
   }));
 
   return (
-    <StudentsTable
+    <AbandonedStudentsTable
       students={students}
-      title="Abandoned Students"
-      emptyMessage="No abandoned students"
-      showEnrolled={false}
       page={page}
       totalPages={totalPages}
       total={total}
       pageSize={PAGE_SIZE}
       basePath="/admin/abandoned-students"
+      canNote={can(access, 'students.notes')}
+      canWhatsApp={can(access, 'whatsapp.reply')}
     />
   );
 }
