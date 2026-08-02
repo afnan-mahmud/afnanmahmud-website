@@ -1,19 +1,20 @@
 'use client';
 
 import Script from 'next/script';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { META_PIXEL_ID, trackPixel } from '@/lib/meta-pixel';
 
 function PageViewTracker() {
+  // Keyed on pathname only — see the note in GoogleTagManager: a query-string
+  // change is UI state here, and counting it double-fired PageView.
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Fire PageView on every client-side route change (the base script fires
     // the first one on load).
     trackPixel('PageView');
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
@@ -50,9 +51,7 @@ export default function MetaPixel() {
           src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
         />
       </noscript>
-      <Suspense fallback={null}>
-        <PageViewTracker />
-      </Suspense>
+      <PageViewTracker />
     </>
   );
 }

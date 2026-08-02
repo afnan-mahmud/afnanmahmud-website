@@ -1,20 +1,22 @@
 'use client';
 
 import Script from 'next/script';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { GTM_ID, GTM_EVENT, pushToDataLayer } from '@/lib/gtm';
 
 function GtmPageView() {
+  // Keyed on pathname only. Query strings here are UI state, not new pages —
+  // the ai-for-developers gate writes ?seg=… with replaceState, and Next syncs
+  // that into useSearchParams, so depending on it double-counted the pageview.
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Mirror MetaPixel: push page_view on every client-side route change. The
     // base snippet fires gtm.js once on load; GTM's own Page View trigger can
     // also key off this custom event for SPA navigations.
     pushToDataLayer(GTM_EVENT.pageView, { page_path: pathname });
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
@@ -45,9 +47,7 @@ export default function GoogleTagManager() {
           style={{ display: 'none', visibility: 'hidden' }}
         />
       </noscript>
-      <Suspense fallback={null}>
-        <GtmPageView />
-      </Suspense>
+      <GtmPageView />
     </>
   );
 }

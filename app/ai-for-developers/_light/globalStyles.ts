@@ -1,0 +1,120 @@
+/**
+ * The light landing's design tokens + component classes, ported from the
+ * course.afnanmahmud.com app's `globals.css`.
+ *
+ * It ships as a <style> string injected by the page (the same pattern the dark
+ * landing uses) rather than an imported stylesheet, because a real CSS import
+ * would be hoisted into <head> alongside the app's own globals — the token
+ * block and the html/body colors need to land *after* them to win. Injecting
+ * from the page body also means these rules only exist on this route.
+ *
+ * Tokens hang off `.cl-light` instead of `:root` so the rest of the app keeps
+ * its own theme. The `.card-*` / `.btn-accent` / `.accent-*` classes stay
+ * unscoped on purpose: raising them to `.cl-light .card-soft` would out-specify
+ * the Tailwind utilities the sections use to override them. Their names are
+ * unique to this landing, so there is nothing to collide with.
+ */
+export const lightGlobalStyles = `
+  html { scroll-behavior: smooth; background-color: #f7f8fb; }
+  body { background: #f7f8fb; color: #0f172a; }
+
+  /*
+   * Segment accent colors are injected per-page as --seg-accent / --seg-accent-2
+   * (raw "R G B" triples) via themeStyle() so sections can build rgb(var(--..)/α).
+   */
+  .cl-light {
+    --bg: #f7f8fb;
+    --surface: #ffffff;
+    --ink: #0f172a;
+    --ink-soft: #475569;
+    --ink-muted: #64748b;
+    --line: #e6e9f0;
+    /* Sensible default accent (sky/indigo) until a segment sets its own. */
+    --seg-accent: 56 189 248;
+    --seg-accent-2: 99 102 241;
+
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-bangla), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Soft elevated card used across sections. */
+  .card-soft {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 30px -12px rgb(15 23 42 / 0.10);
+  }
+
+  /*
+   * Full-color feature card. Fills with the segment gradient and flips text to
+   * white — set --seg-accent / --seg-accent-2 per card (see cardAccent() in ui)
+   * to give a grid a fresh, multi-color energy.
+   */
+  .card-color {
+    background: linear-gradient(150deg, rgb(var(--seg-accent)), rgb(var(--seg-accent-2)));
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 1rem;
+    color: #fff;
+    box-shadow: 0 14px 34px -14px rgb(var(--seg-accent-2) / 0.55);
+  }
+
+  /* Accent-tinted glass panel (light). */
+  .panel-accent {
+    background: linear-gradient(180deg, #ffffff 0%, rgb(var(--seg-accent) / 0.04) 100%);
+    border: 1px solid rgb(var(--seg-accent) / 0.22);
+    border-radius: 1.25rem;
+  }
+
+  .accent-text {
+    color: rgb(var(--seg-accent-2));
+  }
+
+  /* Gradient text using the segment accents. */
+  .accent-gradient {
+    background-image: linear-gradient(
+      90deg,
+      rgb(var(--seg-accent)),
+      rgb(var(--seg-accent-2))
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Primary pill button. */
+  .btn-accent {
+    background-image: linear-gradient(
+      90deg,
+      rgb(var(--seg-accent)),
+      rgb(var(--seg-accent-2))
+    );
+    color: #fff;
+    box-shadow: 0 10px 24px -8px rgb(var(--seg-accent-2) / 0.55);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+  .btn-accent:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px -8px rgb(var(--seg-accent-2) / 0.7);
+    filter: saturate(1.05);
+  }
+  .btn-accent:active {
+    transform: scale(0.98);
+  }
+
+  /* Horizontal chip scroller in TimelineNav — swipeable, no visible scrollbar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Keep anchor targets clear of the pinned TimelineNav when jumping to them. */
+  .cl-light section[id] {
+    scroll-margin-top: 5rem;
+  }
+`;

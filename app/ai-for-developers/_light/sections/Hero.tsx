@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Star, Users, ShieldCheck, PlayCircle, MonitorPlay } from 'lucide-react';
 import type { HeroContent } from '@/app/ai-for-developers/_landing/content';
 import { Container, GradientText, Reveal } from '../ui';
@@ -107,8 +108,8 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
           {/* Third CTA: Demo class button — vibrant, colorful, and focused */}
           <Reveal delay={280}>
             <div className="mt-4 flex justify-center">
-              <a
-                href="https://afnanmahmud.com/ai-for-developers/demo"
+              <Link
+                href="/ai-for-developers/demo"
                 className="group relative inline-flex w-full sm:w-auto items-center justify-center rounded-full p-[2px] bg-[linear-gradient(135deg,rgb(var(--seg-accent)),rgb(var(--seg-accent-2)),#ec4899)] shadow-[0_10px_28px_-6px_rgba(236,72,153,0.35),0_8px_20px_-6px_rgb(var(--seg-accent-2)/0.35)] hover:shadow-[0_14px_36px_-4px_rgba(236,72,153,0.5),0_10px_24px_-4px_rgb(var(--seg-accent-2)/0.55)] hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
               >
                 <span className="inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-full bg-white px-7 py-3.5 text-base font-extrabold text-[var(--ink)] transition-colors group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-50">
@@ -122,7 +123,7 @@ export function Hero({ content, enrolledLabel }: { content: HeroContent; enrolle
                     ফ্রি
                   </span>
                 </span>
-              </a>
+              </Link>
             </div>
           </Reveal>
 

@@ -27,8 +27,8 @@ export const beginner: SegmentContent = {
   },
   sectionOrder: ['painPoints', 'socialProof', 'whyBest', 'outcomes', 'curriculum', 'audience', 'instructor', 'feedback', 'cta2', 'faq'],
   hero: {
-    headlineLead: 'কোডিং ভয়? এবার',
-    headlineAccent: 'AI-ই আপনার প্রোগ্রামার',
+    headlineLead: 'কোডিং নিয়ে ভয়? এবার',
+    headlineAccent: 'AI-ই কে বানান আপনার Assistant প্রোগ্রামার',
     headlineTrail: '।',
     subheadline:
       'একদম শূন্য থেকে শুরু, কোডিং না জেনেও AI-কে গাইড করে নিজের হাতে অ্যাপ ও ওয়েবসাইট বানান।',

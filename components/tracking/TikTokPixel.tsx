@@ -1,19 +1,20 @@
 'use client';
 
 import Script from 'next/script';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { TIKTOK_PIXEL_ID } from '@/lib/tiktok-pixel';
 
 function PageViewTracker() {
+  // Keyed on pathname only — see the note in GoogleTagManager: a query-string
+  // change is UI state here, and counting it double-fired the page view.
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Fire a TikTok page view on every client-side route change (the base
     // script fires the first one on load).
     if (typeof window !== 'undefined' && window.ttq) window.ttq.page();
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
@@ -41,9 +42,7 @@ export default function TikTokPixel() {
           }(window, document, 'ttq');
         `}
       </Script>
-      <Suspense fallback={null}>
-        <PageViewTracker />
-      </Suspense>
+      <PageViewTracker />
     </>
   );
 }

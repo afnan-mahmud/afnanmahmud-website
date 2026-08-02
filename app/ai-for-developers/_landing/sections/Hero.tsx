@@ -35,11 +35,18 @@ export function Hero({ content }: { content: HeroContent }) {
               <Link
                 href="/ai-for-developers/demo"
                 className="group relative inline-flex rounded-xl p-[2px] shadow-lg hover:-translate-y-1 active:scale-95 transition-all"
-                style={{ backgroundImage: 'linear-gradient(to right, rgb(var(--seg-accent)), rgb(var(--seg-accent-2)))' }}
+                style={{ backgroundImage: 'linear-gradient(to right, rgb(var(--seg-accent)), rgb(var(--seg-accent-2)), #ec4899)' }}
               >
-                <span className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-slate-950 px-8 py-4 text-white font-bold text-lg group-hover:bg-slate-900 transition-colors">
-                  <MonitorPlay size={20} style={{ color: 'rgb(var(--seg-accent))' }} />
-                  ডেমো ক্লাস দেখুন
+                <span className="inline-flex items-center justify-center gap-2.5 rounded-[10px] bg-slate-950 px-8 py-4 text-white font-bold text-lg group-hover:bg-slate-900 transition-colors">
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+                  </span>
+                  <MonitorPlay size={20} style={{ color: 'rgb(var(--seg-accent))' }} className="transition-transform group-hover:scale-110" />
+                  <span>ডেমো ক্লাস দেখুন</span>
+                  <span className="rounded-full bg-gradient-to-r from-rose-500 to-pink-500 px-2 py-0.5 text-xs font-black text-white shadow-sm">
+                    ফ্রি
+                  </span>
                 </span>
               </Link>
             </div>
