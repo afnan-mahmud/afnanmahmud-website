@@ -1,7 +1,11 @@
 import { createHash, randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
+import { isOwnedUrl, ownedOrigin } from '@/lib/owned-hosts';
 
 const GRAPH_VERSION = 'v21.0';
+
+/** ISO 3166-1 alpha-2, lowercase — Meta's expected `country` format before hashing. */
+const FUNNEL_COUNTRY = 'bd';
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const ACCESS_TOKEN = process.env.META_CAPI_ACCESS_TOKEN;
@@ -56,7 +60,7 @@ export interface CapiUserInfo {
   externalId?: string;
 }
 
-interface RequestSignals {
+export interface RequestSignals {
   fbp?: string;
   fbc?: string;
   clientIpAddress?: string;
@@ -64,8 +68,36 @@ interface RequestSignals {
   eventSourceUrl?: string;
 }
 
+export interface CapiSignalOptions {
+  /**
+   * Canonical *owned* URL to report as `event_source_url` when the request's
+   * referer is a domain we don't own. Required for the Purchase on
+   * `/api/payment/success`, whose referer is the EPS gateway.
+   */
+  canonicalUrl?: string;
+}
+
+/**
+ * Resolve `event_source_url`, never letting a foreign domain through:
+ * owned referer (the normal case for ViewContent / InitiateCheckout) → the
+ * caller's canonical owned URL → this request's own URL if owned → our origin.
+ */
+function resolveEventSourceUrl(
+  referer: string | null,
+  canonicalUrl: string | undefined,
+  requestUrl: string
+): string {
+  if (isOwnedUrl(referer)) return referer!;
+  if (canonicalUrl) return canonicalUrl;
+  if (isOwnedUrl(requestUrl)) return requestUrl;
+  return ownedOrigin();
+}
+
 /** Pull fbp/fbc cookies, client IP, user-agent and URL from an incoming request. */
-export function capiSignalsFromRequest(req: NextRequest): RequestSignals {
+export function capiSignalsFromRequest(
+  req: NextRequest,
+  opts?: CapiSignalOptions
+): RequestSignals {
   const fbp = req.cookies.get('_fbp')?.value;
   const fbc = req.cookies.get('_fbc')?.value;
   const fwd = req.headers.get('x-forwarded-for');
@@ -76,7 +108,11 @@ export function capiSignalsFromRequest(req: NextRequest): RequestSignals {
     fbc,
     clientIpAddress,
     clientUserAgent,
-    eventSourceUrl: req.headers.get('referer') ?? req.nextUrl.href,
+    eventSourceUrl: resolveEventSourceUrl(
+      req.headers.get('referer'),
+      opts?.canonicalUrl,
+      req.nextUrl.href
+    ),
   };
 }
 
@@ -98,6 +134,10 @@ function buildUserData(user: CapiUserInfo, signals: RequestSignals) {
   }
   const ext = hashField(user.externalId);
   if (ext) ud.external_id = [ext];
+  // The funnel is Bangladesh-only by construction (BD phone regex, BDT-only
+  // pricing), so country is deterministic — free match quality on every event.
+  const country = hashField(FUNNEL_COUNTRY);
+  if (country) ud.country = [country];
   if (signals.fbp) ud.fbp = signals.fbp;
   if (signals.fbc) ud.fbc = signals.fbc;
   if (signals.clientIpAddress) ud.client_ip_address = signals.clientIpAddress;
@@ -120,15 +160,25 @@ export interface CapiEventInput {
 export async function sendCapiEvent(input: CapiEventInput): Promise<void> {
   if (!isCapiEnabled()) return;
 
+  const userData = buildUserData(input.user, input.signals);
+  /**
+   * Meta requires client_user_agent on `website` events; without it the event is
+   * rejected outright. That only happens on the reconciliation path for orders
+   * created before capturedSignals existed (see lib/order-fulfillment.ts) — for
+   * those, `system_generated` is honest and accepted, where `website` with an
+   * empty context is neither.
+   */
+  const actionSource = userData.client_user_agent ? 'website' : 'system_generated';
+
   const payload = {
     data: [
       {
         event_name: input.eventName,
         event_time: Math.floor(Date.now() / 1000),
         event_id: input.eventId,
-        action_source: 'website',
+        action_source: actionSource,
         event_source_url: input.signals.eventSourceUrl,
-        user_data: buildUserData(input.user, input.signals),
+        user_data: userData,
         custom_data: input.customData,
       },
     ],

@@ -2,7 +2,8 @@ import { connectDB } from '@/lib/db';
 import { Order } from '@/models/Order';
 import { Course } from '@/models/Course';
 import { User } from '@/models/User';
-import { sendCapiEvent, newEventId, type CapiEventInput } from '@/lib/meta-capi';
+import { sendCapiEvent, newEventId, type CapiEventInput, type RequestSignals } from '@/lib/meta-capi';
+import type { IOrderCapturedSignals } from '@/models/Order';
 import { sendTikTokEvent, type TikTokSignals } from '@/lib/tiktok-events';
 import { sendPurchaseConfirmation } from '@/lib/sms';
 
@@ -19,6 +20,40 @@ export interface FinalizeResult {
   courseTitle: string;
   amount: number;
   currency: string;
+}
+
+/** True when these signals carry real browser context (i.e. came from a live request). */
+function hasBrowserContext(signals?: RequestSignals): boolean {
+  if (!signals) return false;
+  return Boolean(
+    signals.clientUserAgent ||
+      signals.clientIpAddress ||
+      signals.fbp ||
+      signals.fbc ||
+      signals.eventSourceUrl
+  );
+}
+
+/**
+ * Signals for the CAPI Purchase: the live request's if this call came from one
+ * (redirect / status poll — unchanged behaviour), otherwise the ones captured at
+ * enroll time and stored on the order. Only the reconciliation cron, which has
+ * no request of its own, ever reaches the stored branch. Whole-object fallback,
+ * never a field-level merge, so a live request's signals are used exactly as-is.
+ */
+function resolveSignals(
+  live: RequestSignals | undefined,
+  stored: IOrderCapturedSignals | undefined | null
+): RequestSignals {
+  if (hasBrowserContext(live)) return live!;
+  if (!stored) return {};
+  return {
+    fbp: stored.fbp,
+    fbc: stored.fbc,
+    clientIpAddress: stored.clientIpAddress,
+    clientUserAgent: stored.clientUserAgent,
+    eventSourceUrl: stored.eventSourceUrl,
+  };
 }
 
 /**
@@ -100,7 +135,7 @@ export async function finalizeSuccessfulOrder(
         name: purchaser?.name,
         externalId: String(order.student),
       },
-      signals: opts?.signals ?? {},
+      signals: resolveSignals(opts?.signals, order.capturedSignals),
       customData: {
         value: order.amount,
         currency: order.currency ?? 'BDT',

@@ -11,6 +11,9 @@ export async function GET(req: NextRequest) {
   const orderId = searchParams.get('orderId');
 
   const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3001';
+  // EPS is the referer on this redirect — a domain we don't own. Report the
+  // owned success page instead (see lib/owned-hosts.ts).
+  const capiOpts = { canonicalUrl: `${baseUrl}/payment/success` };
 
   if (!orderId) {
     return NextResponse.redirect(`${baseUrl}/payment/failed?reason=invalid_order`);
@@ -29,7 +32,7 @@ export async function GET(req: NextRequest) {
     // idempotently and go straight to the success page — no re-verification needed.
     if (order.status === 'success') {
       const fin = await finalizeSuccessfulOrder(orderId, {
-        signals: capiSignalsFromRequest(req),
+        signals: capiSignalsFromRequest(req, capiOpts),
         tiktokSignals: tiktokSignalsFromRequest(req),
       });
       return redirectSuccess(baseUrl, orderId, fin);
@@ -80,7 +83,7 @@ export async function GET(req: NextRequest) {
     // outcome === 'success'
     const fin = await finalizeSuccessfulOrder(orderId, {
       epsTransactionId,
-      signals: capiSignalsFromRequest(req),
+      signals: capiSignalsFromRequest(req, capiOpts),
       tiktokSignals: tiktokSignalsFromRequest(req),
     });
     return redirectSuccess(baseUrl, orderId, fin);

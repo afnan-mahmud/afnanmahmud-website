@@ -69,6 +69,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+    // ai-for-developers has a standalone landing page (/ai-for-developers),
+    // not a /courses/<slug> page.
+    const landingUrl = COURSE_SLUG === 'ai-for-developers'
+      ? `${baseUrl}/ai-for-developers`
+      : `${baseUrl}/courses/${COURSE_SLUG}`;
+
+    // Captured once here and reused for InitiateCheckout *and* stored on the
+    // order: if this buyer closes the tab before the EPS redirect, the
+    // reconciliation cron has no request of its own and would otherwise send
+    // the Purchase with no browser context at all.
+    const signals = capiSignalsFromRequest(req, { canonicalUrl: landingUrl });
+
     // Create pending order with a unique EPS merchant transaction id.
     const merchantTransactionId = newMerchantTransactionId();
     const order = await Order.create({
@@ -79,6 +92,7 @@ export async function POST(req: NextRequest) {
       paymentGateway: 'eps',
       merchantTransactionId,
       status: 'pending',
+      capturedSignals: signals,
     });
 
     // Meta InitiateCheckout — shared event id for browser/CAPI deduplication.
@@ -94,7 +108,7 @@ export async function POST(req: NextRequest) {
       eventName: 'InitiateCheckout',
       eventId,
       user: { phone: user.phone, email: user.email, name: user.name, externalId: String(user._id) },
-      signals: capiSignalsFromRequest(req),
+      signals,
       customData: {
         value: course.price,
         currency: 'BDT',
@@ -117,14 +131,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
     const successUrl = `${baseUrl}/api/payment/success?orderId=${order._id}`;
     const failUrl = `${baseUrl}/api/payment/fail?orderId=${order._id}`;
-    // ai-for-developers has a standalone landing page (/ai-for-developers),
-    // not a /courses/<slug> page, so send cancels back there.
-    const cancelUrl = COURSE_SLUG === 'ai-for-developers'
-      ? `${baseUrl}/ai-for-developers`
-      : `${baseUrl}/courses/${COURSE_SLUG}`;
+    // Send cancels back to the landing page the buyer came from.
+    const cancelUrl = landingUrl;
 
     // Dev mode: if EPS credentials not set, bypass payment and go straight to success
     if (!epsConfigured()) {

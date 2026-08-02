@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { GTM_ID, GTM_EVENT, pushToDataLayer } from '@/lib/gtm';
 
 function GtmPageView() {
@@ -10,11 +10,18 @@ function GtmPageView() {
   // the ai-for-developers gate writes ?seg=… with replaceState, and Next syncs
   // that into useSearchParams, so depending on it double-counted the pageview.
   const pathname = usePathname();
+  // Mirror MetaPixel's guard: skip the mount run, which the base gtm.js load
+  // already covers, and would otherwise double-count the first pageview.
+  const mounted = useRef(false);
 
   useEffect(() => {
-    // Mirror MetaPixel: push page_view on every client-side route change. The
-    // base snippet fires gtm.js once on load; GTM's own Page View trigger can
-    // also key off this custom event for SPA navigations.
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    // Push page_view on genuine client-side route changes. The base snippet
+    // fires gtm.js once on load; GTM's own Page View trigger can also key off
+    // this custom event for SPA navigations.
     pushToDataLayer(GTM_EVENT.pageView, { page_path: pathname });
   }, [pathname]);
 

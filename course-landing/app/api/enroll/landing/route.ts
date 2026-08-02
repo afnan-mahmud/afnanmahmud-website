@@ -56,6 +56,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const root = baseUrl();
+    // Captured once here and reused for InitiateCheckout *and* stored on the
+    // order: if this buyer closes the tab before the EPS redirect, the
+    // reconciliation cron has no request of its own and would otherwise send
+    // the Purchase with no browser context at all.
+    const signals = capiSignalsFromRequest(req, { canonicalUrl: `${root}/` });
+
     const merchantTransactionId = newMerchantTransactionId();
     const order = await Order.create({
       student: user._id,
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
       paymentGateway: 'eps',
       merchantTransactionId,
       status: 'pending',
+      capturedSignals: signals,
     });
 
     const eventId = newEventId();
@@ -80,7 +88,7 @@ export async function POST(req: NextRequest) {
       eventName: 'InitiateCheckout',
       eventId,
       user: { phone: user.phone, email: user.email, name: user.name, externalId: String(user._id) },
-      signals: capiSignalsFromRequest(req),
+      signals,
       customData: {
         value: course.price,
         currency: 'BDT',
@@ -103,7 +111,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const root = baseUrl();
     const successUrl = `${root}/api/payment/success?orderId=${order._id}`;
     const failUrl = `${root}/api/payment/fail?orderId=${order._id}`;
     const cancelUrl = `${root}/`;

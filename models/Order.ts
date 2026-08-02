@@ -1,5 +1,21 @@
 import { Schema, model, models, Document, Types } from 'mongoose';
 
+/**
+ * Browser context captured at order-creation time (the enroll POST), replayed by
+ * the fulfillment path when no live request signals exist — i.e. the
+ * reconciliation cron, whose buyers closed the tab before the EPS redirect.
+ * Without this their Purchase reaches Meta with no UA/IP/fbp/fbc and matches at
+ * ~zero quality.
+ */
+export interface IOrderCapturedSignals {
+  fbp?: string;
+  fbc?: string;
+  clientIpAddress?: string;
+  clientUserAgent?: string;
+  /** The owned landing-page URL the enrollment started from. */
+  eventSourceUrl?: string;
+}
+
 export interface IOrder extends Document {
   student: Types.ObjectId;
   course: Types.ObjectId;
@@ -18,12 +34,25 @@ export interface IOrder extends Document {
    * the single CAPI Purchase.
    */
   metaPurchaseEventId?: string;
+  /** Meta browser signals captured at enroll; absent on orders created before this field existed. */
+  capturedSignals?: IOrderCapturedSignals;
   status: 'pending' | 'success' | 'failed' | 'refunded';
   failReason?: string;
   /** When the abandoned-enrollment WhatsApp follow-up was sent (dedupe flag). */
   enrollFollowupSentAt?: Date;
   createdAt: Date;
 }
+
+const CapturedSignalsSchema = new Schema<IOrderCapturedSignals>(
+  {
+    fbp: { type: String },
+    fbc: { type: String },
+    clientIpAddress: { type: String },
+    clientUserAgent: { type: String },
+    eventSourceUrl: { type: String },
+  },
+  { _id: false }
+);
 
 const OrderSchema = new Schema<IOrder>(
   {
@@ -36,6 +65,9 @@ const OrderSchema = new Schema<IOrder>(
     transactionId: { type: String },
     epsOrderId: { type: String },
     metaPurchaseEventId: { type: String, default: null },
+    // No default: old orders simply have no sub-document, and the fulfillment
+    // path treats a missing one as "no stored signals".
+    capturedSignals: { type: CapturedSignalsSchema, default: undefined },
     status: {
       type: String,
       enum: ['pending', 'success', 'failed', 'refunded'],

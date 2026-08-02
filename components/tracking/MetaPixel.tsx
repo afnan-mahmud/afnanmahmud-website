@@ -2,17 +2,24 @@
 
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { META_PIXEL_ID, trackPixel } from '@/lib/meta-pixel';
 
 function PageViewTracker() {
   // Keyed on pathname only — see the note in GoogleTagManager: a query-string
   // change is UI state here, and counting it double-fired PageView.
   const pathname = usePathname();
+  // The effect also runs on mount, where the base snippet has already fired the
+  // load PageView — firing again there double-counted every landing-page view.
+  const mounted = useRef(false);
 
   useEffect(() => {
-    // Fire PageView on every client-side route change (the base script fires
-    // the first one on load).
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    // Fire PageView on genuine client-side route changes only (the base script
+    // fires the first one on load).
     trackPixel('PageView');
   }, [pathname]);
 
