@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { ChevronDown, Sparkles, Target, Layers, Code2, Cpu, Zap, Rocket, Globe, Smartphone, Check, Trophy } from 'lucide-react';
-import { Reveal, GradientText } from '../../LandingClient';
+import { Reveal, GradientText, toBn } from '../../LandingClient';
 import type { IconType } from '../content';
 
 type CurriculumAccordionProps = {
@@ -11,9 +11,11 @@ type CurriculumAccordionProps = {
   children: ReactNode;
   icon?: IconType;
   defaultOpen?: boolean;
+  /** Sub-label under the title; tells the visitor what a tap will reveal. */
+  hint?: string;
 };
 
-function CurriculumAccordion({ title, level, children, icon: Icon, defaultOpen = false }: CurriculumAccordionProps) {
+function CurriculumAccordion({ title, level, children, icon: Icon, defaultOpen = false, hint }: CurriculumAccordionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -25,8 +27,10 @@ function CurriculumAccordion({ title, level, children, icon: Icon, defaultOpen =
       }`}
     >
       <button
+        type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 md:p-6 text-left focus:outline-none group"
+        className="w-full flex items-center justify-between gap-3 p-5 md:p-6 text-left cursor-pointer focus:outline-none group"
       >
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 group-hover:border-[rgb(var(--seg-accent-2)/0.5)] group-hover:text-[rgb(var(--seg-accent-2))] transition-colors">
@@ -36,22 +40,23 @@ function CurriculumAccordion({ title, level, children, icon: Icon, defaultOpen =
           <div>
             <h3 className={`font-bold text-lg md:text-xl transition-colors duration-300 ${isOpen ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>{title}</h3>
             {Icon && (
-              <div className="flex items-center gap-2 mt-1 text-sm text-slate-500 group-hover:text-[rgb(var(--seg-accent-2)/0.8)] transition-colors">
-                <Icon size={14} /> <span>Unlock Modules</span>
+              <div className={`flex items-center gap-2 mt-1 text-sm transition-colors ${isOpen ? 'text-[rgb(var(--seg-accent-2)/0.8)]' : 'text-slate-400 group-hover:text-[rgb(var(--seg-accent-2)/0.8)]'}`}>
+                <Icon size={14} /> <span>{hint ?? 'Unlock Modules'}</span>
               </div>
             )}
           </div>
         </div>
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-[rgb(var(--seg-accent-2)/0.2)] text-[rgb(var(--seg-accent-2))]' : 'bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-white'}`}>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isOpen ? 'bg-[rgb(var(--seg-accent-2)/0.2)] text-[rgb(var(--seg-accent-2))]' : 'bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-white'}`}>
           <ChevronDown className={`transition-transform duration-500 ease-in-out ${isOpen ? 'rotate-180' : ''}`} size={20} />
         </div>
       </button>
-      <div
-        className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
-        style={{ overflow: 'hidden' }}
-      >
-        <div className="p-5 md:p-6 pt-0 text-slate-400 border-t border-slate-800/50 mt-2">
-          {children}
+      {/* grid-rows 0fr→1fr animates to the content's real height; a fixed max-h
+          silently clipped the longer modules on narrow screens. */}
+      <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <div className="p-5 md:p-6 pt-0 text-slate-400 border-t border-slate-800/50 mt-2">
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -204,7 +209,13 @@ export function Curriculum() {
                   {/* Timeline Node/Dot */}
                   <div className="absolute left-0 md:left-6 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-900 border-4 border-[rgb(var(--seg-accent-2))] z-10 shadow-[0_0_10px_rgb(var(--seg-accent-2)/0.6)] hidden sm:block"></div>
 
-                  <CurriculumAccordion title={mod.title} level={idx + 1} icon={mod.icon} defaultOpen={idx === 0}>
+                  <CurriculumAccordion
+                    title={mod.title}
+                    level={idx + 1}
+                    icon={mod.icon}
+                    hint={`${toBn(mod.points.length)}টি টপিক — দেখতে ট্যাপ করুন`}
+                    defaultOpen={idx === 0}
+                  >
                     <ul className="space-y-3 mt-4">
                       {mod.points.map((point, i) => (
                         <li key={i} className="flex items-start gap-3 group/item">

@@ -8,6 +8,7 @@ import { Space_Grotesk, Inter } from 'next/font/google';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, upgradeClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 const sg = Space_Grotesk({ subsets: ['latin'] });
 const inter = Inter({ subsets: ['latin'] });
@@ -68,6 +69,17 @@ function PaymentSuccessContent() {
       event_id: eid,
       ...(phone ? { user_data: { phone } } : {}),
     });
+
+    // Clarity gets the same conversion, minus the phone — no PII leaves here.
+    // `upgrade` keeps every buyer's session recording out of sampling.
+    trackClarity(CLARITY_EVENT.purchase, {
+      content_id: courseSlug || undefined,
+      content_name: courseTitle,
+      value: value ?? undefined,
+      currency,
+      transaction_id: txn,
+    });
+    upgradeClarity('purchase');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eid]);
 

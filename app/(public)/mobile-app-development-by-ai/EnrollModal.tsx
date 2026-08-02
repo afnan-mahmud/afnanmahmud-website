@@ -5,6 +5,7 @@ import { Inter, Poppins } from 'next/font/google';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, upgradeClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 const poppins = Poppins({ subsets: ['latin'], weight: ['600', '700', '800'] });
@@ -36,6 +37,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
   useEffect(() => {
     if (open) {
       pushToDataLayer(GTM_EVENT.enrollClick, { content_id: COURSE_SLUG });
+      trackClarity(CLARITY_EVENT.enrollClick, { content_id: COURSE_SLUG });
       formStarted.current = false;
       setError('');
       setTouched({ name: false, phone: false });
@@ -69,6 +71,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
     if (formStarted.current) return;
     formStarted.current = true;
     pushToDataLayer(GTM_EVENT.formStart, { content_id: COURSE_SLUG });
+    trackClarity(CLARITY_EVENT.formStart, { content_id: COURSE_SLUG });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -145,6 +148,14 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
             currency: data.currency ?? 'BDT',
             event_id: data.eventId,
           });
+          trackClarity(CLARITY_EVENT.beginCheckout, {
+            content_id: data.contentId,
+            content_name: data.contentName,
+            value: data.value,
+            currency: data.currency ?? 'BDT',
+          });
+          // Keep the recording of anyone who reached the gateway.
+          upgradeClarity('begin_checkout');
         }
         window.location.href = data.paymentUrl;
       }

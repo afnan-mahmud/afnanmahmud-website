@@ -5,6 +5,7 @@ import { Code, Code2, Sparkles, Cpu, Layers, Zap, Brain, Terminal, Briefcase, Gl
 import { EnrollProvider } from './EnrollContext';
 import ViewContentTracker from '@/components/tracking/ViewContentTracker';
 import WhatsAppFab from '@/components/whatsapp/WhatsAppFab';
+import { StickyEnrollBarConnected } from './_landing/StickyEnrollBarConnected';
 import { connectDB } from '@/lib/db';
 import { Course } from '@/models/Course';
 import {
@@ -108,7 +109,8 @@ export default async function AiForDevelopersPage() {
 
   return (
     <EnrollProvider>
-    <div className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
+    {/* pb-44 on mobile clears the fixed StickyEnrollBar so the footer stays reachable. */}
+    <div className="min-h-screen font-sans bg-[#020617] text-slate-200 overflow-x-hidden pb-44 lg:pb-0 selection:bg-indigo-500/30 selection:text-indigo-200">
       <style>{globalStyles}</style>
 
       <ViewContentTracker
@@ -150,7 +152,20 @@ export default async function AiForDevelopersPage() {
 
       <FooterDark />
 
-      <WhatsAppFab />
+      {/* Desktop keeps the round FAB; on mobile the sticky bar carries its own
+          WhatsApp button, so the two would otherwise overlap. */}
+      <WhatsAppFab desktopOnly />
+    </div>
+
+    {/* Outside the overflow-clipping wrapper so the fixed bar isn't clipped.
+        StickyEnrollBar paints from --seg-accent, which only the segment pages
+        set via themeStyle() — this LP supplies its own cyan → indigo pair. */}
+    <div style={{ ['--seg-accent' as string]: '34 211 238', ['--seg-accent-2' as string]: '99 102 241' }}>
+      <StickyEnrollBarConnected
+        originalPrice="~৳10,000"
+        price="৳990"
+        promoText="Early Bird অফার — ৳10,000 এর কোর্স ৳990"
+      />
     </div>
     </EnrollProvider>
   );

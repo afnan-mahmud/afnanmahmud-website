@@ -9,6 +9,7 @@ import OtpInput from '@/components/shared/OtpInput';
 import { trackPixel, setPixelAdvancedMatching } from '@/lib/meta-pixel';
 import { trackTikTok, identifyTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] });
 
@@ -136,6 +137,8 @@ function OtpPageContent() {
         event_id: eventId,
         ...(amDigits ? { user_data: { phone: amPhone } } : {}),
       });
+      // No phone tag here — Clarity only ever sees non-PII context.
+      trackClarity(CLARITY_EVENT.signUp);
       void fetch('/api/track/complete-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

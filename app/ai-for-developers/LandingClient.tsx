@@ -10,6 +10,10 @@ type IconType = ComponentType<{ size?: number | string; className?: string }>;
 
 const DEMO_VIDEO_SRC = '/course-demo.mp4';
 
+const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+/** Latin digits → Bangla, so counts read naturally inside Bangla copy. */
+export const toBn = (n: number | string) => String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
+
 type RevealProps = {
   children?: ReactNode;
   delay?: number;
@@ -70,16 +74,20 @@ type AccordionProps = {
   children: ReactNode;
   icon?: IconType;
   defaultOpen?: boolean;
+  /** Sub-label under the title; tells the visitor what a tap will reveal. */
+  hint?: string;
 };
 
-const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false }: AccordionProps) => {
+const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false, hint }: AccordionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
     <div className={`border rounded-2xl overflow-hidden transition-all duration-300 ease-out ${isOpen ? 'border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.15)] bg-slate-900/80' : 'border-slate-800 bg-slate-900/30 hover:border-indigo-500/30 hover:bg-slate-800/50'}`}>
       <button
+        type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 md:p-6 text-left focus:outline-none group"
+        className="w-full flex items-center justify-between gap-3 p-5 md:p-6 text-left cursor-pointer focus:outline-none group"
       >
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 group-hover:border-indigo-500/50 group-hover:text-indigo-400 transition-colors">
@@ -89,22 +97,23 @@ const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false }: 
           <div>
             <h3 className={`font-bold text-lg md:text-xl transition-colors duration-300 ${isOpen ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>{title}</h3>
             {Icon && (
-              <div className="flex items-center gap-2 mt-1 text-sm text-slate-500 group-hover:text-indigo-400/80 transition-colors">
-                <Icon size={14} /> <span>Unlock Modules</span>
+              <div className={`flex items-center gap-2 mt-1 text-sm transition-colors ${isOpen ? 'text-indigo-400/80' : 'text-slate-400 group-hover:text-indigo-400/80'}`}>
+                <Icon size={14} /> <span>{hint ?? 'Unlock Modules'}</span>
               </div>
             )}
           </div>
         </div>
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-white'}`}>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isOpen ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-white'}`}>
           <ChevronDown className={`transition-transform duration-500 ease-in-out ${isOpen ? 'rotate-180' : ''}`} size={20} />
         </div>
       </button>
-      <div
-        className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
-        style={{ overflow: 'hidden' }}
-      >
-        <div className="p-5 md:p-6 pt-0 text-slate-400 border-t border-slate-800/50 mt-2">
-          {children}
+      {/* grid-rows 0fr→1fr animates to the content's real height; a fixed max-h
+          silently clipped the longer modules on narrow screens. */}
+      <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <div className="p-5 md:p-6 pt-0 text-slate-400 border-t border-slate-800/50 mt-2">
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -113,10 +122,12 @@ const Accordion = ({ title, level, children, icon: Icon, defaultOpen = false }: 
 
 // --- MAIN PAGE COMPONENT ---
 
-// CTA buttons across the landing page scroll the visitor to the pricing
-// section (#pricing) instead of opening the enroll modal directly. The enroll
-// modal is opened only from the pricing section's own "Start Mission Now"
-// button (see PricingNeon).
+// Mid-page CTA buttons (EnrollButton, CtaBanner) scroll the visitor to the
+// pricing section (#pricing) rather than opening the enroll modal, so the
+// value breakdown does its job first. The exceptions are the hero CTAs and
+// the mobile sticky bar, which open the modal directly — by the time someone
+// taps a CTA in the hero they have not seen the syllabus anyway, and the
+// extra scroll hop was costing conversions on mobile.
 function scrollToPricing() {
   document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
 }
@@ -153,7 +164,7 @@ export function Navbar() {
 }
 
 export function HeroSection() {
-  const { openDemo } = useEnroll();
+  const { openEnroll, openDemo } = useEnroll();
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 overflow-hidden border-b border-slate-800/50 min-h-[90vh] flex items-center">
       {/* Cyberpunk Glow Effects */}
@@ -181,6 +192,41 @@ export function HeroSection() {
               </p>
             </Reveal>
 
+            {/* Mobile/tablet only: the offer is pulled up into the first
+                screenful. Previously price + enroll sat below a long body
+                paragraph and the demo video, so a phone visitor had to reach
+                #pricing (~70% scroll) before ever seeing ৳990. Desktop keeps
+                the original order — the CTA row below is already above the
+                fold there. Figures mirror PricingNeon (৳10,000 → ৳990). */}
+            <Reveal delay={250} direction="right">
+              <div className="lg:hidden mt-7 rounded-2xl border border-cyan-500/30 bg-slate-900/70 p-5 backdrop-blur-sm shadow-[0_0_30px_rgba(34,211,238,0.15)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-indigo-600 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white">
+                    <Sparkles size={12} /> Early Bird
+                  </span>
+                  <span className="text-xs font-black text-cyan-300">৯০% ছাড় — ৳9,010 সাশ্রয়</span>
+                </div>
+
+                <div className="flex items-end gap-3">
+                  <span className="text-xl font-bold text-slate-500 line-through">৳10,000</span>
+                  <span className="text-5xl font-black leading-none text-white drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]">৳990</span>
+                </div>
+                <p className="mt-2 text-sm text-slate-400">একবার পেমেন্ট — লাইফটাইম অ্যাক্সেস</p>
+
+                <button
+                  onClick={openEnroll}
+                  className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 px-6 py-4 text-lg font-black text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] active:scale-95 transition-all cursor-pointer"
+                >
+                  <Rocket size={20} />
+                  এখনই Enroll করুন
+                </button>
+
+                <div className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-emerald-300">
+                  <span aria-hidden="true">🛡️</span> ৭ দিনের মানি-ব্যাক গ্যারান্টি
+                </div>
+              </div>
+            </Reveal>
+
             <Reveal delay={300} direction="right">
               <p className="mt-5 sm:mt-6 max-w-2xl text-[15px] sm:text-base md:text-lg lg:text-xl text-slate-300/90 leading-relaxed sm:leading-loose tracking-wide [text-wrap:pretty] border-l-2 border-indigo-500/40 pl-4 sm:pl-5">
                 Coding এর ঝামেলা এখন <span className="bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent font-semibold">AI উপর ছেড়ে দিন</span>, মডার্ন AI হবে আপনার পার্সোনাল প্রোগ্রামার।
@@ -206,7 +252,10 @@ export function HeroSection() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                <button onClick={scrollToPricing} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
+                {/* Hero CTAs open the enroll modal directly. The rest of the
+                    page (EnrollButton, CtaBanner) still routes through
+                    #pricing so the value breakdown does its job first. */}
+                <button onClick={openEnroll} className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-lg shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer">
                   <Rocket className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" size={20} />
                   Enroll Now - ৳990
                 </button>
@@ -221,7 +270,8 @@ export function HeroSection() {
                   Demo Class
                 </Link>
               </div>
-              <div className="mt-5 inline-flex items-center gap-2.5 rounded-full border border-emerald-400/40 bg-gradient-to-r from-emerald-500/15 to-teal-500/10 px-4 py-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-sm">
+              {/* Mobile carries this badge inside the offer card above. */}
+              <div className="mt-5 hidden lg:inline-flex items-center gap-2.5 rounded-full border border-emerald-400/40 bg-gradient-to-r from-emerald-500/15 to-teal-500/10 px-4 py-2 shadow-[0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-sm">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/20 text-sm animate-float">🛡️</span>
                 <span className="text-sm font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-teal-200">৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
               </div>
@@ -547,7 +597,13 @@ export function CurriculumJourney() {
                   {/* Timeline Node/Dot */}
                   <div className="absolute left-0 md:left-6 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-900 border-4 border-indigo-500 z-10 shadow-[0_0_10px_rgba(99,102,241,0.6)] hidden sm:block"></div>
 
-                  <Accordion title={mod.title} level={idx + 1} icon={mod.icon} defaultOpen={idx === 0}>
+                  <Accordion
+                    title={mod.title}
+                    level={idx + 1}
+                    icon={mod.icon}
+                    hint={`${toBn(mod.points.length)}টি টপিক — দেখতে ট্যাপ করুন`}
+                    defaultOpen={idx === 0}
+                  >
                     <ul className="space-y-3 mt-4">
                       {mod.points.map((point, i) => (
                         <li key={i} className="flex items-start gap-3 group/item">

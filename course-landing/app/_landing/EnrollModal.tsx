@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Lock, Rocket, Loader2, ArrowRight } from 'lucide-react';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, upgradeClarity, CLARITY_EVENT } from '@/lib/clarity';
 import { useEnroll } from './EnrollContext';
-import { OTP_URL } from './constants';
+import { COURSE_SLUG, OTP_URL } from './constants';
 
 const RETRY_KEY = 'devc_enroll_retry';
 
@@ -21,9 +23,13 @@ export function EnrollModal() {
   const [done, setDone] = useState('');
   const [touched, setTouched] = useState({ name: false, phone: false });
   const nameRef = useRef<HTMLInputElement>(null);
+  const formStarted = useRef(false);
 
   useEffect(() => {
     if (!open) return;
+    pushToDataLayer(GTM_EVENT.enrollClick, { content_id: COURSE_SLUG });
+    trackClarity(CLARITY_EVENT.enrollClick, { content_id: COURSE_SLUG });
+    formStarted.current = false;
     setError('');
     setDone('');
     setTouched({ name: false, phone: false });
@@ -49,6 +55,13 @@ export function EnrollModal() {
   const nameValid = isValidName(name);
   const phoneValid = isValidPhone(phone);
   const formValid = nameValid && phoneValid;
+
+  function handleFormStart() {
+    if (formStarted.current) return;
+    formStarted.current = true;
+    pushToDataLayer(GTM_EVENT.formStart, { content_id: COURSE_SLUG });
+    trackClarity(CLARITY_EVENT.formStart, { content_id: COURSE_SLUG });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +125,21 @@ export function EnrollModal() {
             },
             data.eventId
           );
+          pushToDataLayer(GTM_EVENT.beginCheckout, {
+            content_id: data.contentId,
+            content_name: data.contentName,
+            value: data.value,
+            currency: data.currency ?? 'BDT',
+            event_id: data.eventId,
+          });
+          trackClarity(CLARITY_EVENT.beginCheckout, {
+            content_id: data.contentId,
+            content_name: data.contentName,
+            value: data.value,
+            currency: data.currency ?? 'BDT',
+          });
+          // Keep the recording of anyone who reached the gateway.
+          upgradeClarity('begin_checkout');
         }
         window.location.href = data.paymentUrl;
       }
@@ -169,6 +197,7 @@ export function EnrollModal() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                onFocus={handleFormStart}
                 placeholder="যেমন: Rahim Uddin"
                 disabled={loading}
                 className={`w-full rounded-xl border bg-white px-4 py-3 text-[var(--ink)] outline-none transition placeholder:text-[var(--ink-muted)] focus:ring-2 focus:ring-[rgb(var(--seg-accent)/0.25)] disabled:opacity-60 ${
@@ -188,6 +217,7 @@ export function EnrollModal() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                 onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
+                onFocus={handleFormStart}
                 placeholder="01XXXXXXXXX"
                 disabled={loading}
                 maxLength={11}

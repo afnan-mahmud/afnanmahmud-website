@@ -5,6 +5,7 @@ import { X, Lock, Rocket, Loader2 } from 'lucide-react';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, upgradeClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 const COURSE_SLUG = 'ai-for-developers';
 const RETRY_KEY = 'devc_enroll_retry';
@@ -30,6 +31,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
   useEffect(() => {
     if (open) {
       pushToDataLayer(GTM_EVENT.enrollClick, { content_id: COURSE_SLUG });
+      trackClarity(CLARITY_EVENT.enrollClick, { content_id: COURSE_SLUG });
       formStarted.current = false;
       setError('');
       setDone('');
@@ -63,6 +65,7 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
     if (formStarted.current) return;
     formStarted.current = true;
     pushToDataLayer(GTM_EVENT.formStart, { content_id: COURSE_SLUG });
+    trackClarity(CLARITY_EVENT.formStart, { content_id: COURSE_SLUG });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -140,6 +143,14 @@ export default function EnrollModal({ open, onClose }: EnrollModalProps) {
             currency: data.currency ?? 'BDT',
             event_id: data.eventId,
           });
+          trackClarity(CLARITY_EVENT.beginCheckout, {
+            content_id: data.contentId,
+            content_name: data.contentName,
+            value: data.value,
+            currency: data.currency ?? 'BDT',
+          });
+          // Keep the recording of anyone who reached the gateway.
+          upgradeClarity('begin_checkout');
         }
         window.location.href = data.paymentUrl;
       }

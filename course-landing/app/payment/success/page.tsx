@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowRight, Check } from 'lucide-react';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
+import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, upgradeClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 const OTP_URL = 'https://afnanmahmud.com/auth/otp';
 
@@ -15,6 +17,7 @@ function SuccessContent() {
   const eid = params.get('eid');
   const value = params.get('value');
   const currency = params.get('currency') ?? 'BDT';
+  const txn = params.get('txn') ?? undefined;
 
   useEffect(() => {
     if (!eid) return;
@@ -39,6 +42,38 @@ function SuccessContent() {
       },
       eid
     );
+
+    // Advanced matching for GTM/Google Ads — the enroll form stashed the phone
+    // before the gateway redirect. Mirrors the main app's success page.
+    let phone: string | undefined;
+    try {
+      const saved = localStorage.getItem('devc_enroll_retry');
+      if (saved) {
+        const digits = (JSON.parse(saved) as { phone?: string }).phone?.replace(/\D/g, '');
+        if (digits) phone = digits.startsWith('88') ? digits : `88${digits}`;
+      }
+    } catch { /* ignore unavailable/malformed storage */ }
+
+    pushToDataLayer(GTM_EVENT.purchase, {
+      content_id: courseSlug || undefined,
+      content_name: courseTitle,
+      value: value ? Number(value) : undefined,
+      currency,
+      transaction_id: txn,
+      event_id: eid,
+      ...(phone ? { user_data: { phone } } : {}),
+    });
+
+    // Clarity gets the same conversion, minus the phone — no PII leaves here.
+    // `upgrade` keeps every buyer's session recording out of sampling.
+    trackClarity(CLARITY_EVENT.purchase, {
+      content_id: courseSlug || undefined,
+      content_name: courseTitle,
+      value: value ?? undefined,
+      currency,
+      transaction_id: txn,
+    });
+    upgradeClarity('purchase');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eid]);
 

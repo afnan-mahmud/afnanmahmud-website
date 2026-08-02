@@ -17,8 +17,10 @@ function FaqAccordion({ title, children }: { title: ReactNode; children: ReactNo
       }`}
     >
       <button
+        type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 md:p-6 text-left focus:outline-none group"
+        className="w-full flex items-center justify-between gap-3 p-5 md:p-6 text-left cursor-pointer focus:outline-none group"
       >
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 group-hover:border-[rgb(var(--seg-accent)/0.5)] group-hover:text-[rgb(var(--seg-accent))] transition-colors">
@@ -30,7 +32,7 @@ function FaqAccordion({ title, children }: { title: ReactNode; children: ReactNo
           </h3>
         </div>
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
             isOpen
               ? 'bg-[rgb(var(--seg-accent)/0.2)] text-[rgb(var(--seg-accent))]'
               : 'bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-white'
@@ -39,12 +41,13 @@ function FaqAccordion({ title, children }: { title: ReactNode; children: ReactNo
           <ChevronDown className={`transition-transform duration-500 ease-in-out ${isOpen ? 'rotate-180' : ''}`} size={20} />
         </div>
       </button>
-      <div
-        className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
-        style={{ overflow: 'hidden' }}
-      >
-        <div className="p-5 md:p-6 pt-0 text-slate-400 border-t border-slate-800/50 mt-2">
-          {children}
+      {/* grid-rows 0fr→1fr animates to the answer's real height; a fixed max-h
+          silently clipped the longer answers on narrow screens. */}
+      <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <div className="p-5 md:p-6 pt-0 text-slate-400 border-t border-slate-800/50 mt-2">
+            {children}
+          </div>
         </div>
       </div>
     </div>

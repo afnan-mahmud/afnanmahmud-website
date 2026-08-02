@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { trackPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 interface ViewContentTrackerProps {
   contentId: string;
@@ -62,6 +63,13 @@ export default function ViewContentTracker({
       value,
       currency,
       event_id: eventId,
+    });
+
+    trackClarity(CLARITY_EVENT.viewItem, {
+      content_id: contentId,
+      content_name: contentName,
+      value,
+      currency,
     });
 
     fetch('/api/track/view-content', {

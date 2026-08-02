@@ -8,6 +8,7 @@ import VdoPlayer from '@/components/VdoPlayer';
 import { trackCustomPixel } from '@/lib/meta-pixel';
 import { trackTikTok } from '@/lib/tiktok-pixel';
 import { pushToDataLayer, GTM_EVENT } from '@/lib/gtm';
+import { trackClarity, CLARITY_EVENT } from '@/lib/clarity';
 
 const COURSE_SLUG = 'ai-for-developers';
 
@@ -91,6 +92,11 @@ export default function DemoClassClient({
       event_id: eventId,
     });
 
+    trackClarity(CLARITY_EVENT.viewDemoClass, {
+      content_id: COURSE_SLUG,
+      content_name: courseTitle,
+    });
+
     fetch('/api/track/view-demo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -160,12 +166,16 @@ export default function DemoClassClient({
                   <VdoPlayer
                     videoId={demo.videoId}
                     title={demo.title}
-                    onReady={() =>
+                    onReady={() => {
                       pushToDataLayer(GTM_EVENT.demoClassReady, {
                         content_id: COURSE_SLUG,
                         content_name: courseTitle,
-                      })
-                    }
+                      });
+                      trackClarity(CLARITY_EVENT.demoClassReady, {
+                        content_id: COURSE_SLUG,
+                        content_name: courseTitle,
+                      });
+                    }}
                   />
                 </div>
                 <div className="p-5 md:p-7">
