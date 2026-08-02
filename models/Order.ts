@@ -11,6 +11,13 @@ export interface IOrder extends Document {
   /** EPS-side transaction id returned on success. */
   transactionId?: string;
   epsOrderId?: string;
+  /**
+   * Meta Purchase event_id, minted once when the order first transitions to
+   * success and never changed. Every replay of the success/status endpoints
+   * returns this same id so the browser Purchase always deduplicates against
+   * the single CAPI Purchase.
+   */
+  metaPurchaseEventId?: string;
   status: 'pending' | 'success' | 'failed' | 'refunded';
   failReason?: string;
   /** When the abandoned-enrollment WhatsApp follow-up was sent (dedupe flag). */
@@ -28,6 +35,7 @@ const OrderSchema = new Schema<IOrder>(
     merchantTransactionId: { type: String, index: true },
     transactionId: { type: String },
     epsOrderId: { type: String },
+    metaPurchaseEventId: { type: String, default: null },
     status: {
       type: String,
       enum: ['pending', 'success', 'failed', 'refunded'],

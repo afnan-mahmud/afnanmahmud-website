@@ -7,7 +7,11 @@ import { sendTikTokEvent, type TikTokSignals } from '@/lib/tiktok-events';
 import { sendPurchaseConfirmation } from '@/lib/sms';
 
 export interface FinalizeResult {
-  /** Shared Meta event id for browser/CAPI Purchase deduplication. */
+  /**
+   * Shared Meta event id for browser/CAPI Purchase deduplication. Stable for the
+   * lifetime of the order: minted on the first success transition, persisted on
+   * the order, and returned unchanged on every replay.
+   */
   eventId: string;
   /** True only on the *first* transition to success (side-effects ran). */
   firstTransition: boolean;
@@ -33,12 +37,17 @@ export async function finalizeSuccessfulOrder(
 ): Promise<FinalizeResult | null> {
   await connectDB();
 
+  const candidateEventId = newEventId();
+
   // Atomically flip a non-success order to success. A matched doc means *we* were
-  // the first to do so and therefore own the one-time side-effects.
+  // the first to do so and therefore own the one-time side-effects. The Meta
+  // Purchase event id is written in the *same* atomic update, binding one id to
+  // the order forever — replays must never mint a fresh (undeduplicable) one.
   const flipped = await Order.findOneAndUpdate(
     { _id: orderId, status: { $ne: 'success' } },
     {
       status: 'success',
+      metaPurchaseEventId: candidateEventId,
       ...(opts?.epsTransactionId ? { transactionId: opts.epsTransactionId } : {}),
       $unset: { failReason: '' },
     },
@@ -58,7 +67,26 @@ export async function finalizeSuccessfulOrder(
     { new: false }
   ).select('phone name email');
 
-  const eventId = newEventId();
+  // Always return the *stored* id. On the first transition that is the one we
+  // just wrote; on a replay it is whatever was written back then.
+  let eventId = order.metaPurchaseEventId ?? undefined;
+  if (!eventId) {
+    // Order reached success before this field existed. Claim an id now so every
+    // later replay returns the same value — but do NOT send CAPI: this is not a
+    // first transition and that Purchase was already counted.
+    const claimed = await Order.findOneAndUpdate(
+      { _id: orderId, metaPurchaseEventId: null },
+      { $set: { metaPurchaseEventId: candidateEventId } },
+      { new: true }
+    ).select('metaPurchaseEventId');
+    if (claimed?.metaPurchaseEventId) {
+      eventId = claimed.metaPurchaseEventId;
+    } else {
+      // Lost the race — another concurrent call claimed it; use theirs.
+      const current = await Order.findById(orderId).select('metaPurchaseEventId');
+      eventId = current?.metaPurchaseEventId ?? candidateEventId;
+    }
+  }
 
   if (firstTransition) {
     await Course.findByIdAndUpdate(order.course._id, { $inc: { enrolledCount: 1 } });
@@ -79,6 +107,9 @@ export async function finalizeSuccessfulOrder(
         content_ids: [order.course.slug],
         content_name: order.course.title,
         content_type: 'product',
+        // Secondary dedup key + refund-by-order reconciliation. Same value the
+        // browser Purchase sends (the order id, also carried as ?txn=).
+        order_id: String(order._id),
       },
     });
 

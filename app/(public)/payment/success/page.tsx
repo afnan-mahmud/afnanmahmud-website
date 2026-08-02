@@ -34,6 +34,8 @@ function PaymentSuccessContent() {
         content_ids: courseSlug ? [courseSlug] : undefined,
         content_name: courseTitle,
         content_type: 'product',
+        // Secondary dedup key — matches custom_data.order_id on the CAPI Purchase.
+        order_id: txn,
       },
       eid
     );

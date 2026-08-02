@@ -5,7 +5,16 @@ const GRAPH_VERSION = 'v21.0';
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const ACCESS_TOKEN = process.env.META_CAPI_ACCESS_TOKEN;
-const TEST_EVENT_CODE = process.env.META_TEST_EVENT_CODE;
+/**
+ * Test Events code — honoured in dev/staging only. A non-empty
+ * META_TEST_EVENT_CODE routes 100% of events to the Events Manager *Test Events*
+ * tab, where they do NOT count as conversions and cannot be used for
+ * optimisation. Leaving that possible in production means one forgotten
+ * debugging env var silently kills every live conversion, so production ignores
+ * the variable entirely.
+ */
+const TEST_EVENT_CODE =
+  process.env.NODE_ENV !== 'production' ? process.env.META_TEST_EVENT_CODE : undefined;
 
 /** Whether server-side CAPI is configured (pixel id + access token present). */
 export function isCapiEnabled(): boolean {
