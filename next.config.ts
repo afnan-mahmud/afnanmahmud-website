@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   // (smaller footprint, faster boot). Run with: node .next/standalone/server.js
   output: 'standalone',
 
+  // The motion-graphics lesson pages are plain .html files read from disk at
+  // request time (see app/ai-for-developers/lesson/[...slug]/route.ts). Nothing
+  // imports them, so tracing would leave them out of the standalone bundle.
+  outputFileTracingIncludes: {
+    '/ai-for-developers/lesson/\\[\\.\\.\\.slug\\]': [
+      './app/ai-for-developers/lesson/**/*.html',
+    ],
+  },
+
   // Long-lived cache for static media in /public. These files are
   // content-stable (renamed when they change), so a 1-year immutable cache
   // keeps repeat visits from re-downloading them. Fixes Lighthouse's

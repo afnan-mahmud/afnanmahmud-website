@@ -1,0 +1,3084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat System Architecture & Core Concepts · Motion Presentation</title>
+    <!-- GSAP for robust timeline orchestrations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #080C14;
+            --surface: #0F172A;
+            --surface-hover: #1E293B;
+            --surface-card: #131D31;
+            --border: #334155;
+            --border-light: #475569;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --accent1: #38BDF8; /* Cyan Blue */
+            --accent2: #818CF8; /* Indigo/Purple */
+            --accent3: #F43F5E; /* Rose */
+            --success: #34D399; /* Emerald Green */
+            --warn: #FBBF24;    /* Amber */
+            --error: #F87171;   /* Red */
+            --server-base: #1E293B;
+            --db-top: #38BDF8;
+            --db-mid: #6366F1;
+            --db-bot: #1E1B4B;
+            --font-main: 'Inter', system-ui, sans-serif;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(1000px 600px at 90% -10%, rgba(99,102,241,.15), transparent 70%),
+                radial-gradient(900px 500px at 10% 110%, rgba(56,189,248,.12), transparent 70%),
+                radial-gradient(500px 300px at 50% 50%, rgba(15,23,42,.6), transparent 100%);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header / Top Bar */
+        .top-bar {
+            height: 66px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(14px);
+            z-index: 20;
+        }
+
+        .module-label {
+            font-family: var(--font-code);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scene-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        .scene-counter {
+            font-family: var(--font-code);
+            font-size: 14px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.06);
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* Controls / Bottom Bar */
+        .bottom-bar {
+            height: 72px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(14px);
+            z-index: 20;
+        }
+
+        .progress-container {
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            box-shadow: 0 0 12px rgba(129,140,248,.65);
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        button {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform .15s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+
+        button:hover {
+            background: var(--surface-hover);
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0) scale(.97);
+        }
+
+        button:focus-visible {
+            outline: 2px solid var(--accent1);
+            outline-offset: 2px;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent1), #0284C7);
+            color: #021224;
+            border: none;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+        }
+
+        button.primary:hover {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.55);
+            background: linear-gradient(135deg, #7DD3FC, #0369A1);
+        }
+
+        kbd {
+            font-family: var(--font-code);
+            font-size: 11px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+
+        /* Stage Canvas Area */
+        .stage-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #stage {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .stage-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+        }
+
+        #stage-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #stage-dom {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            perspective: 1200px;
+        }
+
+        /* ========================================================
+           RICH ARCHITECTURAL UI SYSTEM (MATCHING REFERENCE DESIGN)
+           ======================================================== */
+
+        /* 1. Browser Application Window */
+        .browser-window-art {
+            position: absolute;
+            background: #0E1626;
+            border: 2px solid #38BDF8;
+            border-radius: 14px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 24px rgba(56,189,248,0.2);
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .b-bar {
+            background: #172338;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .b-dots { display: flex; gap: 6px; }
+        .b-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .b-dot.r { background: #EF4444; }
+        .b-dot.y { background: #F59E0B; }
+        .b-dot.g { background: #10B981; }
+
+        .b-search {
+            flex: 1;
+            background: #0B111D;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 4px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: var(--font-code);
+            font-size: 11px;
+            color: #94A3B8;
+        }
+
+        .b-search .s-icon { color: var(--accent1); }
+
+        .b-body {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            background: #0A101C;
+        }
+
+        .b-wireframe-card {
+            background: #131E31;
+            border: 1px solid #23334D;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .b-img-thumb {
+            width: 54px;
+            height: 44px;
+            background: linear-gradient(135deg, #1E3A8A, #0284C7);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #93C5FD;
+            font-size: 18px;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        .b-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .b-line {
+            height: 6px;
+            background: #233550;
+            border-radius: 3px;
+        }
+        .b-line.w-full { width: 100%; }
+        .b-line.w-70 { width: 70%; }
+        .b-line.w-40 { width: 40%; background: var(--accent1); }
+
+        .b-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .b-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: var(--font-code);
+        }
+        .b-btn.pri { background: #38BDF8; color: #031525; }
+        .b-btn.sec { background: #6366F1; color: #FFFFFF; }
+
+        /* 2. Metallic 3-Blade Server Rack */
+        .server-rack-art {
+            position: absolute;
+            background: #0B1320;
+            border: 2px solid #4F46E5;
+            border-radius: 12px;
+            box-shadow: 0 20px 48px rgba(0,0,0,0.7), 0 0 28px rgba(79, 70, 229, 0.3);
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px;
+            min-width: 170px;
+        }
+
+        .rack-blade {
+            background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .blade-vents {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .blade-vent {
+            width: 32px;
+            height: 2px;
+            background: #475569;
+            border-radius: 1px;
+        }
+
+        .blade-leds {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .rack-led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .rack-led.cyan { color: #38BDF8; background: #38BDF8; }
+        .rack-led.green { color: #34D399; background: #34D399; }
+        .rack-led.purple { color: #818CF8; background: #818CF8; }
+        .rack-led.blink { animation: led-blink 1.2s infinite ease-in-out; }
+
+        @keyframes led-blink {
+            0%, 100% { opacity: 0.3; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 6px currentColor); }
+        }
+
+        .rack-title-tag {
+            text-align: center;
+            font-size: 11px;
+            font-family: var(--font-code);
+            font-weight: 700;
+            color: var(--accent1);
+            margin-top: 4px;
+        }
+
+        /* 3. 3D Cylindrical Layered Database Disks */
+        .db-cylinder-art {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 140px;
+        }
+
+        .db-stack-svg {
+            filter: drop-shadow(0 16px 30px rgba(0,0,0,0.65));
+        }
+
+        .db-label-box {
+            margin-top: 6px;
+            font-size: 11px;
+            font-family: var(--font-code);
+            font-weight: 700;
+            color: var(--warn);
+            text-align: center;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        /* 4. Cache / Cookie Cylinder (Center Intermediate Storage) */
+        .cache-cylinder-art {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 5. Cloud Infrastructure Hub */
+        .cloud-hub-art {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 6. Rotating Gear Node (Service & Sanitizer Engine) */
+        .gear-node-art {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gear-spinner-cw { animation: spin-cw 8s linear infinite; }
+        .gear-spinner-ccw { animation: spin-ccw 6s linear infinite; }
+        @keyframes spin-cw { 100% { transform: rotate(360deg); } }
+        @keyframes spin-ccw { 100% { transform: rotate(-360deg); } }
+
+        /* 7. Live Step-by-Step Educational HUD */
+        .step-hud {
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid #38BDF8;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 20px rgba(56,189,248,0.25);
+            border-radius: 12px;
+            padding: 12px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 20;
+            backdrop-filter: blur(12px);
+            max-width: 860px;
+            width: 90%;
+        }
+
+        .hud-step-pill {
+            background: linear-gradient(135deg, #38BDF8, #6366F1);
+            color: #031525;
+            font-family: var(--font-code);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .hud-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #F8FAFC;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .hud-text span.action { color: var(--accent1); font-weight: 700; }
+        .hud-text span.code { color: var(--warn); font-family: var(--font-code); font-size: 13px; }
+        .hud-text span.success { color: var(--success); font-weight: 700; }
+
+        /* Legacy fallback nodes */
+        .node {
+            position: absolute;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+            color: var(--text-main);
+            font-weight: 600;
+            min-width: 130px;
+            text-align: center;
+            z-index: 3;
+            transition: border-color .3s ease, box-shadow .3s ease;
+        }
+
+        .node.server { border-color: var(--accent2); box-shadow: 0 0 20px rgba(129, 140, 248, 0.25); }
+        .node.client { border-color: var(--accent1); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+        .node.db { border-color: var(--warn); box-shadow: 0 0 18px rgba(251, 191, 36, 0.2); }
+        .node.router { border-color: var(--accent3); }
+        .node.service { border-color: #38BDF8; }
+        .node.guard { border-color: #F59E0B; background: #181308; }
+
+        .node-icon { font-size: 28px; margin-bottom: 6px; }
+        .node-label { font-size: 14px; font-weight: 700; }
+        .node-sub { font-size: 11px; font-family: var(--font-code); color: var(--text-muted); margin-top: 3px; }
+
+        /* Glowing Packets */
+        .packet {
+            position: absolute;
+            background: var(--accent1);
+            color: #04131F;
+            font-family: var(--font-code);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 16px var(--accent1), 0 4px 12px rgba(0,0,0,.4);
+            z-index: 10;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .packet.res { background: var(--success); box-shadow: 0 0 16px var(--success), 0 4px 12px rgba(0,0,0,.4); color: #032014; }
+        .packet.err { background: var(--error); box-shadow: 0 0 16px var(--error), 0 4px 12px rgba(0,0,0,.4); color: #FFFFFF; }
+        .packet.purple { background: var(--accent2); box-shadow: 0 0 16px var(--accent2); color: #FFFFFF; }
+        .packet.warn { background: var(--warn); box-shadow: 0 0 16px var(--warn); color: #000000; }
+
+        /* Glass Cards, DevTools Table, Code Blocks */
+        .glass-card {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.88);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            z-index: 4;
+        }
+
+        .devtools-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-code);
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .devtools-table th {
+            color: var(--accent1);
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .devtools-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #E2E8F0;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: var(--font-code);
+        }
+        .badge-pill.green { background: rgba(52, 211, 153, 0.15); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.3); }
+        .badge-pill.warn { background: rgba(251, 191, 36, 0.15); color: #FBBF24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-pill.red { background: rgba(248, 113, 113, 0.15); color: #F87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+        .badge-pill.blue { background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-pill.purple { background: rgba(129, 140, 248, 0.15); color: #A5B4FC; border: 1px solid rgba(129, 140, 248, 0.3); }
+
+        /* Intro Card v2 */
+        .intro-card.v2 {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 48px 40px;
+            background:
+                radial-gradient(700px 380px at 50% 8%, rgba(99,102,241,.18), transparent 70%),
+                var(--surface);
+            z-index: 10;
+        }
+
+        .ic-badge {
+            font-family: var(--font-code);
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent1);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 14px;
+            background: rgba(56,189,248,.08);
+        }
+
+        .ic-num {
+            font-family: var(--font-code);
+            font-weight: 700;
+            font-size: 44px;
+            line-height: 1;
+            color: transparent;
+            -webkit-text-stroke: 1.5px rgba(148,163,184,.35);
+            margin: 22px 0 6px;
+        }
+
+        .intro-card.v2 .intro-title {
+            font-size: 44px;
+            font-weight: 800;
+            margin: 0 0 10px;
+            line-height: 1.1;
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ic-tag {
+            font-family: var(--font-code);
+            font-size: 16px;
+            color: var(--accent1);
+            margin-bottom: 26px;
+        }
+
+        .ic-what {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-width: 720px;
+            margin: 0 auto 22px;
+        }
+
+        .ic-use {
+            max-width: 720px;
+            margin: 0 auto;
+            text-align: left;
+            background: linear-gradient(90deg, rgba(99,102,241,.12), rgba(56,189,248,.06));
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent2);
+            border-radius: 12px;
+            padding: 16px 20px;
+        }
+
+        .ic-use-label {
+            font-family: var(--font-code);
+            font-size: 12px;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+
+        .ic-use-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #CBD5E1;
+        }
+
+        .pulse-text {
+            margin-top: 34px;
+            font-size: 15px;
+            color: var(--text-main);
+            opacity: 0.7;
+            animation: pulse-op 2s infinite;
+        }
+
+        .pulse-text b { color: var(--accent1); }
+
+        @keyframes pulse-op {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Scene Overview / Jump Menu */
+        #scene-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            background: rgba(6,9,16,.88);
+            backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s ease;
+        }
+
+        #scene-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .overlay-inner {
+            width: min(1120px,100%);
+            max-height: 86vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 30px 70px rgba(0,0,0,.6);
+        }
+
+        .overlay-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .overlay-head h2 { font-size: 18px; font-weight: 800; }
+
+        .overlay-grid {
+            padding: 16px 24px 24px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+            gap: 10px;
+        }
+
+        .ov-modhead {
+            grid-column: 1 / -1;
+            margin: 14px 0 2px;
+            font-family: var(--font-code);
+            font-size: 11px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--accent1);
+        }
+
+        .ov-item {
+            justify-content: flex-start;
+            text-align: left;
+            gap: 10px;
+            padding: 10px 12px;
+            font-weight: 500;
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        .ov-item:hover { transform: translateY(0); border-color: var(--accent2); }
+        .ov-item.active { border-color: var(--accent2); background: linear-gradient(90deg, rgba(56,189,248,.12), rgba(99,102,241,.16)); }
+        .ov-num { font-family: var(--font-code); font-size: 12px; color: var(--text-muted); min-width: 22px; }
+        .ov-title { font-size: 13px; line-height: 1.3; }
+
+        @media (max-width: 720px) {
+            .intro-card.v2 .intro-title { font-size: 32px; }
+            .ic-what { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="module-label" id="ui-module">Module</div>
+        <div class="scene-title" id="ui-title">Title</div>
+        <div class="scene-counter" id="ui-counter">00 / 00</div>
+    </div>
+
+    <div class="stage-container">
+        <div id="stage">
+            <div class="stage-grid"></div>
+            <svg id="stage-svg">
+                <defs>
+                    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 8 5 L 0 9 z" fill="#38BDF8" />
+                    </marker>
+                    <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 8 5 L 0 9 z" fill="#818CF8" />
+                    </marker>
+                    <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 8 5 L 0 9 z" fill="#34D399" />
+                    </marker>
+                    <marker id="arrow-warn" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 8 5 L 0 9 z" fill="#FBBF24" />
+                    </marker>
+                    <marker id="arrow-gray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 8 5 L 0 9 z" fill="#475569" />
+                    </marker>
+                </defs>
+            </svg>
+            <div id="stage-dom"></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="progress-container"><div class="progress-bar" id="ui-progress"></div></div>
+        <div class="controls">
+            <button id="btn-menu">☰ Scenes <kbd>O</kbd></button>
+            <button id="btn-prev">◀ Prev <kbd>←</kbd></button>
+            <button id="btn-pause">⏸ Pause <kbd>P</kbd></button>
+            <button id="btn-replay">⟳ Replay <kbd>R</kbd></button>
+            <button id="btn-speed">⚡ 1× <kbd>S</kbd></button>
+            <button id="btn-next" class="primary">Next ▶ <kbd>→</kbd></button>
+        </div>
+    </div>
+
+    <script>
+        const DOM = {
+            svg: document.getElementById('stage-svg'),
+            dom: document.getElementById('stage-dom'),
+            module: document.getElementById('ui-module'),
+            title: document.getElementById('ui-title'),
+            counter: document.getElementById('ui-counter'),
+            progress: document.getElementById('ui-progress'),
+            pauseBtn: document.getElementById('btn-pause'),
+            replayBtn: document.getElementById('btn-replay'),
+        };
+
+        let currentSceneIndex = 0;
+        let subState = 0; // 0 = Intro Card, 1 = Animation
+        let masterTimeline = null;
+
+        const DESCRIPTIONS = {
+            "Client–Server Architecture": "The foundational architecture of the web. Multiple client devices (browsers and mobile apps) connect to a central server to request data and communicate.",
+            "Request–Response Model": "The standard communication pattern of the internet. A client sends a request to the server, and the server processes it and returns a single response.",
+            "Real-time vs Request–Response": "Unlike traditional apps that force repeated polling, real-time apps maintain an open connection so the server instantly pushes data the millisecond it arrives.",
+            "HTTP vs WebSocket": "HTTP performs a fresh handshake for every request. WebSockets perform one handshake and upgrade to a persistent, open channel for instant two-way messaging.",
+            "Full-Duplex Communication": "Data travels in both directions simultaneously. The client can send a message at the exact same time the server is pushing a message down to the client.",
+            "Database Basics: Hierarchy": "NoSQL data structure: Collections (folders) contain Documents (records), which are made up of Fields (key-value pairs).",
+            "Auth vs Authz": "Authentication (Auth) verifies 'Who are you?'. Authorization (Authz) verifies 'What are you allowed to do?'.",
+            "JWT (JSON Web Token)": "A secure token consisting of a header, a data payload (user ID/roles), and a cryptographic signature verifying authenticity.",
+            "Cookie": "A secure browser storage mechanism carrying the JWT token, automatically attaching to every HTTP/WebSocket request sent to the server.",
+            "Middleware Pipeline": "Functions intercepting incoming requests before reaching the controller to verify tokens, permissions, and format payloads.",
+            "Layered Architecture": "Separation of concerns: Controller (HTTP handling), Service (business rules), and Model (database interactions).",
+            "Async / Await & Promises": "Non-blocking JavaScript operations, allowing the server to handle thousands of users concurrently while waiting for database queries.",
+            "TypeScript Basics": "JavaScript with static types, catching syntax and type errors in the editor long before runtime.",
+            "Schema vs Model": "A Schema is the data blueprint; the Model is the factory tool used to query, create, and update MongoDB documents.",
+            "ChatRoom & Message Collections": "Decoupling conversation metadata (ChatRoom) from messages (Message) for high performance and infinite scalability.",
+            "One-to-Many Relationship": "One parent ChatRoom document linking out to thousands of individual child Message documents.",
+            "ObjectId": "MongoDB's unique 24-hex-character identifier with creation timestamps baked directly inside.",
+            "Population (ref)": "Auto-fetching linked documents from another collection using stored ObjectId references.",
+            "required / trim / default": "Mongoose field validation rules ensuring clean, non-empty, and defaulted data.",
+            "timestamps": "Automatic createdAt and updatedAt historical tracking on every document.",
+            "Database Index": "A sorted B-Tree roadmap allowing instant O(log N) lookups instead of slow full-collection scans.",
+            "Compound Index": "A multi-key index indexing buyerId, sellerId, and listingId together for instant room lookups.",
+            "Unique Index": "A database constraint preventing duplicate chat rooms for the exact same deal.",
+            "Index Direction (-1)": "Descending order index allowing reverse-chronological message queries with zero CPU sort overhead.",
+            "Sanitize Input": "Never trust user input: cleaning raw chat text to strip scams, phones, and malicious scripts before saving.",
+            "Regex Basics": "Regular expression pattern matching to detect phone numbers, links, and keywords in messages.",
+            "External Link Detection": "Detecting and stripping off-platform URLs to protect marketplace buyers and sellers.",
+            "Phone Number Masking": "Replacing 11-digit phone numbers with [phone hidden] to enforce marketplace privacy.",
+            "Keyword Detection": "Monitoring messages for risk keywords (e.g. 'advance payment') to trigger safety warning banners.",
+            "HTML Tag Stripping (XSS)": "Stripping HTML and script tags so messages render safely as text, not executable code.",
+            "Structured Return": "Returning { sanitizedText, warnings[], isBlocked } for clean decoupled socket handling.",
+            "Service Layer Separation": "Thin controllers handling req/res, while the service layer manages validation, sanitization, and DB calls.",
+            "Validation": "Verifying business rules, such as confirming the requested item listing exists and is active.",
+            "Business Rule: buyer ≠ seller": "Guarding against invalid states by blocking sellers from opening a chat with themselves.",
+            "upsert (Find or Create)": "Atomic operation returning an existing chat room or creating a new one in one single step.",
+            "$or Operator": "MongoDB query fetching all rooms where the current user is either the buyer OR the seller.",
+            "Last Message Preview + Unread Count": "Aggregating inbox summaries with recent message snippets and unread counts.",
+            "Authorization Check → 403": "Blocking users from reading rooms they are not participants in with a 403 Forbidden error.",
+            "Pagination (page / limit / skip)": "Loading message history in small chunks (e.g. 20 at a time) to prevent memory crashes.",
+            "Mark as Read (updateMany)": "Bulk updating unread messages to seen state in a single query.",
+            "Empty Message Block → 400": "Rejecting messages that become empty after sanitization with 400 Bad Request.",
+            "AppError (Custom Error Class)": "Custom error class attaching status codes and user-friendly messages for the global error handler.",
+            "Controller Pattern": "Extracting inputs, calling the service, formatting JSON, and sending the HTTP response.",
+            "HTTP Status Codes": "The universal response codes: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 500 Error.",
+            "authenticate & requireVerified Middleware": "Chained security guards checking login tokens and verified account status.",
+            "Route Params vs Query Params": "Route params (:roomId) identify resources; query params (?page=2) filter or sort.",
+            "Router Mounting & API Versioning": "Mounting isolated route files under /api/v1 prefix for clean future-proof routing.",
+            "Socket.io vs WebSockets": "Socket.io builds on WebSockets by adding rooms, auto-reconnection, and fallbacks out of the box.",
+            "Namespace (/chat)": "Multiplexed communication channels isolating chat traffic from notifications on a single server.",
+            "Socket Handshake Authentication": "Reading cookies and verifying JWT tokens during the initial WebSocket connection handshake.",
+            "tokenVersion Check": "Invalidating stolen tokens by comparing database tokenVersion upon WebSocket connection.",
+            "Socket Rooms": "Grouping sockets into rooms to broadcast messages exclusively to room participants.",
+            "Emit vs Broadcast vs To": "Three delivery modes: emit (sender), broadcast (others), to(room).emit (room members).",
+            "join_room Event": "Client emits join_room; server verifies membership and adds socket to room channel.",
+            "send_message Flow": "The complete real-time lifecycle: emit text → sanitize → save DB → push to recipient in milliseconds.",
+            "Typing Indicator": "Broadcasting lightweight typing events without touching the database.",
+            "mark_read / Read Receipts": "Emitting read receipt events to flip single ticks to double blue ticks.",
+            "Disconnect & Cleanup": "Handling socket disconnects gracefully and freeing memory.",
+            "http.createServer(app)": "Wrapping Express with core Node HTTP server so Express and Socket.io share one server instance.",
+            "Why NOT app.listen()": "app.listen() hides the server instance, preventing Socket.io from attaching.",
+            "Socket.io Init + CORS": "Configuring Socket.io with credentials:true to allow cross-origin cookie sharing.",
+            "One Server, Two Protocols": "A unified backend server listening on port 5000 handling both HTTP and WebSockets."
+        };
+
+        const USECASES = {
+            "Client–Server Architecture": { what: "The web's base setup: many client apps (browsers, mobile apps) talk to one central server that holds the data and logic.", use: "Every buyer and seller runs a client. They all connect to one Becha-Kena server that stores the chat rooms and messages and decides who receives what." },
+            "Request–Response Model": { what: "The classic one-shot pattern: the client sends a request, the server answers once, and the exchange is over.", use: "We use this for the REST parts of chat, like creating a room, loading old messages, or marking as read. Next you will see why it is not enough for live messaging." },
+            "Real-time vs Request–Response": { what: "Instead of the client repeatedly asking 'any new messages?', a live connection lets the server push data the instant something happens.", use: "When a seller replies, the buyer must see it immediately without refreshing. That instant feel is exactly what our WebSocket layer delivers." },
+            "HTTP vs WebSocket": { what: "HTTP does a fresh handshake for every request. WebSocket handshakes once, then keeps an open two-way channel.", use: "Loading message history uses HTTP; the live 'new_message the moment it is sent' uses WebSocket. Our chat uses both together." },
+            "Full-Duplex Communication": { what: "Both sides can send at the same time over one open channel, with no waiting for turns.", use: "A buyer can be typing while the seller's message is already arriving. That simultaneous flow is what makes chat feel alive." },
+            "Database Basics: Hierarchy": { what: "NoSQL stores data as Collections then Documents then Fields (folder, record, key-value).", use: "Our chat has a chatrooms collection and a messages collection; each message document has fields like roomId, senderId, and messageText." },
+            "Auth vs Authz": { what: "Authentication asks 'who are you?'. Authorization asks 'are you allowed to do this?'.", use: "Logging in proves who you are, but only a room's buyer or seller is allowed to read that room's messages. That second check is authorization." },
+            "JWT (JSON Web Token)": { what: "A signed token that carries a user's identity and cannot be tampered with.", use: "After login we hand the user a JWT. Every chat request and every socket connection uses it to prove which user is sending the message." },
+            "Cookie": { what: "A small value stored in the browser that rides along automatically with every request.", use: "We keep the JWT in a cookie so the socket handshake can read it automatically. The user never has to manually attach a token." },
+            "Middleware Pipeline": { what: "Functions that run before your main logic, acting like checkpoints on the incoming request.", use: "Before any chat controller runs, middleware checks the token and verified status, so logged-out or unverified users never reach the messaging logic." },
+            "Layered Architecture": { what: "Split code into Controller (handles HTTP), Service (business logic), and Model (database).", use: "Our chat controller just passes data along; the chat service does the validation, sanitizing, and DB work. Each file stays clean and testable." },
+            "Async / Await & Promises": { what: "Non-blocking code, so JavaScript keeps working while it waits for slow operations.", use: "Saving a message and fetching history hit the database, which takes time. Async keeps the server responsive to other users meanwhile." },
+            "TypeScript Basics": { what: "JavaScript with types that catch mistakes in your editor before the code runs.", use: "Our schemas and services are typed (roomId is an ObjectId, messageText is a string), so wrong data shapes are caught while coding, not in production." },
+            "Schema vs Model": { what: "A Schema defines the structure and rules; the Model is the tool built from it that you use to query and save.", use: "We define ChatRoom and Message schemas, then use their models to create rooms and store each chat message." },
+            "ChatRoom & Message Collections": { what: "Splitting conversation metadata from the messages themselves into two separate collections.", use: "A ChatRoom links buyer, seller, and listing; each Message points back to its room. Rooms stay small and message history scales cleanly." },
+            "One-to-Many Relationship": { what: "One parent record links out to many child records.", use: "One ChatRoom has many Messages. This shape lets us page through thousands of messages without bloating the room document." },
+            "ObjectId": { what: "MongoDB's unique 24-character ID, with the creation timestamp baked inside it.", use: "Every room, message, user, and listing gets an ObjectId. We use them to link a message to its room and its sender." },
+            "Population (ref)": { what: "Mongoose auto-fetches a linked document from another collection using a stored reference.", use: "A room only stores buyerId, sellerId, and listingId. Population turns those into the actual user names and listing title for the inbox UI." },
+            "required / trim / default": { what: "Field rules: must be present, auto-remove edge spaces, and provide a fallback value.", use: "messageText is required and trimmed (no blank or space-only messages), and readStatus defaults to false so every new message starts unread." },
+            "timestamps": { what: "Automatic createdAt and updatedAt on every document.", use: "We sort chat messages by createdAt and show 'sent at' times, with no manual timestamping needed." },
+            "Database Index": { what: "A sorted roadmap so the database jumps straight to matches instead of scanning everything.", use: "Without an index, loading a busy room's history scans every message. An index makes it instant even with millions of messages." },
+            "Compound Index": { what: "One index built from several fields together.", use: "We index buyerId, sellerId, and listingId together, so finding 'the room between these two people about this listing' is a single fast lookup." },
+            "Unique Index": { what: "A database-level rule that blocks duplicate values.", use: "A unique compound index guarantees only ONE room exists per buyer, seller, and listing, so we never create duplicate chats for the same deal." },
+            "Index Direction (-1)": { what: "Storing an index in descending order for reverse-chronological reads.", use: "Chat shows newest messages first. A createdAt: -1 index lets the database return them already in that order." },
+            "Sanitize Input": { what: "The golden rule: never trust user input; clean it before saving.", use: "Buyers and sellers can type anything. We sanitize every message so scams, scripts, and junk never reach the database or the other person." },
+            "Regex Basics": { what: "Pattern rules for finding specific structures inside text.", use: "We use regex to spot phone numbers, links, and banned phrases hidden inside chat messages." },
+            "External Link Detection": { what: "Catching http, www, and .com style patterns inside text.", use: "Scammers try to pull users off-platform with links. We detect and strip them so the conversation stays inside Becha-Kena." },
+            "Phone Number Masking": { what: "Replacing digit sequences that look like phone numbers with asterisks.", use: "To protect privacy and keep deals on-platform, a buyer's 01712... becomes [phone hidden] before the seller sees it." },
+            "Keyword Detection": { what: "Flagging specific risky phrases in a message.", use: "Phrases like 'advance payment' or 'send money first' trigger an automatic scam warning in the chat, protecting users from fraud." },
+            "HTML Tag Stripping (XSS)": { what: "Removing HTML and script tags so text can never execute as code.", use: "If someone types a script tag into chat, we strip it so it shows as harmless text instead of attacking the recipient's browser." },
+            "Structured Return": { what: "Returning an object with clean text plus any warnings, not just a raw string.", use: "Our sanitizer returns sanitizedText plus warnings, so the socket can deliver the clean message AND privately warn the sender." },
+            "Service Layer Separation": { what: "Keep controllers thin; put the real work inside the service.", use: "The chat service holds all the sanitizing, validation, and DB logic. The controller just calls it and returns the result." },
+            "Validation": { what: "Checking business rules before you act.", use: "Before opening a room we confirm the listing exists and is still active. You cannot start a chat about a deleted or sold item." },
+            "Business Rule: buyer ≠ seller": { what: "A logic guard that prevents invalid states.", use: "We block a user from opening a chat with themselves; a seller cannot message their own listing." },
+            "upsert (Find or Create)": { what: "One atomic operation that returns the existing record, or creates it if it is missing.", use: "'Message seller' upserts on buyer, seller, and listing: reuse the existing room if there is one, otherwise create it. Never a duplicate." },
+            "$or Operator": { what: "Matches documents that meet any one of several conditions.", use: "To load a user's inbox we fetch every room where they are the buyer OR the seller, in one query." },
+            "Last Message Preview + Unread Count": { what: "Summary data prepared for each row of an inbox list.", use: "Each inbox row shows the other person, a preview of the latest message, and how many messages are still unread, all from aggregated data." },
+            "Authorization Check → 403": { what: "Blocking access to resources the user does not own.", use: "If someone requests a room they are not part of, we throw 403 Forbidden. You can only read your own conversations." },
+            "Pagination (page / limit / skip)": { what: "Loading data in small chunks instead of all at once.", use: "A long chat can have thousands of messages. We load them page by page so the app stays fast and never crashes the client." },
+            "Mark as Read (updateMany)": { what: "A single bulk update across many documents at once.", use: "When a user opens a room, one command marks all messages sent to them as read, powering the 'seen' state." },
+            "Empty Message Block → 400": { what: "Rejecting requests that end up empty or invalid after processing.", use: "If sanitizing strips a message down to nothing (it was only a link or script), we reject it with 400 instead of saving a blank message." },
+            "AppError (Custom Error Class)": { what: "A structured error that carries a status code and a clear message.", use: "Instead of leaking raw crashes, our chat throws AppErrors (403, 400, and so on) that a global handler turns into clean responses." },
+            "Controller Pattern": { what: "Extract the inputs, call the service, then send the response.", use: "The chat controller pulls the roomId and user, asks the service to do the work, and returns the right status and data." },
+            "HTTP Status Codes": { what: "Standard numeric outcomes: 200 ok, 400 bad input, 403 forbidden, and more.", use: "Our chat endpoints speak this language so the frontend knows if a send succeeded, was blocked, or was unauthorized." },
+            "authenticate & requireVerified Middleware": { what: "Chained guards: first logged-in, then verified.", use: "Every chat route runs both, so only verified, logged-in users can create rooms or send messages." },
+            "Route Params vs Query Params": { what: "Path params identify a resource; query params filter or modify it.", use: "/rooms/:roomId/messages identifies which room, while ?page=2&limit=20 controls how much history to load." },
+            "Router Mounting & API Versioning": { what: "Grouping routes into files that mount under a version prefix.", use: "Chat routes mount at /api/v1/chat, keeping them organized and safe to upgrade later without breaking existing clients." },
+            "Socket.io vs WebSockets": { what: "WebSocket is the raw pipe; Socket.io adds rooms, reconnection, and fallbacks on top.", use: "We build on Socket.io so our chat gets rooms and auto-reconnect out of the box instead of hand-rolling them." },
+            "Namespace (/chat)": { what: "A named channel that isolates traffic on a single server.", use: "All chat traffic lives in the /chat namespace, kept separate from things like notifications or live tracking." },
+            "Socket Handshake Authentication": { what: "Verifying identity during the socket's initial connection.", use: "Sockets skip normal HTTP routes, so on connect we read the cookie, verify the JWT, and reject anyone who is not a valid user." },
+            "tokenVersion Check": { what: "A database counter that invalidates old tokens after logout.", use: "If a user logs out, their old token cannot reconnect to chat. We compare tokenVersion on every socket connection." },
+            "Socket Rooms": { what: "Grouping sockets so a message can target just that group.", use: "Each conversation is a socket room. A new message is emitted only to that room, so just the two participants receive it." },
+            "Emit vs Broadcast vs To": { what: "Three delivery modes: to yourself, to everyone except the sender, or to a specific room.", use: "We use to(room).emit so a message reaches the room's members, and emit private warnings back to just the sender." },
+            "join_room Event": { what: "The client asks to enter a room; the server verifies and adds them.", use: "When a user opens a chat they emit join_room. We check they belong there, add their socket, and confirm with room_joined." },
+            "send_message Flow": { what: "The full path of a live message, end to end.", use: "Client emits text, server sanitizes it, saves to the DB, then emits the clean new_message to the room plus a warning to the sender, all in milliseconds." },
+            "Typing Indicator": { what: "Broadcasting lightweight typing events without touching the database.", use: "As someone types, we broadcast user_typing to the other person so they see 'typing...', with no database write needed." },
+            "mark_read / Read Receipts": { what: "Emitting a read event so the sender sees a 'seen' state.", use: "When a user reads messages, we update the DB and emit messages_read, flipping the sender's single tick into double ticks." },
+            "Disconnect & Cleanup": { what: "Handling a dropped connection gracefully.", use: "When a user closes the app or loses signal, the socket disconnects. We remove them from rooms and free the connection." },
+            "http.createServer(app)": { what: "Manually creating the underlying Node HTTP server around Express.", use: "Express alone cannot share its server with Socket.io. Wrapping it lets our REST API and chat sockets run on the same server." },
+            "Why NOT app.listen()": { what: "app.listen() hides the server so nothing else can attach to it.", use: "We use http.createServer(app) instead, so Socket.io has a real server instance to plug the chat into. This is the number one gotcha students hit." },
+            "Socket.io Init + CORS": { what: "Starting Socket.io on the server with cross-origin rules configured.", use: "We initialize Socket.io on our HTTP server and set CORS so the browser's chat client is allowed to complete the handshake." },
+            "One Server, Two Protocols": { what: "A single server on a single port handling both HTTP and WebSocket.", use: "The finished Becha-Kena backend serves the REST API and the live chat from one port. The whole architecture comes together." }
+        };
+
+        // ==========================================
+        // ADVANCED UI BUILDER ENGINE
+        // ==========================================
+        const UI = {
+            clear: () => {
+                DOM.svg.innerHTML = `
+                    <defs>
+                        <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#38BDF8" />
+                        </marker>
+                        <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#818CF8" />
+                        </marker>
+                        <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#34D399" />
+                        </marker>
+                        <marker id="arrow-warn" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#FBBF24" />
+                        </marker>
+                        <marker id="arrow-gray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#475569" />
+                        </marker>
+                    </defs>
+                `;
+                DOM.dom.innerHTML = '';
+            },
+            create: (tag, cls, parent = DOM.dom) => {
+                const el = document.createElement(tag);
+                if(cls) el.className = cls;
+                parent.appendChild(el);
+                return el;
+            },
+
+            // 1. Realistic Browser Window (From Reference Image)
+            browser: (id, { x = 20, y = 50, width = 280, url = 'bechakena.com/chat', title = 'Client UI', customBody = '' }) => {
+                const el = UI.create('div', 'browser-window-art');
+                el.id = id;
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+                el.style.width = `${width}px`;
+
+                let bodyHtml = customBody;
+                if (!bodyHtml) {
+                    bodyHtml = `
+                        <div class="b-wireframe-card">
+                            <div class="b-img-thumb">🏔️</div>
+                            <div class="b-lines">
+                                <div class="b-line w-40"></div>
+                                <div class="b-line w-full"></div>
+                                <div class="b-line w-70"></div>
+                            </div>
+                        </div>
+                        <div class="b-actions">
+                            <div class="b-btn pri">💬 Send Msg</div>
+                            <div class="b-btn sec">⚡ Live WS</div>
+                        </div>
+                    `;
+                }
+
+                el.innerHTML = `
+                    <div class="b-bar">
+                        <div class="b-dots">
+                            <div class="b-dot r"></div>
+                            <div class="b-dot y"></div>
+                            <div class="b-dot g"></div>
+                        </div>
+                        <div class="b-search">
+                            <span>🔒 https://${url}</span>
+                            <span class="s-icon">🔍</span>
+                        </div>
+                    </div>
+                    <div class="b-body">
+                        ${bodyHtml}
+                    </div>
+                `;
+                return el;
+            },
+
+            // 2. Metallic 3-Blade Server Rack (From Reference Image)
+            serverRack: (id, { x = 50, y = 50, width = 190, label = 'Express Server', sub = 'Port :5000', blades = 3 }) => {
+                const el = UI.create('div', 'server-rack-art');
+                el.id = id;
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+                el.style.minWidth = `${width}px`;
+
+                let bladesHtml = '';
+                const colors = ['cyan', 'green', 'purple'];
+                for (let i = 0; i < blades; i++) {
+                    const c = colors[i % colors.length];
+                    bladesHtml += `
+                        <div class="rack-blade">
+                            <div class="blade-vents">
+                                <div class="blade-vent"></div>
+                                <div class="blade-vent"></div>
+                                <div class="blade-vent"></div>
+                            </div>
+                            <div class="blade-leds">
+                                <div class="rack-led ${c} blink"></div>
+                                <div class="rack-led green"></div>
+                                <div class="rack-led cyan"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                el.innerHTML = `
+                    ${bladesHtml}
+                    <div class="rack-title-tag">${label} · <span style="color:#94A3B8;">${sub}</span></div>
+                `;
+                return el;
+            },
+
+            // 3. 3D Cylindrical Layered Database Disks (From Reference Image)
+            database3D: (id, { x = 80, y = 50, width = 150, label = 'MongoDB Atlas', sub = 'chatrooms / msgs' }) => {
+                const el = UI.create('div', 'db-cylinder-art');
+                el.id = id;
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+                el.style.width = `${width}px`;
+
+                el.innerHTML = `
+                    <svg class="db-stack-svg" width="130" height="110" viewBox="0 0 130 110" fill="none">
+                        <!-- Top Disk 1 (Cyan/Blue) -->
+                        <g>
+                            <path d="M5 25 C5 35 125 35 125 25 V45 C125 55 5 55 5 45 Z" fill="#0284C7" />
+                            <ellipse cx="65" cy="25" rx="60" ry="16" fill="#38BDF8" />
+                            <ellipse cx="65" cy="25" rx="54" ry="12" fill="#7DD3FC" opacity="0.4" />
+                            <circle cx="108" cy="38" r="3" fill="#FFFFFF" />
+                            <circle cx="116" cy="38" r="3" fill="#34D399" />
+                        </g>
+                        <!-- Mid Disk 2 (Purple) -->
+                        <g>
+                            <path d="M5 50 C5 60 125 60 125 50 V70 C125 80 5 80 5 70 Z" fill="#4338CA" />
+                            <ellipse cx="65" cy="50" rx="60" ry="16" fill="#6366F1" />
+                            <circle cx="108" cy="63" r="3" fill="#FFFFFF" />
+                            <circle cx="116" cy="63" r="3" fill="#38BDF8" />
+                        </g>
+                        <!-- Base Disk 3 (Dark Navy) -->
+                        <g>
+                            <path d="M5 75 C5 85 125 85 125 75 V95 C125 105 5 105 5 95 Z" fill="#0F172A" />
+                            <ellipse cx="65" cy="75" rx="60" ry="16" fill="#1E293B" />
+                            <circle cx="108" cy="88" r="3" fill="#FBBF24" />
+                            <circle cx="116" cy="88" r="3" fill="#34D399" />
+                        </g>
+                    </svg>
+                    <div class="db-label-box">🛢️ ${label}<br><span style="color:#94A3B8; font-size:10px;">${sub}</span></div>
+                `;
+                return el;
+            },
+
+            // 4. Cache / Cookie Cylinder (Center intermediate storage)
+            cacheCylinder: (id, { x = 50, y = 78, label = 'Browser Cookies', sub = 'accessToken (JWT)' }) => {
+                const el = UI.create('div', 'cache-cylinder-art');
+                el.id = id;
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+
+                el.innerHTML = `
+                    <svg width="100" height="75" viewBox="0 0 100 75" fill="none">
+                        <!-- Top Disk -->
+                        <g>
+                            <path d="M5 20 C5 28 95 28 95 20 V38 C95 46 5 46 5 38 Z" fill="#CBD5E1" />
+                            <ellipse cx="50" cy="20" rx="45" ry="12" fill="#F8FAFC" />
+                            <circle cx="80" cy="30" r="2.5" fill="#38BDF8" />
+                        </g>
+                        <!-- Base Disk -->
+                        <g>
+                            <path d="M5 40 C5 48 95 48 95 40 V58 C95 66 5 66 5 58 Z" fill="#0284C7" />
+                            <ellipse cx="50" cy="40" rx="45" ry="12" fill="#38BDF8" />
+                            <circle cx="80" cy="50" r="2.5" fill="#34D399" />
+                        </g>
+                    </svg>
+                    <div style="font-size:11px; font-family:var(--font-code); font-weight:700; color:#38BDF8; text-align:center; margin-top:2px;">
+                        🍪 ${label}<br><span style="color:#94A3B8; font-size:9px;">${sub}</span>
+                    </div>
+                `;
+                return el;
+            },
+
+            // 5. Cloud Infrastructure Hub
+            cloudHub: (id, { x = 80, y = 22, label = 'Socket.io Cluster', sub = '/chat namespace' }) => {
+                const el = UI.create('div', 'cloud-hub-art');
+                el.id = id;
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+
+                el.innerHTML = `
+                    <svg width="110" height="75" viewBox="0 0 110 75" fill="none">
+                        <path d="M25 45 C15 45 10 38 10 30 C10 20 20 15 30 15 C35 8 50 5 62 12 C72 5 88 10 90 22 C100 24 105 32 100 42 C98 48 90 50 85 50 L25 50 Z" fill="#1E293B" stroke="#818CF8" stroke-width="2" />
+                        <!-- Connected Nodes -->
+                        <line x1="35" y1="50" x2="35" y2="65" stroke="#818CF8" stroke-width="2" />
+                        <line x1="75" y1="50" x2="75" y2="65" stroke="#818CF8" stroke-width="2" />
+                        <line x1="35" y1="65" x2="75" y2="65" stroke="#818CF8" stroke-width="2" />
+                        <circle cx="35" cy="65" r="4" fill="#38BDF8" />
+                        <circle cx="75" cy="65" r="4" fill="#34D399" />
+                    </svg>
+                    <div style="font-size:11px; font-family:var(--font-code); font-weight:700; color:#818CF8; text-align:center;">
+                        ☁️ ${label}<br><span style="color:#94A3B8; font-size:9px;">${sub}</span>
+                    </div>
+                `;
+                return el;
+            },
+
+            // 6. Rotating Gear Node (Service Layer / Processing)
+            gearNode: (id, { x = 65, y = 50, label = 'ChatService Engine', sub = 'Sanitizer & Logic' }) => {
+                const el = UI.create('div', 'gear-node-art');
+                el.id = id;
+                el.style.left = `${x}%`;
+                el.style.top = `${y}%`;
+
+                el.innerHTML = `
+                    <div style="position:relative; width:64px; height:64px;">
+                        <svg class="gear-spinner-cw" style="position:absolute; top:0; left:0;" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        <svg class="gear-spinner-ccw" style="position:absolute; bottom:0; right:0;" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </div>
+                    <div style="font-size:11px; font-family:var(--font-code); font-weight:700; color:#38BDF8; text-align:center;">
+                        ⚙️ ${label}<br><span style="color:#94A3B8; font-size:9px;">${sub}</span>
+                    </div>
+                `;
+                return el;
+            },
+
+            // 7. Live Step-by-Step Educational Narrative HUD
+            stepHUD: (initStep = 1, totalSteps = 4, initialText = "Request initiated by client...") => {
+                const el = UI.create('div', 'step-hud');
+                el.id = 'active-step-hud';
+                el.innerHTML = `
+                    <div class="hud-step-pill" id="hud-pill">STEP ${initStep}/${totalSteps}</div>
+                    <div class="hud-text" id="hud-text">${initialText}</div>
+                `;
+                return el;
+            },
+
+            // Draw clean architectural orthogonal conduits with arrowheads
+            orthogonal: (x1, y1, x2, y2, color = '#38BDF8', arrow = 'arrow-cyan', type = 'horizontal-first') => {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                let d = '';
+                if (type === 'horizontal-first') {
+                    d = `M ${x1} ${y1} L ${x2} ${y1} L ${x2} ${y2}`;
+                } else if (type === 'vertical-first') {
+                    d = `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
+                } else {
+                    d = `M ${x1} ${y1} L ${x2} ${y2}`;
+                }
+                
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', color);
+                path.setAttribute('stroke-width', '2.5');
+                path.setAttribute('fill', 'none');
+                if (arrow) path.setAttribute('marker-end', `url(#${arrow})`);
+                DOM.svg.appendChild(path);
+                return path;
+            },
+
+            line: (x1, y1, x2, y2, color = 'var(--border)', dash = false, arrowMarker = '') => {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute('x1', `${x1}%`); line.setAttribute('y1', `${y1}%`);
+                line.setAttribute('x2', `${x2}%`); line.setAttribute('y2', `${y2}%`);
+                line.setAttribute('stroke', color);
+                line.setAttribute('stroke-width', '2.5');
+                if(dash) line.setAttribute('stroke-dasharray', '6,6');
+                if(arrowMarker) line.setAttribute('marker-end', `url(#${arrowMarker})`);
+                DOM.svg.appendChild(line);
+                return line;
+            },
+
+            packet: (label, type = '') => {
+                const el = UI.create('div', `packet ${type}`);
+                el.innerText = label;
+                el.style.opacity = 0;
+                return el;
+            },
+
+            card: (title, bodyHtml, xPct, yPct, minWidth = 260, cls = 'glass-card') => {
+                const el = UI.create('div', cls);
+                el.style.left = `${xPct}%`;
+                el.style.top = `${yPct}%`;
+                el.style.minWidth = `${minWidth}px`;
+                el.innerHTML = `
+                    <div style="font-size:12px; font-weight:700; font-family:var(--font-code); color:var(--accent1); margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                        ${title}
+                    </div>
+                    <div>${bodyHtml}</div>
+                `;
+                return el;
+            }
+        };
+
+        // Advanced Animation helper
+        const ANIM = {
+            send: (tl, packet, x1, y1, x2, y2, duration = 0.8, ease = "power1.inOut") => {
+                return tl
+                    .set(packet, { left: `${x1}%`, top: `${y1}%`, opacity: 0, scale: 0.7 })
+                    .to(packet, { opacity: 1, scale: 1, duration: 0.15 })
+                    .to(packet, { left: `${x2}%`, top: `${y2}%`, duration: duration, ease: ease })
+                    .to(packet, { opacity: 0, scale: 0.7, duration: 0.15 });
+            },
+            flow: (tl, packet, waypoints, durationPerHop = 0.4) => {
+                if (!waypoints || waypoints.length < 2) return tl;
+                tl.set(packet, { left: `${waypoints[0][0]}%`, top: `${waypoints[0][1]}%`, opacity: 0, scale: 0.7 })
+                  .to(packet, { opacity: 1, scale: 1, duration: 0.1 });
+                for (let i = 1; i < waypoints.length; i++) {
+                    tl.to(packet, { left: `${waypoints[i][0]}%`, top: `${waypoints[i][1]}%`, duration: durationPerHop, ease: "none" });
+                }
+                return tl.to(packet, { opacity: 0, scale: 0.7, duration: 0.15 });
+            },
+            narrate: (tl, stepNum, totalSteps, textHtml) => {
+                return tl.call(() => {
+                    const pill = document.getElementById('hud-pill');
+                    const text = document.getElementById('hud-text');
+                    if (pill) pill.innerText = `STEP ${stepNum}/${totalSteps}`;
+                    if (text) text.innerHTML = textHtml;
+                });
+            },
+            pulse: (tl, target, color = '#38BDF8', duration = 0.4) => {
+                return tl.to(target, { scale: 1.05, borderColor: color, duration: duration / 2, yoyo: true, repeat: 1 });
+            }
+        };
+
+        // ==========================================
+        // 62 MASTER SCENES WITH HIGH-OCTANE GRAPHICS
+        // ==========================================
+        const scenes = [
+            // 1. Client–Server Architecture (The Foundation Blueprint)
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Client–Server Architecture", sub: "Who talks to whom in production",
+                build: (tl) => {
+                    const bApp = UI.browser('bApp', { x: 18, y: 32, width: 220, url: 'bechakena.com', title: 'Buyer Browser' });
+                    const mApp = UI.browser('mApp', { x: 18, y: 72, width: 220, url: 'app.bechakena.com', title: 'Seller Mobile App' });
+                    const server = UI.serverRack('sRack', { x: 52, y: 50, width: 200, label: 'Express Backend', sub: 'Port :5000' });
+                    const cloud = UI.cloudHub('cHub', { x: 82, y: 24, label: 'Socket Gateway', sub: 'Cluster' });
+                    const db = UI.database3D('dbAtlas', { x: 82, y: 68, label: 'MongoDB Atlas', sub: 'chatrooms / msgs' });
+                    const hud = UI.stepHUD(1, 4, "Client apps initiate requests across the internet to the central backend server...");
+
+                    UI.line(28, 32, 42, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(28, 72, 42, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(62, 44, 76, 26, '#818CF8', false, 'arrow-purple');
+                    UI.line(62, 56, 76, 68, '#FBBF24', false, 'arrow-warn');
+
+                    const p1 = UI.packet('POST /chat/rooms');
+                    const p2 = UI.packet('Query DB', 'warn');
+                    const p3 = UI.packet('200 OK [Rooms]', 'res');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.db-cylinder-art', '.cloud-hub-art', '.step-hud'], { opacity: 0, scale: 0.9, stagger: 0.1, duration: 0.4 })
+                      .add(ANIM.narrate(tl, 1, 4, "📱 <b>Step 1:</b> Buyer browser sends <span class='code'>POST /api/v1/chat/rooms</span> to the backend server."))
+                      .add(ANIM.send(tl, p1, 28, 32, 52, 50, 0.6))
+                      .add(ANIM.pulse(tl, server, '#38BDF8'))
+                      .add(ANIM.narrate(tl, 2, 4, "🖧 <b>Step 2:</b> Express backend executes query to MongoDB Atlas cluster."))
+                      .add(ANIM.send(tl, p2, 52, 50, 82, 68, 0.5))
+                      .add(ANIM.pulse(tl, db, '#FBBF24'))
+                      .add(ANIM.narrate(tl, 3, 4, "🛢️ <b>Step 3:</b> Database returns room documents $\rightarrow$ Server responds to client with <span class='success'>200 OK</span>."))
+                      .add(ANIM.send(tl, p3, 52, 50, 28, 32, 0.6))
+                      .add(ANIM.pulse(tl, bApp, '#34D399'))
+                      .add(ANIM.narrate(tl, 4, 4, "✓ <b>Step 4:</b> All clients share one single centralized source of truth!"));
+                }
+            },
+
+            // 2. Request–Response Model
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Request–Response Model", sub: "The standard one-shot transaction",
+                build: (tl) => {
+                    const client = UI.browser('c', { x: 22, y: 50, width: 260, url: 'bechakena.com/chat' });
+                    const server = UI.serverRack('s', { x: 78, y: 50, width: 220, label: 'Express REST API', sub: 'req ➔ res ➔ close' });
+                    const hud = UI.stepHUD(1, 3, "HTTP Request/Response lifecycle: Client asks $\rightarrow$ Server responds $\rightarrow$ Channel closes.");
+
+                    UI.line(35, 42, 67, 42, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(67, 58, 35, 58, '#34D399', false, 'arrow-green');
+
+                    const pReq = UI.packet('HTTP GET /api/v1/chat/rooms');
+                    const pRes = UI.packet('HTTP 200 OK JSON', 'res');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, y: 20, stagger: 0.1 })
+                      .add(ANIM.narrate(tl, 1, 3, "📤 <b>Step 1:</b> Client dispatches HTTP Request with Headers & Cookies."))
+                      .add(ANIM.send(tl, pReq, 35, 42, 67, 42, 0.7))
+                      .add(ANIM.pulse(tl, server, '#38BDF8'))
+                      .add(ANIM.narrate(tl, 2, 3, "🖧 <b>Step 2:</b> Server processes request and formats JSON payload."))
+                      .add(ANIM.send(tl, pRes, 67, 58, 35, 58, 0.7))
+                      .add(ANIM.pulse(tl, client, '#34D399'))
+                      .add(ANIM.narrate(tl, 3, 3, "🔒 <b>Step 3:</b> Transaction completed. Connection closes until next explicit request!"));
+                }
+            },
+
+            // 3. Real-time vs Request–Response
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Real-time vs Request–Response", sub: "Why chat needs persistent streaming",
+                build: (tl) => {
+                    const c1 = UI.browser('c1', { x: 22, y: 30, width: 220, url: 'polling-client.com' });
+                    const s1 = UI.serverRack('s1', { x: 78, y: 30, width: 180, label: 'HTTP Polling Server', sub: 'High Waste' });
+                    UI.line(33, 30, 69, 30, '#475569');
+
+                    const c2 = UI.browser('c2', { x: 22, y: 70, width: 220, url: 'socket-client.com' });
+                    const s2 = UI.serverRack('s2', { x: 78, y: 70, width: 180, label: 'WebSocket Hub', sub: 'Instant 5ms Push' });
+                    UI.line(33, 70, 69, 70, '#38BDF8', false, 'arrow-cyan');
+
+                    const hud = UI.stepHUD(1, 3, "Comparing Polling (laggy repeated checks) vs WebSockets (instant push)...");
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.narrate(tl, 1, 3, "🐢 <b>Polling:</b> Client asks repeatedly 'Any new msg?'. Server returns '304 No' (99% waste)."))
+                      .add(ANIM.send(tl, UI.packet('Any new msg?'), 33, 30, 69, 30, 0.4))
+                      .add(ANIM.send(tl, UI.packet('304 No', 'err'), 69, 30, 33, 30, 0.4))
+                      .add(ANIM.narrate(tl, 2, 3, "⚡ <b>WebSocket:</b> Single handshake keeps channel open forever!"))
+                      .add(ANIM.send(tl, UI.packet('⚡ new_message ("Hi!")', 'res'), 69, 70, 33, 70, 0.5))
+                      .add(ANIM.pulse(tl, c2, '#34D399'))
+                      .add(ANIM.narrate(tl, 3, 3, "✓ Instant message delivery with ZERO wasteful polling HTTP requests!"));
+                }
+            },
+
+            // 4. HTTP vs WebSocket
+            {
+                mod: "MODULE 0 · Fundamentals", title: "HTTP vs WebSocket", sub: "Repeated handshakes vs Persistent channel",
+                build: (tl) => {
+                    const c = UI.browser('c', { x: 22, y: 50, width: 250, url: 'bechakena.com/chat' });
+                    const s = UI.serverRack('s', { x: 78, y: 50, width: 200, label: 'Protocol Gateway', sub: 'HTTP / WS' });
+                    const hud = UI.stepHUD(1, 3, "Upgrade handshake: HTTP 101 Switching Protocols turns connection into a WebSocket pipe.");
+
+                    UI.line(34, 50, 68, 50, '#818CF8', false, 'arrow-purple');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.narrate(tl, 1, 3, "🤝 <b>Step 1:</b> Client sends HTTP Upgrade request with <span class='code'>Connection: Upgrade</span>."))
+                      .add(ANIM.send(tl, UI.packet('GET /chat Upgrade: websocket'), 34, 50, 68, 50, 0.6))
+                      .add(ANIM.narrate(tl, 2, 3, "⚡ <b>Step 2:</b> Server replies with <span class='code'>101 Switching Protocols</span>."))
+                      .add(ANIM.send(tl, UI.packet('101 Switching Protocols', 'res'), 68, 50, 34, 50, 0.6))
+                      .add(ANIM.pulse(tl, c, '#34D399'))
+                      .add(ANIM.narrate(tl, 3, 3, "🚰 <b>Step 3:</b> The pipe is now a persistent, full-duplex bi-directional stream!"));
+                }
+            },
+
+            // 5. Full-Duplex Communication
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Full-Duplex Communication", sub: "Both sides stream simultaneously",
+                build: (tl) => {
+                    const buyer = UI.browser('b', { x: 18, y: 50, width: 220, url: 'buyer.com/chat' });
+                    const server = UI.serverRack('s', { x: 50, y: 50, width: 180, label: 'WebSocket Hub', sub: 'Full Duplex' });
+                    const seller = UI.browser('sApp', { x: 82, y: 50, width: 220, url: 'seller.com/chat' });
+                    const hud = UI.stepHUD(1, 2, "Full Duplex: Both buyer and seller send and receive messages at the exact same second.");
+
+                    UI.line(29, 44, 41, 44, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(41, 44, 71, 44, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(71, 56, 59, 56, '#34D399', false, 'arrow-green');
+                    UI.line(59, 56, 29, 56, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.narrate(tl, 1, 2, "💬 <b>Simultaneous flow:</b> Buyer types price inquiry while Seller sends item photos."))
+                      .add(ANIM.send(tl, UI.packet('Buyer: "Is price 5000 tk?"'), 29, 44, 71, 44, 0.9))
+                      .add(ANIM.send(tl, UI.packet('Seller: "Yes, final price!"', 'res'), 71, 56, 29, 56, 0.9), "<0.2")
+                      .add(ANIM.pulse(tl, [buyer, seller], '#34D399'))
+                      .add(ANIM.narrate(tl, 2, 2, "✓ No waiting for turns. True real-time interactive responsiveness!"));
+                }
+            },
+
+            // 6. Database Basics: Hierarchy
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Database Basics: Hierarchy", sub: "Collection → Document → Field",
+                build: (tl) => {
+                    const db = UI.database3D('db', { x: 20, y: 50, label: 'becha_kena_db', sub: 'NoSQL Database' });
+                    const col = UI.card('📁 1. Collection: "messages"', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:var(--accent1);">
+                            Folder holding all message records
+                        </div>
+                    `, 50, 50, 220);
+                    const doc = UI.card('📄 2. Document & Fields', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            <span style="color:var(--accent1);">_id:</span> ObjectId("65a1...")<br>
+                            <span style="color:var(--warn);">roomId:</span> "room_101"<br>
+                            <span style="color:var(--success);">text:</span> "Hello seller!"<br>
+                            <span style="color:var(--text-muted);">isRead:</span> false
+                        </div>
+                    `, 80, 50, 240);
+                    const hud = UI.stepHUD(1, 2, "Hierarchy: Database holds Collections $\rightarrow$ Collections hold Documents $\rightarrow$ Documents hold Fields.");
+
+                    UI.line(28, 50, 39, 50, '#FBBF24', false, 'arrow-warn');
+                    UI.line(61, 50, 68, 50, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from(['.db-cylinder-art', col, doc, '.step-hud'], { opacity: 0, scale: 0.85, stagger: 0.15 })
+                      .add(ANIM.pulse(tl, doc, '#34D399'));
+                }
+            },
+
+            // 7. Auth vs Authz
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Auth vs Authz", sub: "Identity check vs Permission check",
+                build: (tl) => {
+                    const user = UI.browser('u', { x: 18, y: 50, width: 200, url: 'user-app.com', title: 'User: Rahim (Buyer)' });
+                    const gate1 = UI.serverRack('g1', { x: 50, y: 32, width: 170, label: 'Authentication', sub: 'Verify JWT (Who)' });
+                    const gate2 = UI.serverRack('g2', { x: 50, y: 68, width: 170, label: 'Authorization', sub: 'Check Role (Permission)' });
+                    const route = UI.card('🛡️ Protected Admin Route', `
+                        <div style="color:var(--error); font-weight:700;">DELETE /api/v1/users</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Requires Role: "admin"</div>
+                    `, 82, 68, 200);
+                    const hud = UI.stepHUD(1, 3, "AuthN confirms your identity; AuthZ blocks you if you don't have permission.");
+
+                    UI.line(28, 50, 41, 32, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(28, 50, 41, 68, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(59, 68, 72, 68, '#F87171', true);
+
+                    tl.from(['.browser-window-art', '.server-rack-art', route, '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.narrate(tl, 1, 3, "🔑 <b>AuthN:</b> User sends JWT cookie. Server confirms: 'You are Rahim, user #65a123' ✓"))
+                      .add(ANIM.send(tl, UI.packet('JWT Token ➔'), 28, 50, 41, 32, 0.5))
+                      .add(ANIM.pulse(tl, gate1, '#34D399'))
+                      .add(ANIM.narrate(tl, 2, 3, "🛑 <b>AuthZ:</b> Rahim tries to delete a user. Server checks: 'Role is buyer, not admin!' ❌"))
+                      .add(ANIM.send(tl, UI.packet('Try Admin Action'), 28, 50, 41, 68, 0.5))
+                      .add(ANIM.pulse(tl, gate2, '#F87171'))
+                      .add(ANIM.send(tl, UI.packet('403 Forbidden ❌', 'err'), 41, 68, 28, 68, 0.5))
+                      .add(ANIM.narrate(tl, 3, 3, "✓ 403 Forbidden stops unauthorized users right in their tracks!"));
+                }
+            },
+
+            // 8. JWT (JSON Web Token)
+            {
+                mod: "MODULE 0 · Fundamentals", title: "JWT (JSON Web Token)", sub: "Header . Payload . Cryptographic Signature",
+                build: (tl) => {
+                    const cHead = UI.card('1. Header (Algorithm)', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:#F87171;">
+                            { "alg": "HS256", "typ": "JWT" }
+                        </div>
+                    `, 20, 36, 200);
+
+                    const cPay = UI.card('2. Payload (Claims)', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:#FBBF24;">
+                            { "userId": "65a1...", "role": "buyer", "exp": 17400000 }
+                        </div>
+                    `, 50, 36, 230);
+
+                    const cSig = UI.card('3. Signature (HMAC)', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:#34D399;">
+                            HMACSHA256(head + pay, SECRET_KEY 🔑)
+                        </div>
+                    `, 80, 36, 240);
+
+                    const tokenStr = UI.card('Signed Token String (Joined with Dots)', `
+                        <div style="font-family:var(--font-code); font-size:13px; font-weight:700; word-break:break-all;">
+                            <span style="color:#F87171;">eyJhbGciOi...</span>.<span style="color:#FBBF24;">eyJ1c2VySWQi...</span>.<span style="color:#34D399;">SflKxwRJSMeKK...</span>
+                        </div>
+                    `, 50, 68, 680);
+                    const hud = UI.stepHUD(1, 2, "JWT consists of 3 Base64URL parts: Header (red), Payload (amber), Signature (green).");
+
+                    tl.from([cHead, cPay, cSig, tokenStr, '.step-hud'], { opacity: 0, y: 20, stagger: 0.12 })
+                      .add(ANIM.pulse(tl, tokenStr, '#34D399'));
+                }
+            },
+
+            // 9. Cookie (Where the token lives in the browser)
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Cookie", sub: "Where the token lives in browser storage",
+                build: (tl) => {
+                    const browser = UI.browser('b', {
+                        x: 28, y: 48, width: 360, url: 'bechakena.com/chat',
+                        customBody: `
+                            <div style="font-size:11px; font-weight:700; color:#38BDF8; font-family:var(--font-code); margin-bottom:4px;">
+                                🛠️ DevTools > Application > Storage > Cookies
+                            </div>
+                            <table class="devtools-table">
+                                <thead>
+                                    <tr><th>Name</th><th>Value</th><th>HttpOnly</th><th>Secure</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="cookie-row" style="background:rgba(56,189,248,0.12);">
+                                        <td style="color:#FBBF24; font-weight:700;">accessToken</td>
+                                        <td>eyJhbGci...</td>
+                                        <td><span class="badge-pill green">🔒 true</span></td>
+                                        <td><span class="badge-pill green">✓ true</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size:10px; color:#94A3B8; margin-top:6px;">
+                                🛡️ HttpOnly cookie is immune to XSS theft and auto-attaches to all requests!
+                            </div>
+                        `
+                    });
+
+                    const server = UI.serverRack('s', { x: 78, y: 48, width: 200, label: 'Express Auth Server', sub: 'Set-Cookie Handler' });
+                    const hud = UI.stepHUD(1, 3, "Browser Cookie Storage: Server sets cookie on login $\rightarrow$ Browser auto-sends it on every request.");
+
+                    UI.line(46, 42, 68, 42, '#818CF8', false, 'arrow-purple');
+                    UI.line(46, 56, 68, 56, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, scale: 0.9, stagger: 0.1 })
+                      .add(ANIM.narrate(tl, 1, 3, "🔑 <b>Step 1:</b> On login, server sends <span class='code'>Set-Cookie: accessToken=eyJ...; HttpOnly</span>."))
+                      .add(ANIM.send(tl, UI.packet('Set-Cookie: accessToken', 'purple'), 68, 42, 46, 42, 0.7))
+                      .add(ANIM.narrate(tl, 2, 3, "🍪 <b>Step 2:</b> Browser stores it in locked cookie storage (inaccessible to malicious JS)."))
+                      .from('#cookie-row', { backgroundColor: 'rgba(52,211,153,0.5)', duration: 0.5 })
+                      .add(ANIM.narrate(tl, 3, 3, "🚀 <b>Step 3:</b> Browser automatically attaches the cookie to all HTTP & WebSocket requests!"))
+                      .add(ANIM.send(tl, UI.packet('GET /rooms + Cookie ➔'), 46, 56, 68, 56, 0.7))
+                      .add(ANIM.pulse(tl, server, '#34D399'));
+                }
+            },
+
+            // 10. Middleware Pipeline
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Middleware Pipeline", sub: "Checkpoints before the controller",
+                build: (tl) => {
+                    const client = UI.browser('c', { x: 12, y: 50, width: 160, url: 'app.com' });
+                    const m1 = UI.serverRack('m1', { x: 34, y: 50, width: 140, label: '1. cors()', sub: 'Whitelist' });
+                    const m2 = UI.serverRack('m2', { x: 54, y: 50, width: 150, label: '2. authenticate', sub: 'Verify Cookie' });
+                    const m3 = UI.serverRack('m3', { x: 74, y: 50, width: 150, label: '3. requireVerified', sub: 'Check Status' });
+                    const ctrl = UI.card('🎯 Controller', '<div style="color:var(--success); font-weight:700;">chatController.createRoom()</div>', 92, 50, 140);
+                    const hud = UI.stepHUD(1, 4, "Sequential middleware execution: Each guard checks request and calls next().");
+
+                    UI.line(18, 50, 27, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(41, 50, 46, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(61, 50, 66, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(81, 50, 86, 50, '#34D399', false, 'arrow-green');
+
+                    const req = UI.packet('Request (req, res, next)');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', ctrl, '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.send(tl, req, 18, 50, 34, 50, 0.4))
+                      .add(ANIM.pulse(tl, m1, '#34D399'))
+                      .add(ANIM.send(tl, req, 34, 50, 54, 50, 0.4))
+                      .add(ANIM.pulse(tl, m2, '#34D399'))
+                      .add(ANIM.send(tl, req, 54, 50, 74, 50, 0.4))
+                      .add(ANIM.pulse(tl, m3, '#34D399'))
+                      .add(ANIM.send(tl, req, 74, 50, 92, 50, 0.4))
+                      .add(ANIM.pulse(tl, ctrl, '#818CF8'));
+                }
+            },
+
+            // 11. Layered Architecture
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Layered Architecture", sub: "Controller → Service → Model",
+                build: (tl) => {
+                    const client = UI.browser('cl', { x: 12, y: 50, width: 170, url: 'client.com' });
+                    const ctrl = UI.serverRack('ctrl', { x: 36, y: 50, width: 160, label: 'Controller Layer', sub: 'chat.controller.ts' });
+                    const svc = UI.gearNode('svc', { x: 62, y: 50, label: 'Service Layer', sub: 'chat.service.ts' });
+                    const db = UI.database3D('db', { x: 88, y: 50, label: 'Model Layer', sub: 'ChatRoom.ts (DB)' });
+                    const hud = UI.stepHUD(1, 4, "Decoupled 3-tier structure: Controller handles HTTP $\rightarrow$ Service runs business logic $\rightarrow$ Model queries DB.");
+
+                    UI.line(18, 44, 28, 44, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(44, 44, 56, 44, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(68, 44, 80, 44, '#FBBF24', false, 'arrow-warn');
+                    UI.line(80, 56, 68, 56, '#34D399', false, 'arrow-green');
+                    UI.line(56, 56, 44, 56, '#34D399', false, 'arrow-green');
+                    UI.line(28, 56, 18, 56, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.gear-node-art', '.db-cylinder-art', '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.send(tl, UI.packet('HTTP Request ➔'), 18, 44, 36, 44, 0.4))
+                      .add(ANIM.send(tl, UI.packet('DTO / Params ➔'), 36, 44, 62, 44, 0.4))
+                      .add(ANIM.send(tl, UI.packet('DB Query ➔', 'warn'), 62, 44, 88, 44, 0.4))
+                      .add(ANIM.pulse(tl, db, '#FBBF24'))
+                      .add(ANIM.send(tl, UI.packet('⬅ Saved Doc', 'res'), 88, 56, 62, 56, 0.4))
+                      .add(ANIM.send(tl, UI.packet('⬅ Clean Data', 'res'), 62, 56, 36, 56, 0.4))
+                      .add(ANIM.send(tl, UI.packet('⬅ 201 Created', 'res'), 36, 56, 18, 56, 0.4))
+                      .add(ANIM.pulse(tl, client, '#34D399'));
+                }
+            },
+
+            // 12. Async / Await & Promises
+            {
+                mod: "MODULE 0 · Fundamentals", title: "Async / Await & Promises", sub: "Non-blocking JavaScript event loop",
+                build: (tl) => {
+                    const server = UI.serverRack('s', { x: 28, y: 40, width: 200, label: 'Node.js Call Stack', sub: 'Handles other users' });
+                    const db = UI.database3D('db', { x: 75, y: 40, label: 'MongoDB Disk I/O', sub: '50ms DB Operation' });
+                    const code = UI.card('Non-Blocking Execution', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.6;">
+                            <span style="color:#93C5FD;">console.log("1. Request received");</span><br>
+                            <span style="color:#FBBF24; font-weight:700;">const msgs = await Message.find({ roomId });</span><br>
+                            <span style="color:#34D399;">console.log("2. Messages ready");</span>
+                        </div>
+                    `, 50, 72, 500);
+                    const hud = UI.stepHUD(1, 2, "await pauses function execution without freezing the Node.js event loop for other users.");
+
+                    UI.line(38, 40, 68, 40, '#FBBF24', true);
+
+                    tl.from(['.server-rack-art', '.db-cylinder-art', code, '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('await Message.find()'), 38, 40, 75, 40, 0.6))
+                      .add(ANIM.pulse(tl, db, '#FBBF24', 0.6))
+                      .add(ANIM.send(tl, UI.packet('Promise Resolved ✓', 'res'), 75, 40, 38, 40, 0.6))
+                      .add(ANIM.pulse(tl, server, '#34D399'));
+                }
+            },
+
+            // 13. TypeScript Basics
+            {
+                mod: "MODULE 0 · Fundamentals", title: "TypeScript Basics", sub: "Type safety prevents runtime crashes",
+                build: (tl) => {
+                    const editor = UI.card('📝 chat.interface.ts', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.6;">
+                            <span style="color:#818CF8;">interface</span> <span style="color:#38BDF8;">ISendMessage</span> {<br>
+                            &nbsp;&nbsp;roomId: <span style="color:#34D399;">string</span>;<br>
+                            &nbsp;&nbsp;text: <span style="color:#34D399;">string</span>;<br>
+                            &nbsp;&nbsp;senderId: <span style="color:#34D399;">string</span>;<br>
+                            }
+                        </div>
+                    `, 28, 50, 280);
+
+                    const errorBox = UI.card('Compile-Time Type Checker', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.5;">
+                            <span style="color:var(--error); font-weight:700;">❌ Error:</span> Type 'number' not assignable to 'string'.<br>
+                            <div style="background:#1F1315; border-left:3px solid var(--error); padding:6px 10px; margin-top:8px;">
+                                msg.text = 12345; <span style="color:var(--text-muted); font-size:10px;">// Caught in VS Code!</span>
+                            </div>
+                            <div style="margin-top:8px; color:var(--success);">
+                                ✓ Fixed: msg.text = "Is this available?";
+                            </div>
+                        </div>
+                    `, 72, 50, 340);
+                    const hud = UI.stepHUD(1, 2, "TypeScript catches payload shape mismatches in your editor before deploying to production.");
+
+                    UI.line(42, 50, 55, 50, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from([editor, errorBox, '.step-hud'], { opacity: 0, scale: 0.9, stagger: 0.15 })
+                      .add(ANIM.pulse(tl, errorBox, '#F87171'))
+                      .to(errorBox, { borderColor: '#34D399', duration: 0.4 });
+                }
+            },
+
+            // 14. Schema vs Model
+            {
+                mod: "MODULE 1 · Data Modeling", title: "Schema vs Model", sub: "Blueprint vs Factory",
+                build: (tl) => {
+                    const schema = UI.card('📐 Schema (Blueprint)', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.5;">
+                            <span style="color:var(--accent1);">new Schema({</span><br>
+                            &nbsp;&nbsp;text: { type: String, required: true },<br>
+                            &nbsp;&nbsp;roomId: { type: ObjectId, ref: 'ChatRoom' }<br>
+                            <span style="color:var(--accent1);">})</span>
+                        </div>
+                    `, 22, 50, 240);
+
+                    const model = UI.serverRack('m', { x: 52, y: 50, width: 170, label: 'Model Factory', sub: 'mongoose.model("Message")' });
+
+                    const docs = UI.card('📄 Manufactured Documents', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            • Message.create({ text: "Hi" })<br>
+                            • Message.find({ roomId })<br>
+                            • message.save()
+                        </div>
+                    `, 82, 50, 220);
+                    const hud = UI.stepHUD(1, 2, "Schema defines structure and validation; Model is the constructor used to query and create documents.");
+
+                    UI.line(34, 50, 43, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(61, 50, 71, 50, '#FBBF24', false, 'arrow-warn');
+
+                    tl.from([schema, '.server-rack-art', docs, '.step-hud'], { opacity: 0, y: 20, stagger: 0.15 })
+                      .add(ANIM.pulse(tl, model, '#818CF8'));
+                }
+            },
+
+            // 15. ChatRoom & Message Collections
+            {
+                mod: "MODULE 1 · Data Modeling", title: "ChatRoom & Message Collections", sub: "Decoupled relational collections",
+                build: (tl) => {
+                    const roomCol = UI.card('📁 Collection: chatrooms', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            <span style="color:var(--accent1); font-weight:700;">_id: "room_101"</span><br>
+                            buyerId: "u_rahim"<br>
+                            sellerId: "u_karim"<br>
+                            listingId: "listing_iphone13"
+                        </div>
+                    `, 28, 50, 260);
+
+                    const msgCol = UI.card('📁 Collection: messages', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            <span style="color:var(--success); font-weight:700;">_id: "m_1"</span> | roomId: <span style="color:var(--accent1);">"room_101"</span><br>
+                            text: "Is battery health 90%?"<br>
+                            <hr style="border:none; border-top:1px solid var(--border); margin:6px 0;">
+                            <span style="color:var(--success); font-weight:700;">_id: "m_2"</span> | roomId: <span style="color:var(--accent1);">"room_101"</span><br>
+                            text: "Yes brother, 92% health."
+                        </div>
+                    `, 75, 50, 320);
+                    const hud = UI.stepHUD(1, 2, "Separating ChatRoom metadata from individual Message documents keeps room documents lightweight.");
+
+                    UI.line(60, 42, 41, 42, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(60, 68, 41, 68, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from([roomCol, msgCol, '.step-hud'], { opacity: 0, scale: 0.9, stagger: 0.15 })
+                      .add(ANIM.pulse(tl, msgCol, '#38BDF8'));
+                }
+            },
+
+            // 16. One-to-Many Relationship
+            {
+                mod: "MODULE 1 · Data Modeling", title: "One-to-Many Relationship", sub: "1 Room, Infinite Messages",
+                build: (tl) => {
+                    const parent = UI.database3D('p', { x: 50, y: 26, label: 'ChatRoom (Parent)', sub: '1 Document' });
+                    const m1 = UI.card('Message #1', 'roomId: 101', 20, 75, 140);
+                    const m2 = UI.card('Message #2', 'roomId: 101', 40, 75, 140);
+                    const m3 = UI.card('Message #3', 'roomId: 101', 60, 75, 140);
+                    const m4 = UI.card('Message #10,000+', '<span style="color:#34D399; font-weight:700;">Scales Clean!</span>', 82, 75, 160);
+                    const hud = UI.stepHUD(1, 2, "One ChatRoom parent links to thousands of child Message documents via roomId reference.");
+
+                    UI.line(50, 38, 20, 70, '#475569');
+                    UI.line(50, 38, 40, 70, '#475569');
+                    UI.line(50, 38, 60, 70, '#475569');
+                    UI.line(50, 38, 82, 70, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.db-cylinder-art', m1, m2, m3, m4, '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.pulse(tl, m4, '#34D399'));
+                }
+            },
+
+            // 17. ObjectId
+            {
+                mod: "MODULE 1 · Data Modeling", title: "ObjectId", sub: "24-Hex Character Unique Identifier",
+                build: (tl) => {
+                    const card = UI.card('MongoDB 24-Hex Character ObjectId Anatomy', `
+                        <div style="font-family:var(--font-code); font-size:22px; font-weight:700; text-align:center; margin:16px 0;">
+                            <span style="color:#F87171;">65a1b2c3</span><span style="color:#FBBF24;">d4e5f6a7b8</span><span style="color:#34D399;">c9d0e1</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; text-align:center;">
+                            <div style="background:#1B1214; border:1px solid #F87171; border-radius:8px; padding:10px;">
+                                <div style="color:#F87171; font-weight:700;">4 Bytes</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Timestamp ⏰ (Creation Date)</div>
+                            </div>
+                            <div style="background:#1C1810; border:1px solid #FBBF24; border-radius:8px; padding:10px;">
+                                <div style="color:#FBBF24; font-weight:700;">5 Bytes</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Random Process ID 💻</div>
+                            </div>
+                            <div style="background:#0F1F18; border:1px solid #34D399; border-radius:8px; padding:10px;">
+                                <div style="color:#34D399; font-weight:700;">3 Bytes</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Incrementing Counter 🔢</div>
+                            </div>
+                        </div>
+                    `, 50, 50, 680);
+                    const hud = UI.stepHUD(1, 1, "ObjectId encodes the creation timestamp directly inside its first 4 bytes!");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.5 });
+                }
+            },
+
+            // 18. Population (ref)
+            {
+                mod: "MODULE 1 · Data Modeling", title: "Population (ref)", sub: "Hydrating linked documents",
+                build: (tl) => {
+                    const before = UI.card('Before .populate()', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            roomId: "room_101",<br>
+                            seller: <span style="color:var(--warn); font-weight:700;">"65a999b..."</span><br>
+                            <span style="color:var(--text-muted); font-size:11px;">(Just raw ObjectId)</span>
+                        </div>
+                    `, 25, 50, 220);
+
+                    const after = UI.card('After .populate("seller", "name avatar")', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            roomId: "room_101",<br>
+                            seller: <span style="color:var(--success); font-weight:700;">{</span><br>
+                            &nbsp;&nbsp;name: "Afnan Mahmud",<br>
+                            &nbsp;&nbsp;avatar: "afnan.png"<br>
+                            <span style="color:var(--success); font-weight:700;">}</span>
+                        </div>
+                    `, 75, 50, 300);
+                    const hud = UI.stepHUD(1, 2, "Mongoose population replaces foreign ObjectId keys with the actual populated user object.");
+
+                    UI.line(36, 50, 60, 50, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from([before, after, '.step-hud'], { opacity: 0, y: 20, stagger: 0.2 })
+                      .add(ANIM.send(tl, UI.packet('Fetch user doc'), 36, 50, 60, 50, 0.7))
+                      .add(ANIM.pulse(tl, after, '#34D399'));
+                }
+            },
+
+            // 19. required / trim / default
+            {
+                mod: "MODULE 1 · Data Modeling", title: "required / trim / default", sub: "Schema validation rules",
+                build: (tl) => {
+                    const c1 = UI.card('1. required: true', `
+                        <div style="font-family:var(--font-code); font-size:12px;">
+                            text: "" ➔ <span class="badge-pill red">❌ ValidationError</span>
+                        </div>
+                    `, 20, 50, 200);
+
+                    const c2 = UI.card('2. trim: true', `
+                        <div style="font-family:var(--font-code); font-size:12px;">
+                            " &nbsp;hello &nbsp;" ➔ <span class="badge-pill green">✂️ "hello"</span>
+                        </div>
+                    `, 50, 50, 200);
+
+                    const c3 = UI.card('3. default: false', `
+                        <div style="font-family:var(--font-code); font-size:12px;">
+                            isRead: <span class="badge-pill blue">🏷️ auto false</span>
+                        </div>
+                    `, 80, 50, 200);
+                    const hud = UI.stepHUD(1, 3, "Schema validation rules ensure clean, non-empty, auto-trimmed, and defaulted data.");
+
+                    tl.from([c1, c2, c3, '.step-hud'], { scale: 0.8, opacity: 0, stagger: 0.15, duration: 0.4 })
+                      .add(ANIM.pulse(tl, c2, '#34D399'));
+                }
+            },
+
+            // 20. timestamps
+            {
+                mod: "MODULE 1 · Data Modeling", title: "timestamps", sub: "Auto createdAt / updatedAt",
+                build: (tl) => {
+                    const card = UI.card('Mongoose Schema Option: { timestamps: true }', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.7;">
+                            <span style="color:var(--text-muted);">// Automatically managed on every .save():</span><br>
+                            <span style="color:var(--accent1);">createdAt:</span> 2026-08-03T10:00:00.000Z ⏰<br>
+                            <span style="color:var(--success);">updatedAt:</span> 2026-08-03T10:05:30.000Z 🔄
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "timestamps: true provides instant creation and modification timestamps on all records.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.5 })
+                      .add(ANIM.pulse(tl, card, '#34D399'));
+                }
+            },
+
+            // 21. Database Index
+            {
+                mod: "MODULE 1 · Data Modeling", title: "Database Index", sub: "Why indexes make chat instant",
+                build: (tl) => {
+                    const noIndex = UI.card('Without Index (COLLSCAN)', `
+                        <div style="font-size:12px; color:var(--error); font-weight:700;">🐢 Scans 1,000,000 documents</div>
+                        <div style="font-family:var(--font-code); font-size:11px; margin-top:6px; color:var(--text-muted);">
+                            O(N) Sequential scan = 350ms (Slow)
+                        </div>
+                    `, 25, 50, 260);
+
+                    const withIndex = UI.card('With Index (B-Tree IXSCAN)', `
+                        <div style="font-size:12px; color:var(--success); font-weight:700;">⚡ Instant Direct Lookup</div>
+                        <div style="font-family:var(--font-code); font-size:11px; margin-top:6px; color:var(--text-muted);">
+                            O(log N) Tree jump = 1ms (Instant)
+                        </div>
+                    `, 75, 50, 260);
+                    const hud = UI.stepHUD(1, 2, "B-Tree Indexes jump directly to matching documents without scanning full collections.");
+
+                    tl.from([noIndex, withIndex, '.step-hud'], { opacity: 0, y: 20, stagger: 0.2 })
+                      .add(ANIM.pulse(tl, withIndex, '#34D399'));
+                }
+            },
+
+            // 22. Compound Index
+            {
+                mod: "MODULE 1 · Data Modeling", title: "Compound Index", sub: "Multiple fields indexed together",
+                build: (tl) => {
+                    const card = UI.card('Compound Index: { buyerId: 1, sellerId: 1, listingId: 1 }', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.6; color:var(--accent1);">
+                            ChatRoomSchema.index({ buyerId: 1, sellerId: 1, listingId: 1 });
+                        </div>
+                        <div style="margin-top:12px; font-size:12px; color:var(--text-muted);">
+                            🎯 Matches all 3 filter fields in 1 single fast index search!
+                        </div>
+                    `, 50, 50, 560);
+                    const hud = UI.stepHUD(1, 1, "Compound indexes match complex queries with multiple criteria in a single step.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#38BDF8'));
+                }
+            },
+
+            // 23. Unique Index
+            {
+                mod: "MODULE 1 · Data Modeling", title: "Unique Index", sub: "Preventing duplicate chat rooms",
+                build: (tl) => {
+                    const c1 = UI.card('1st Click: Create Room', `
+                        <div style="font-size:12px; color:var(--success);">
+                            ✓ Success: Created room_101
+                        </div>
+                    `, 25, 50, 220);
+
+                    const c2 = UI.card('2nd Click: Duplicate', `
+                        <div style="font-size:12px; color:var(--error); font-weight:700;">
+                            ❌ E11000 Duplicate Key Error
+                        </div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
+                            Guarantees only 1 room per deal!
+                        </div>
+                    `, 75, 50, 240);
+                    const hud = UI.stepHUD(1, 2, "Unique indexes block duplicate records directly at the database engine level.");
+
+                    tl.from([c1, c2, '.step-hud'], { opacity: 0, y: 20, stagger: 0.2 })
+                      .add(ANIM.pulse(tl, c2, '#F87171'));
+                }
+            },
+
+            // 24. Index Direction (-1)
+            {
+                mod: "MODULE 1 · Data Modeling", title: "Index Direction (-1)", sub: "Reverse chronological sorting",
+                build: (tl) => {
+                    const card = UI.card('MessageSchema.index({ roomId: 1, createdAt: -1 })', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.6;">
+                            Query: <span style="color:var(--accent1);">Message.find({ roomId }).sort({ createdAt: -1 })</span>
+                        </div>
+                        <div style="margin-top:10px; font-size:12px; color:var(--success);">
+                            ⚡ Returns newest messages first with ZERO in-memory sort CPU overhead!
+                        </div>
+                    `, 50, 50, 560);
+                    const hud = UI.stepHUD(1, 1, "Index direction (-1) retrieves reverse-chronological chat messages instantly.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#34D399'));
+                }
+            },
+
+            // 25. Sanitize Input
+            {
+                mod: "MODULE 2 · Safety", title: "Sanitize Input", sub: "Never trust raw text",
+                build: (tl) => {
+                    const raw = UI.card('Raw User Input', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:var(--error);">
+                            &lt;script&gt;steal()&lt;/script&gt; Call me at 01712345678
+                        </div>
+                    `, 20, 50, 240);
+
+                    const san = UI.gearNode('san', { x: 50, y: 50, label: 'Sanitizer Engine', sub: 'DOMPurify + Regex' });
+
+                    const clean = UI.card('Clean Safe Output', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:var(--success);">
+                            Call me at [phone hidden]
+                        </div>
+                    `, 80, 50, 240);
+                    const hud = UI.stepHUD(1, 3, "Input sanitization strips executable scripts and masks sensitive phone numbers.");
+
+                    UI.line(32, 50, 42, 50, '#F87171', false);
+                    UI.line(58, 50, 68, 50, '#34D399', false, 'arrow-green');
+
+                    tl.from([raw, '.gear-node-art', clean, '.step-hud'], { opacity: 0, stagger: 0.15 })
+                      .add(ANIM.send(tl, UI.packet('Raw text ➔', 'err'), 20, 50, 50, 50, 0.5))
+                      .add(ANIM.send(tl, UI.packet('Clean text ➔', 'res'), 50, 50, 80, 50, 0.5))
+                      .add(ANIM.pulse(tl, clean, '#34D399'));
+                }
+            },
+
+            // 26. Regex Basics
+            {
+                mod: "MODULE 2 · Safety", title: "Regex Basics", sub: "Pattern matching rules",
+                build: (tl) => {
+                    const card = UI.card('Bangladeshi Mobile Regex: /01[3-9]\\d{8}/g', `
+                        <div style="font-family:var(--font-code); font-size:14px; margin:10px 0;">
+                            Text: "Call <span style="background:rgba(251,191,36,0.3); color:var(--warn); padding:2px 6px; border-radius:4px;">01712345678</span> tomorrow"
+                        </div>
+                        <div style="font-size:12px; color:var(--success);">
+                            ✓ Pattern matches 11 digits starting with 013-019
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "Regular expressions scan incoming text for structured patterns.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#FBBF24'));
+                }
+            },
+
+            // 27. External Link Detection
+            {
+                mod: "MODULE 2 · Safety", title: "External Link Detection", sub: "Blocking off-platform scam links",
+                build: (tl) => {
+                    const card = UI.card('Phishing / Off-Platform Link Filter', `
+                        <div style="font-family:var(--font-code); font-size:13px;">
+                            "Visit <span style="color:var(--error); text-decoration:line-through;">http://scam-site.com</span> for deal"
+                        </div>
+                        <div style="margin-top:10px; font-size:12px; color:var(--success);">
+                            ➔ Transformed to: "Visit <span class="badge-pill red">[link removed]</span> for deal"
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "Link filters strip unverified URLs to keep marketplace transactions on-platform.");
+
+                    tl.from([card, '.step-hud'], { opacity: 0, y: 20, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#F87171'));
+                }
+            },
+
+            // 28. Phone Number Masking
+            {
+                mod: "MODULE 2 · Safety", title: "Phone Number Masking", sub: "Privacy protection",
+                build: (tl) => {
+                    const card = UI.card('Marketplace Privacy Guard', `
+                        <div style="font-family:var(--font-code); font-size:13px;">
+                            "My number is <span style="color:var(--error);">01799887766</span>"
+                        </div>
+                        <div style="margin-top:10px; font-size:12px; color:var(--success);">
+                            ➔ Transformed: "My number is <span class="badge-pill warn">[phone hidden]</span>"
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "Phone numbers are automatically masked before saving to protect user privacy.");
+
+                    tl.from([card, '.step-hud'], { opacity: 0, y: 20, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#FBBF24'));
+                }
+            },
+
+            // 29. Keyword Detection
+            {
+                mod: "MODULE 2 · Safety", title: "Keyword Detection", sub: "Scam warning alerts",
+                build: (tl) => {
+                    const card = UI.card('Proactive Scam Alert System', `
+                        <div style="font-family:var(--font-code); font-size:12px;">
+                            Flagged keyword: <span class="badge-pill red">"advance payment" / "send bKash"</span>
+                        </div>
+                        <div style="background:#1E150A; border-left:3px solid var(--warn); padding:10px; margin-top:10px; border-radius:6px;">
+                            ⚠️ <b>Becha-Kena Warning:</b> Never send advance money to unknown sellers!
+                        </div>
+                    `, 50, 50, 540);
+                    const hud = UI.stepHUD(1, 1, "Monitoring risky keywords injects automatic safety warnings directly into chat.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#FBBF24'));
+                }
+            },
+
+            // 30. HTML Tag Stripping (XSS)
+            {
+                mod: "MODULE 2 · Safety", title: "HTML Tag Stripping (XSS)", sub: "Cross-Site Scripting prevention",
+                build: (tl) => {
+                    const card = UI.card('Cross-Site Scripting (XSS) Prevention', `
+                        <div style="font-family:var(--font-code); font-size:12px; color:var(--error);">
+                            Payload: &lt;img src=x onerror="stealCookies()"&gt; Hello
+                        </div>
+                        <div style="margin-top:10px; font-size:12px; color:var(--success);">
+                            ➔ Cleaned: "Hello" (Script tags completely stripped)
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "HTML stripping prevents executable code from running in the recipient's browser.");
+
+                    tl.from([card, '.step-hud'], { opacity: 0, y: 20, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#34D399'));
+                }
+            },
+
+            // 31. Structured Return
+            {
+                mod: "MODULE 2 · Safety", title: "Structured Return", sub: "{ sanitizedText, warnings[], isBlocked }",
+                build: (tl) => {
+                    const card = UI.card('Sanitize Function Return Object', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.6;">
+                            {<br>
+                            &nbsp;&nbsp;<span style="color:var(--success);">sanitizedText:</span> "Call me at [phone hidden]",<br>
+                            &nbsp;&nbsp;<span style="color:var(--warn);">warnings:</span> ["PHONE_NUMBER_DETECTED"],<br>
+                            &nbsp;&nbsp;<span style="color:var(--accent1);">isBlocked:</span> false<br>
+                            }
+                        </div>
+                    `, 50, 50, 500);
+                    const hud = UI.stepHUD(1, 1, "Structured returns allow backend services to deliver clean text AND emit private warnings.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#38BDF8'));
+                }
+            },
+
+            // 32. Service Layer Separation
+            {
+                mod: "MODULE 3 · Business Logic", title: "Service Layer Separation", sub: "Thin controller, smart service",
+                build: (tl) => {
+                    const ctrl = UI.serverRack('c', { x: 28, y: 50, width: 170, label: 'Controller', sub: 'Handles req/res' });
+                    const svc = UI.gearNode('s', { x: 72, y: 50, label: 'ChatService', sub: 'Validation & DB' });
+                    const hud = UI.stepHUD(1, 2, "Controllers remain thin by delegating heavy business logic to the service layer.");
+
+                    UI.line(36, 50, 64, 50, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from(['.server-rack-art', '.gear-node-art', '.step-hud'], { opacity: 0, stagger: 0.15 })
+                      .add(ANIM.send(tl, UI.packet('Call chatService.create()'), 36, 50, 72, 50, 0.6))
+                      .add(ANIM.send(tl, UI.packet('Return result', 'res'), 72, 50, 36, 50, 0.6));
+                }
+            },
+
+            // 33. Validation
+            {
+                mod: "MODULE 3 · Business Logic", title: "Validation", sub: "Checking listing active status",
+                build: (tl) => {
+                    const card = UI.card('Listing Validation Check', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            const listing = await Listing.findById(listingId);<br>
+                            <span style="color:var(--error);">if (!listing || listing.status === 'sold') {</span><br>
+                            &nbsp;&nbsp;throw new AppError('Listing is no longer active', 404);<br>
+                            <span style="color:var(--error);">}</span>
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "Validation checks verify listings exist and are still for sale before opening rooms.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#F87171'));
+                }
+            },
+
+            // 34. Business Rule: buyer ≠ seller
+            {
+                mod: "MODULE 3 · Business Logic", title: "Business Rule: buyer ≠ seller", sub: "Preventing self-messaging",
+                build: (tl) => {
+                    const card = UI.card('Guard: Prevent Self-Messaging', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            <span style="color:var(--error); font-weight:700;">if (listing.sellerId.equals(currentUserId)) {</span><br>
+                            &nbsp;&nbsp;throw new AppError("You cannot chat with yourself!", 400);<br>
+                            <span style="color:var(--error); font-weight:700;">}</span>
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "Business rules prevent sellers from opening chat rooms with their own listings.");
+
+                    tl.from([card, '.step-hud'], { opacity: 0, y: 20, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#F87171'));
+                }
+            },
+
+            // 35. upsert (Find or Create)
+            {
+                mod: "MODULE 3 · Business Logic", title: "upsert (Find or Create)", sub: "Atomic database operation",
+                build: (tl) => {
+                    const card = UI.card('findOneAndUpdate({ buyer, seller, listing }, { ... }, { upsert: true })', `
+                        <div style="display:flex; gap:16px; margin-top:10px;">
+                            <div style="flex:1; background:#0B1F17; border:1px solid #34D399; padding:10px; border-radius:8px;">
+                                <div style="color:#34D399; font-weight:700;">If Room Exists:</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Returns existing roomId</div>
+                            </div>
+                            <div style="flex:1; background:#181528; border:1px solid #818CF8; padding:10px; border-radius:8px;">
+                                <div style="color:#818CF8; font-weight:700;">If Not Found:</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Creates new room atomically</div>
+                            </div>
+                        </div>
+                    `, 50, 50, 600);
+                    const hud = UI.stepHUD(1, 1, "upsert atomically returns existing chat rooms or creates a new one in one single step.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#34D399'));
+                }
+            },
+
+            // 36. $or Operator
+            {
+                mod: "MODULE 3 · Business Logic", title: "$or Operator", sub: "Match either condition",
+                build: (tl) => {
+                    const card = UI.card('MongoDB Query: Fetch User Inbox', `
+                        <div style="font-family:var(--font-code); font-size:13px; color:var(--accent1);">
+                            ChatRoom.find({<br>
+                            &nbsp;&nbsp;$or: [<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{ buyerId: myUserId },<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{ sellerId: myUserId }<br>
+                            &nbsp;&nbsp;]<br>
+                            });
+                        </div>
+                        <div style="margin-top:10px; font-size:12px; color:var(--success);">
+                            ✓ Matches all conversations where I am either Buyer OR Seller!
+                        </div>
+                    `, 50, 50, 540);
+                    const hud = UI.stepHUD(1, 1, "$or operator matches all chat rooms where the user is either the buyer or the seller.");
+
+                    tl.from([card, '.step-hud'], { opacity: 0, y: 20, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#38BDF8'));
+                }
+            },
+
+            // 37. Last Message Preview + Unread Count
+            {
+                mod: "MODULE 3 · Business Logic", title: "Last Message Preview + Unread Count", sub: "Inbox summary list",
+                build: (tl) => {
+                    const inboxItem = UI.card('📱 Mobile Inbox UI Item', `
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <div>
+                                <div style="font-weight:700; color:#FFF;">Rahim (iPhone 13 Deal)</div>
+                                <div style="font-size:12px; color:var(--text-muted);">"Is price 5000 tk?" · 2m ago</div>
+                            </div>
+                            <div style="background:var(--error); color:#FFF; font-weight:700; font-size:11px; padding:4px 8px; border-radius:12px;">
+                                3
+                            </div>
+                        </div>
+                    `, 50, 50, 420);
+                    const hud = UI.stepHUD(1, 1, "Aggregated queries return participant info, last message snippet, and unread counts.");
+
+                    tl.from([inboxItem, '.step-hud'], { scale: 0.8, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, inboxItem, '#F87171'));
+                }
+            },
+
+            // 38. Authorization Check → 403
+            {
+                mod: "MODULE 3 · Business Logic", title: "Authorization Check → 403", sub: "Only room participants allowed",
+                build: (tl) => {
+                    const hacker = UI.browser('h', { x: 20, y: 50, width: 180, url: 'intruder.com', title: 'Intruder' });
+                    const guard = UI.serverRack('g', { x: 50, y: 50, width: 170, label: 'AuthZ Guard', sub: 'Check [buyer, seller]' });
+                    const room = UI.database3D('r', { x: 80, y: 50, label: 'Private Room 101', sub: 'Rahim & Karim' });
+                    const hud = UI.stepHUD(1, 2, "Access control blocks users from viewing rooms they are not members of with 403 Forbidden.");
+
+                    UI.line(28, 50, 41, 50, '#F87171', true);
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.db-cylinder-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('GET /rooms/101/messages'), 28, 50, 50, 50, 0.5))
+                      .add(ANIM.pulse(tl, guard, '#F87171'))
+                      .add(ANIM.send(tl, UI.packet('403 Forbidden ❌', 'err'), 50, 50, 28, 50, 0.5));
+                }
+            },
+
+            // 39. Pagination (page / limit / skip)
+            {
+                mod: "MODULE 3 · Business Logic", title: "Pagination (page / limit / skip)", sub: "Loading data in chunks",
+                build: (tl) => {
+                    const card = UI.card('Query: Message.find().skip(20).limit(10)', `
+                        <div style="font-family:var(--font-code); font-size:13px; line-height:1.6;">
+                            • Total Messages in Room: 1,000<br>
+                            • Page 1: skip(0).limit(10) ➔ Items 1..10<br>
+                            • Page 2: skip(10).limit(10) ➔ Items 11..20<br>
+                            • Page 3: <span style="color:var(--accent1); font-weight:700;">skip(20).limit(10)</span> ➔ Items 21..30
+                        </div>
+                    `, 50, 50, 520);
+                    const hud = UI.stepHUD(1, 1, "Pagination loads large message histories in small chunks to keep apps fast.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#38BDF8'));
+                }
+            },
+
+            // 40. Mark as Read (updateMany)
+            {
+                mod: "MODULE 3 · Business Logic", title: "Mark as Read (updateMany)", sub: "Bulk seen status update",
+                build: (tl) => {
+                    const card = UI.card('Bulk Mark as Read Operation', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            await Message.updateMany(<br>
+                            &nbsp;&nbsp;{ roomId, senderId: otherUserId, isRead: false },<br>
+                            &nbsp;&nbsp;{ $set: { isRead: true } }<br>
+                            );
+                        </div>
+                        <div style="margin-top:10px; font-size:12px; color:var(--success);">
+                            ✓ Flips all unread messages to seen (✓✓ blue ticks) in 1 query!
+                        </div>
+                    `, 50, 50, 540);
+                    const hud = UI.stepHUD(1, 1, "updateMany updates all received unread messages to seen in a single database query.");
+
+                    tl.from([card, '.step-hud'], { opacity: 0, y: 20, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#34D399'));
+                }
+            },
+
+            // 41. Empty Message Block → 400
+            {
+                mod: "MODULE 3 · Business Logic", title: "Empty Message Block → 400", sub: "Fully-stripped message handling",
+                build: (tl) => {
+                    const card = UI.card('Sanitized Text Length Check', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            const cleanText = sanitize(rawText); <span style="color:var(--text-muted);">// was "&lt;script&gt;&lt;/script&gt;" ➔ ""</span><br>
+                            <span style="color:var(--error); font-weight:700;">if (!cleanText.trim()) {</span><br>
+                            &nbsp;&nbsp;throw new AppError("Message cannot be empty", 400);<br>
+                            <span style="color:var(--error); font-weight:700;">}</span>
+                        </div>
+                    `, 50, 50, 540);
+                    const hud = UI.stepHUD(1, 1, "If sanitization strips all text, the request is rejected with 400 Bad Request.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#F87171'));
+                }
+            },
+
+            // 42. AppError (Custom Error Class)
+            {
+                mod: "MODULE 3 · Business Logic", title: "AppError (Custom Error Class)", sub: "Structured error handling",
+                build: (tl) => {
+                    const card = UI.card('Custom Operational Error Class', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            class AppError extends Error {<br>
+                            &nbsp;&nbsp;constructor(public message: string, public statusCode: number) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;super(message);<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;this.isOperational = true;<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                        <div style="margin-top:8px; font-size:11px; color:var(--accent1);">
+                            ➔ Global Error Handler catches and formats clean JSON response!
+                        </div>
+                    `, 50, 50, 560);
+                    const hud = UI.stepHUD(1, 1, "AppError encapsulates status codes and error messages for consistent API error responses.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#818CF8'));
+                }
+            },
+
+            // 43. Controller Pattern (THE COMPLETE 4-TIER ARCHITECTURAL FLOW)
+            {
+                mod: "MODULE 4 · REST API", title: "Controller Pattern", sub: "req in → service → res out (End-to-End)",
+                build: (tl) => {
+                    const client = UI.browser('cl', { x: 14, y: 50, width: 200, url: 'bechakena.com/chat', title: 'Buyer App' });
+                    const ctrl = UI.serverRack('ctrl', { x: 42, y: 50, width: 170, label: 'Chat Controller', sub: 'chat.controller.ts' });
+                    const svc = UI.gearNode('svc', { x: 70, y: 32, label: 'Chat Service', sub: 'chat.service.ts' });
+                    const db = UI.database3D('db', { x: 70, y: 70, label: 'Message Model', sub: 'MongoDB Atlas' });
+                    const hud = UI.stepHUD(1, 4, "Client dispatches HTTP POST /messages $\rightarrow$ Controller coordinates Service and Model.");
+
+                    UI.line(22, 50, 33, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(50, 42, 62, 32, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(70, 44, 70, 58, '#FBBF24', false, 'arrow-warn');
+                    UI.line(62, 70, 50, 58, '#34D399', false, 'arrow-green');
+                    UI.line(33, 58, 22, 58, '#34D399', false, 'arrow-green');
+
+                    const p1 = UI.packet('POST /messages');
+                    const p2 = UI.packet('sendMessage(dto)');
+                    const p3 = UI.packet('Message.create()', 'warn');
+                    const p4 = UI.packet('Saved Doc ✓', 'res');
+                    const p5 = UI.packet('201 Created JSON', 'res');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.gear-node-art', '.db-cylinder-art', '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.narrate(tl, 1, 4, "📱 <b>Step 1:</b> Client sends HTTP POST <span class='code'>/messages { text: 'Hello!' }</span> to Controller."))
+                      .add(ANIM.send(tl, p1, 22, 50, 42, 50, 0.4))
+                      .add(ANIM.pulse(tl, ctrl, '#818CF8'))
+                      .add(ANIM.narrate(tl, 2, 4, "🎯 <b>Step 2:</b> Controller extracts params and delegates business logic to <span class='action'>chatService</span>."))
+                      .add(ANIM.send(tl, p2, 42, 42, 70, 32, 0.5))
+                      .add(ANIM.pulse(tl, svc, '#38BDF8'))
+                      .add(ANIM.narrate(tl, 3, 4, "⚙️ <b>Step 3:</b> Service sanitizes text and writes document to <span class='code'>Message.create()</span> in MongoDB."))
+                      .add(ANIM.send(tl, p3, 70, 32, 70, 70, 0.4))
+                      .add(ANIM.pulse(tl, db, '#FBBF24'))
+                      .add(ANIM.narrate(tl, 4, 4, "🛢️ <b>Step 4:</b> Model returns saved document $\rightarrow$ Controller sends <span class='success'>201 Created JSON</span> to Client!"))
+                      .add(ANIM.send(tl, p4, 70, 70, 42, 58, 0.4))
+                      .add(ANIM.send(tl, p5, 42, 58, 22, 58, 0.5))
+                      .add(ANIM.pulse(tl, client, '#34D399'));
+                }
+            },
+
+            // 44. HTTP Status Codes
+            {
+                mod: "MODULE 4 · REST API", title: "HTTP Status Codes", sub: "Universal API communication language",
+                build: (tl) => {
+                    const c200 = UI.card('200 OK', '<span style="color:#34D399; font-weight:700;">Standard Success</span>', 20, 35, 180);
+                    const c201 = UI.card('201 Created', '<span style="color:#34D399; font-weight:700;">Resource Created</span>', 50, 35, 180);
+                    const c400 = UI.card('400 Bad Request', '<span style="color:#FBBF24; font-weight:700;">Invalid Input Payload</span>', 80, 35, 180);
+                    const c401 = UI.card('401 Unauthorized', '<span style="color:#F87171; font-weight:700;">Missing / Invalid JWT</span>', 20, 68, 180);
+                    const c403 = UI.card('403 Forbidden', '<span style="color:#F87171; font-weight:700;">Permission Denied</span>', 50, 68, 180);
+                    const c500 = UI.card('500 Server Error', '<span style="color:#F87171; font-weight:700;">Internal Crash</span>', 80, 68, 180);
+                    const hud = UI.stepHUD(1, 1, "HTTP status codes tell the client the exact result of their API request.");
+
+                    tl.from([c200, c201, c400, c401, c403, c500, '.step-hud'], { scale: 0.8, opacity: 0, stagger: 0.1, duration: 0.4 });
+                }
+            },
+
+            // 45. authenticate & requireVerified Middleware
+            {
+                mod: "MODULE 4 · REST API", title: "authenticate & requireVerified Middleware", sub: "Sequential security gates",
+                build: (tl) => {
+                    const client = UI.browser('c', { x: 15, y: 50, width: 170, url: 'app.com' });
+                    const g1 = UI.serverRack('g1', { x: 45, y: 50, width: 150, label: '1. authenticate', sub: 'Checks JWT Cookie' });
+                    const g2 = UI.serverRack('g2', { x: 72, y: 50, width: 160, label: '2. requireVerified', sub: 'Checks KYC / Email' });
+                    const handler = UI.card('🎯 Controller', '<div style="color:var(--success); font-weight:700;">200 OK Response</div>', 92, 50, 140);
+                    const hud = UI.stepHUD(1, 3, "Sequential middleware ensures users are authenticated AND verified before accessing chat.");
+
+                    UI.line(22, 50, 37, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(53, 50, 63, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(80, 50, 86, 50, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', handler, '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('Cookie JWT ➔'), 22, 50, 45, 50, 0.5))
+                      .add(ANIM.pulse(tl, g1, '#34D399'))
+                      .add(ANIM.send(tl, UI.packet('req.user attached ➔'), 45, 50, 72, 50, 0.5))
+                      .add(ANIM.pulse(tl, g2, '#34D399'))
+                      .add(ANIM.send(tl, UI.packet('Authorized ➔', 'res'), 72, 50, 92, 50, 0.4))
+                      .add(ANIM.pulse(tl, handler, '#818CF8'));
+                }
+            },
+
+            // 46. Route Params vs Query Params
+            {
+                mod: "MODULE 4 · REST API", title: "Route Params vs Query Params", sub: "Identifying resources vs Filtering data",
+                build: (tl) => {
+                    const card = UI.card('URL Structure Anatomy', `
+                        <div style="font-family:var(--font-code); font-size:15px; margin:12px 0;">
+                            GET /api/v1/chat/rooms/<span style="color:#F87171; font-weight:700;">:roomId</span>/messages<span style="color:#FBBF24; font-weight:700;">?page=2&limit=20</span>
+                        </div>
+                        <div style="display:flex; gap:16px; margin-top:16px;">
+                            <div style="flex:1; background:#1A1114; border:1px solid #F87171; padding:10px; border-radius:8px;">
+                                <div style="color:#F87171; font-weight:700;">Route Param (:roomId)</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Identifies exact resource</div>
+                            </div>
+                            <div style="flex:1; background:#1C1810; border:1px solid #FBBF24; padding:10px; border-radius:8px;">
+                                <div style="color:#FBBF24; font-weight:700;">Query Param (?page=2)</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Filters, pagination, sort</div>
+                            </div>
+                        </div>
+                    `, 50, 50, 680);
+                    const hud = UI.stepHUD(1, 1, "Route parameters identify resources; query parameters filter and paginate.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#38BDF8'));
+                }
+            },
+
+            // 47. Router Mounting & API Versioning
+            {
+                mod: "MODULE 4 · REST API", title: "Router Mounting & API Versioning", sub: "app.use('/api/v1', routes)",
+                build: (tl) => {
+                    const app = UI.serverRack('app', { x: 20, y: 50, width: 160, label: 'app.ts', sub: 'Express App' });
+                    const v1 = UI.serverRack('v1', { x: 50, y: 50, width: 150, label: '/api/v1', sub: 'Version 1 Root' });
+                    const chat = UI.card('💬 chat.routes.ts', '/chat ➔ chatRouter', 80, 32, 180);
+                    const auth = UI.card('🔑 auth.routes.ts', '/auth ➔ authRouter', 80, 68, 180);
+                    const hud = UI.stepHUD(1, 2, "API versioning under /api/v1 allows safe modular upgrades without breaking existing clients.");
+
+                    UI.line(28, 50, 42, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(58, 50, 71, 32, '#818CF8', false, 'arrow-purple');
+                    UI.line(58, 50, 71, 68, '#818CF8', false, 'arrow-purple');
+
+                    tl.from(['.server-rack-art', chat, auth, '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.pulse(tl, v1, '#38BDF8'))
+                      .add(ANIM.pulse(tl, chat, '#818CF8'));
+                }
+            },
+
+            // 48. Socket.io vs WebSockets
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Socket.io vs WebSockets", sub: "Raw pipes vs Production superpowers",
+                build: (tl) => {
+                    const raw = UI.card('Raw WebSocket', `
+                        <div style="color:var(--error); font-weight:700;">Bare TCP Stream 🚰</div>
+                        <ul style="font-size:11px; color:var(--text-muted); margin-top:6px; padding-left:16px; line-height:1.5;">
+                            <li>No automatic reconnection</li>
+                            <li>No rooms / channels</li>
+                            <li>Manual JSON stringify/parse</li>
+                        </ul>
+                    `, 25, 50, 250);
+
+                    const io = UI.card('Socket.io (Recommended)', `
+                        <div style="color:var(--success); font-weight:700;">Production Superpowers 🚀</div>
+                        <ul style="font-size:11px; color:var(--text-muted); margin-top:6px; padding-left:16px; line-height:1.5;">
+                            <li>✓ Built-in Rooms & Namespaces</li>
+                            <li>✓ Automatic reconnect logic</li>
+                            <li>✓ HTTP long-polling fallback</li>
+                        </ul>
+                    `, 75, 50, 270);
+                    const hud = UI.stepHUD(1, 2, "Socket.io wraps WebSockets with automatic reconnections, rooms, and fallbacks.");
+
+                    tl.from([raw, io, '.step-hud'], { opacity: 0, y: 20, stagger: 0.2 })
+                      .add(ANIM.pulse(tl, io, '#34D399'));
+                }
+            },
+
+            // 49. Namespace (/chat)
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Namespace (/chat)", sub: "Multiplexed channels on 1 server",
+                build: (tl) => {
+                    const server = UI.serverRack('s', { x: 20, y: 50, width: 170, label: 'Socket Server', sub: 'Single Port 5000' });
+                    const nsChat = UI.cloudHub('n1', { x: 75, y: 24, label: '/chat', sub: 'Buyer-Seller Chat' });
+                    const nsNotif = UI.cloudHub('n2', { x: 75, y: 50, label: '/notifications', sub: 'Order Status Alerts' });
+                    const nsTrack = UI.cloudHub('n3', { x: 75, y: 76, label: '/tracking', sub: 'Rider Live GPS' });
+                    const hud = UI.stepHUD(1, 2, "Namespaces isolate different real-time communication channels over a single shared server.");
+
+                    UI.line(29, 50, 68, 24, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(29, 50, 68, 50, '#FBBF24', false, 'arrow-warn');
+                    UI.line(29, 50, 68, 76, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.server-rack-art', '.cloud-hub-art', '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.pulse(tl, nsChat, '#38BDF8'));
+                }
+            },
+
+            // 50. Socket Handshake Authentication
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Socket Handshake Authentication", sub: "Authenticating on connect",
+                build: (tl) => {
+                    const client = UI.browser('c', { x: 15, y: 50, width: 180, url: 'app.com', title: 'io.connect(/chat)' });
+                    const hs = UI.serverRack('hs', { x: 50, y: 50, width: 180, label: 'Handshake Guard', sub: 'socket.handshake.headers' });
+                    const server = UI.cloudHub('s', { x: 85, y: 50, label: 'Connected Hub', sub: 'socket.user attached' });
+                    const hud = UI.stepHUD(1, 3, "Handshake middleware extracts the cookie, validates the JWT, and attaches socket.user.");
+
+                    UI.line(24, 50, 41, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(59, 50, 77, 50, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.cloud-hub-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('Connect + Cookie'), 24, 50, 50, 50, 0.5))
+                      .add(ANIM.pulse(tl, hs, '#34D399'))
+                      .add(ANIM.send(tl, UI.packet('socket.user = decoded ✓', 'res'), 50, 50, 85, 50, 0.5))
+                      .add(ANIM.pulse(tl, server, '#34D399'));
+                }
+            },
+
+            // 51. tokenVersion Check
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "tokenVersion Check", sub: "Instant token revocation upon logout",
+                build: (tl) => {
+                    const db = UI.card('MongoDB User Record', `
+                        <div style="font-family:var(--font-code); font-size:12px;">
+                            user: "Rahim",<br>
+                            <span style="color:var(--success); font-weight:700;">tokenVersion: 2</span> (Logged out)
+                        </div>
+                    `, 25, 50, 240);
+
+                    const stolen = UI.card('Old Stolen JWT Token', `
+                        <div style="font-family:var(--font-code); font-size:12px;">
+                            payload: { user: "Rahim", <span style="color:var(--error); font-weight:700;">tokenVersion: 1</span> }<br>
+                            <div style="color:var(--error); font-weight:700; margin-top:6px;">
+                                ❌ Mismatch! Socket Disconnected!
+                            </div>
+                        </div>
+                    `, 75, 50, 280);
+                    const hud = UI.stepHUD(1, 2, "tokenVersion check prevents logged-out or stolen tokens from connecting to WebSockets.");
+
+                    UI.line(38, 50, 60, 50, '#F87171', true);
+
+                    tl.from([db, stolen, '.step-hud'], { opacity: 0, y: 20, stagger: 0.2 })
+                      .add(ANIM.pulse(tl, stolen, '#F87171'));
+                }
+            },
+
+            // 52. Socket Rooms
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Socket Rooms", sub: "Targeted broadcast delivery",
+                build: (tl) => {
+                    const s = UI.serverRack('s', { x: 50, y: 25, width: 180, label: 'Socket Server', sub: 'io.to("room_101")' });
+                    const b1 = UI.browser('b1', { x: 22, y: 72, width: 170, url: 'buyer.com', title: 'Buyer (Room 101)' });
+                    const s1 = UI.browser('s1', { x: 50, y: 72, width: 170, url: 'seller.com', title: 'Seller (Room 101)' });
+                    const other = UI.browser('o', { x: 78, y: 72, width: 170, url: 'other.com', title: 'Other User (Room 102)' });
+                    const hud = UI.stepHUD(1, 2, "Socket rooms isolate broadcasts so only the 2 participants in room_101 receive messages.");
+
+                    UI.line(50, 36, 22, 60, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(50, 36, 50, 60, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(50, 36, 78, 60, '#475569', true);
+
+                    const p1 = UI.packet('new_message', 'res');
+                    const p2 = UI.packet('new_message', 'res');
+
+                    tl.from(['.server-rack-art', '.browser-window-art', '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.send(tl, p1, 50, 36, 22, 60, 0.5))
+                      .add(ANIM.send(tl, p2, 50, 36, 50, 60, 0.5), "<")
+                      .add(ANIM.pulse(tl, [b1, s1], '#34D399'));
+                }
+            },
+
+            // 53. Emit vs Broadcast vs To
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Emit vs Broadcast vs To", sub: "Who receives the event?",
+                build: (tl) => {
+                    const c1 = UI.card('1. socket.emit()', `
+                        <div style="font-size:12px; color:var(--accent1); font-weight:700;">Sender Only 👤</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Private warning or ACK</div>
+                    `, 20, 50, 200);
+
+                    const c2 = UI.card('2. socket.broadcast()', `
+                        <div style="font-size:12px; color:var(--warn); font-weight:700;">Everyone Except Me 👥</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">"User is typing..."</div>
+                    `, 50, 50, 200);
+
+                    const c3 = UI.card('3. io.to(room).emit()', `
+                        <div style="font-size:12px; color:var(--success); font-weight:700;">Room Members Only 🎯</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Live chat messages</div>
+                    `, 80, 50, 200);
+                    const hud = UI.stepHUD(1, 3, "Understanding the 3 delivery modes: emit (me), broadcast (others), to.emit (room).");
+
+                    tl.from([c1, c2, c3, '.step-hud'], { scale: 0.8, opacity: 0, stagger: 0.15, duration: 0.4 })
+                      .add(ANIM.pulse(tl, c3, '#34D399'));
+                }
+            },
+
+            // 54. join_room Event
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "join_room Event", sub: "Entering the room channel",
+                build: (tl) => {
+                    const client = UI.browser('c', { x: 22, y: 50, width: 220, url: 'chat-ui.com', title: 'Buyer Phone' });
+                    const server = UI.serverRack('s', { x: 78, y: 50, width: 200, label: 'Socket Server', sub: 'socket.join(roomId)' });
+                    const hud = UI.stepHUD(1, 2, "Client emits join_room; server verifies authorization and subscribes socket.");
+
+                    UI.line(33, 50, 68, 50, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('emit("join_room", "room_101")'), 33, 50, 78, 50, 0.6))
+                      .add(ANIM.pulse(tl, server, '#34D399'))
+                      .add(ANIM.send(tl, UI.packet('emit("room_joined") ✓', 'res'), 78, 50, 33, 50, 0.6));
+                }
+            },
+
+            // 55. send_message Flow
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "send_message Flow", sub: "The complete real-time lifecycle",
+                build: (tl) => {
+                    const sender = UI.browser('b', { x: 15, y: 50, width: 180, url: 'buyer.com', title: 'Buyer (Sender)' });
+                    const hub = UI.serverRack('hub', { x: 50, y: 50, width: 180, label: 'Server + DB', sub: 'Sanitize & Save' });
+                    const receiver = UI.browser('s', { x: 85, y: 50, width: 180, url: 'seller.com', title: 'Seller (Receiver)' });
+                    const hud = UI.stepHUD(1, 3, "Real-time send flow: emit text $\rightarrow$ server sanitizes & saves $\rightarrow$ broadcasts to room.");
+
+                    UI.line(24, 50, 41, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(59, 50, 76, 50, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.browser-window-art', '.server-rack-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('emit("send_message") ➔'), 24, 50, 50, 50, 0.5))
+                      .add(ANIM.pulse(tl, hub, '#FBBF24'))
+                      .add(ANIM.send(tl, UI.packet('emit("new_message") ➔', 'res'), 50, 50, 85, 50, 0.5))
+                      .add(ANIM.pulse(tl, receiver, '#34D399'));
+                }
+            },
+
+            // 56. Typing Indicator
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Typing Indicator", sub: "Lightweight broadcast events",
+                build: (tl) => {
+                    const b = UI.browser('b', { x: 22, y: 50, width: 220, url: 'buyer.com', title: 'Buyer (Typing...)' });
+                    const s = UI.browser('s', { x: 78, y: 50, width: 220, url: 'seller.com', title: 'Seller ("Rahim is typing...")' });
+                    const hud = UI.stepHUD(1, 2, "Typing indicator broadcasts user_typing events directly without touching the database.");
+
+                    UI.line(33, 50, 67, 50, '#38BDF8', false, 'arrow-cyan');
+
+                    tl.from(['.browser-window-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('socket.broadcast("user_typing")'), 33, 50, 78, 50, 0.6))
+                      .add(ANIM.pulse(tl, s, '#FBBF24'));
+                }
+            },
+
+            // 57. mark_read / Read Receipts
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "mark_read / Read Receipts", sub: "Seen status updates (✓✓ double blue ticks)",
+                build: (tl) => {
+                    const buyer = UI.browser('b', { x: 22, y: 50, width: 220, url: 'buyer.com', title: 'Status: ✓✓ (Seen)' });
+                    const seller = UI.browser('s', { x: 78, y: 50, width: 220, url: 'seller.com', title: 'Seller opens chat' });
+                    const hud = UI.stepHUD(1, 2, "Viewing messages emits mark_read $\rightarrow$ DB updates $\rightarrow$ sender receives messages_read event.");
+
+                    UI.line(67, 50, 33, 50, '#34D399', false, 'arrow-green');
+
+                    tl.from(['.browser-window-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.send(tl, UI.packet('emit("messages_read") ➔', 'res'), 78, 50, 22, 50, 0.7))
+                      .add(ANIM.pulse(tl, buyer, '#34D399'));
+                }
+            },
+
+            // 58. Disconnect & Cleanup
+            {
+                mod: "MODULE 5 · Real-time WebSockets", title: "Disconnect & Cleanup", sub: "Graceful teardown and memory cleanup",
+                build: (tl) => {
+                    const card = UI.card('Socket Disconnect Handler', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            socket.on('disconnect', (reason) => {<br>
+                            &nbsp;&nbsp;console.log(\`User \${socket.user.id} disconnected: \${reason}\`);<br>
+                            &nbsp;&nbsp;await User.findByIdAndUpdate(socket.user.id, { lastSeen: Date.now() });<br>
+                            &nbsp;&nbsp;<span style="color:var(--success);">// Socket automatically leaves rooms & frees memory!</span><br>
+                            });
+                        </div>
+                    `, 50, 50, 600);
+                    const hud = UI.stepHUD(1, 1, "Disconnect handler updates lastSeen timestamp and frees active memory allocations.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#FBBF24'));
+                }
+            },
+
+            // 59. http.createServer(app)
+            {
+                mod: "MODULE 6 · Server Integration", title: "http.createServer(app)", sub: "Wrapping Express",
+                build: (tl) => {
+                    const app = UI.card('Express (app)', 'HTTP REST Routes', 20, 50, 160);
+                    const http = UI.serverRack('http', { x: 50, y: 50, width: 200, label: 'Node http.Server', sub: 'http.createServer(app)' });
+                    const io = UI.cloudHub('io', { x: 80, y: 50, label: 'Socket.io (io)', sub: 'new Server(httpServer)' });
+                    const hud = UI.stepHUD(1, 2, "Wrapping Express inside Node's native HTTP server allows Socket.io to attach to the same port.");
+
+                    UI.line(28, 50, 40, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(72, 50, 60, 50, '#818CF8', false, 'arrow-purple');
+
+                    tl.from([app, '.server-rack-art', '.cloud-hub-art', '.step-hud'], { opacity: 0, stagger: 0.1 })
+                      .add(ANIM.pulse(tl, http, '#34D399'));
+                }
+            },
+
+            // 60. Why NOT app.listen()
+            {
+                mod: "MODULE 6 · Server Integration", title: "Why NOT app.listen()", sub: "The common gotcha",
+                build: (tl) => {
+                    const bad = UI.card('❌ app.listen(5000)', `
+                        <div style="color:var(--error); font-weight:700;">Hides the HTTP Server instance!</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                            Socket.io cannot attach to it ➔ WebSockets fail!
+                        </div>
+                    `, 25, 50, 260);
+
+                    const good = UI.card('✓ http.createServer(app)', `
+                        <div style="color:var(--success); font-weight:700;">Gives full server control!</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                            Both Express & Socket.io attach to same port 5000.
+                        </div>
+                    `, 75, 50, 280);
+                    const hud = UI.stepHUD(1, 2, "app.listen() creates a hidden HTTP server; http.createServer(app) gives you full access.");
+
+                    tl.from([bad, good, '.step-hud'], { opacity: 0, y: 20, stagger: 0.2 })
+                      .add(ANIM.pulse(tl, good, '#34D399'));
+                }
+            },
+
+            // 61. Socket.io Init + CORS
+            {
+                mod: "MODULE 6 · Server Integration", title: "Socket.io Init + CORS", sub: "Cross-Origin cookie sharing configuration",
+                build: (tl) => {
+                    const card = UI.card('Socket.io Server Configuration', `
+                        <div style="font-family:var(--font-code); font-size:12px; line-height:1.6;">
+                            const io = new Server(httpServer, {<br>
+                            &nbsp;&nbsp;cors: {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;origin: ["http://localhost:3000", "https://bechakena.com"],<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--success); font-weight:700;">credentials: true</span> <span style="color:var(--text-muted);">// Allows cookie sharing</span><br>
+                            &nbsp;&nbsp;}<br>
+                            });
+                        </div>
+                    `, 50, 50, 560);
+                    const hud = UI.stepHUD(1, 1, "credentials: true is mandatory to allow browser cookies to travel during the socket handshake.");
+
+                    tl.from([card, '.step-hud'], { scale: 0.85, opacity: 0, duration: 0.4 })
+                      .add(ANIM.pulse(tl, card, '#38BDF8'));
+                }
+            },
+
+            // 62. One Server, Two Protocols (THE GRAND FINALE)
+            {
+                mod: "MODULE 6 · Server Integration", title: "One Server, Two Protocols", sub: "The Grand Finale Architecture",
+                build: (tl) => {
+                    const s = UI.serverRack('s', { x: 50, y: 50, width: 220, label: 'Server :5000', sub: 'http.createServer(app)' });
+                    const c1 = UI.browser('c1', { x: 15, y: 28, width: 200, url: 'rest-client.com', title: 'REST API Traffic' });
+                    const c2 = UI.browser('c2', { x: 15, y: 72, width: 200, url: 'socket-client.com', title: 'WebSocket Stream' });
+                    const db = UI.database3D('db', { x: 85, y: 50, label: 'MongoDB Atlas', sub: 'Single Source of Truth' });
+                    const hud = UI.stepHUD(1, 3, "A single unified Node.js server on port 5000 simultaneously handling HTTP REST and WebSockets!");
+
+                    UI.line(25, 28, 39, 50, '#38BDF8', false, 'arrow-cyan');
+                    UI.line(25, 72, 39, 50, '#818CF8', false, 'arrow-purple');
+                    UI.line(61, 50, 76, 50, '#FBBF24', false, 'arrow-warn');
+
+                    const pRest = UI.packet('HTTP GET /listings');
+                    const pWs = UI.packet('WS emit("send_message")', 'purple');
+
+                    tl.from(['.server-rack-art', '.browser-window-art', '.db-cylinder-art', '.step-hud'], { opacity: 0, stagger: 0.08 })
+                      .add(ANIM.send(tl, pRest, 25, 28, 50, 50, 0.6))
+                      .add(ANIM.send(tl, pWs, 25, 72, 50, 50, 0.6), "<0.2")
+                      .add(ANIM.pulse(tl, s, '#34D399'))
+                      .add(ANIM.send(tl, UI.packet('Database sync', 'warn'), 50, 50, 85, 50, 0.5))
+                      .add(ANIM.pulse(tl, db, '#FBBF24'));
+                }
+            }
+        ];
+
+        // Ensure exact order mapping
+        const exactOrder = [
+            "Client–Server Architecture",
+            "Request–Response Model",
+            "Real-time vs Request–Response",
+            "HTTP vs WebSocket",
+            "Full-Duplex Communication",
+            "Database Basics: Hierarchy",
+            "Auth vs Authz",
+            "JWT (JSON Web Token)",
+            "Cookie",
+            "Middleware Pipeline",
+            "Layered Architecture",
+            "Async / Await & Promises",
+            "TypeScript Basics",
+            "Schema vs Model",
+            "ChatRoom & Message Collections",
+            "One-to-Many Relationship",
+            "ObjectId",
+            "Population (ref)",
+            "required / trim / default",
+            "timestamps",
+            "Database Index",
+            "Compound Index",
+            "Unique Index",
+            "Index Direction (-1)",
+            "Sanitize Input",
+            "Regex Basics",
+            "External Link Detection",
+            "Phone Number Masking",
+            "Keyword Detection",
+            "HTML Tag Stripping (XSS)",
+            "Structured Return",
+            "Service Layer Separation",
+            "Validation",
+            "Business Rule: buyer ≠ seller",
+            "upsert (Find or Create)",
+            "$or Operator",
+            "Last Message Preview + Unread Count",
+            "Authorization Check → 403",
+            "Pagination (page / limit / skip)",
+            "Mark as Read (updateMany)",
+            "Empty Message Block → 400",
+            "AppError (Custom Error Class)",
+            "Controller Pattern",
+            "HTTP Status Codes",
+            "authenticate & requireVerified Middleware",
+            "Route Params vs Query Params",
+            "Router Mounting & API Versioning",
+            "Socket.io vs WebSockets",
+            "Namespace (/chat)",
+            "Socket Handshake Authentication",
+            "tokenVersion Check",
+            "Socket Rooms",
+            "Emit vs Broadcast vs To",
+            "join_room Event",
+            "send_message Flow",
+            "Typing Indicator",
+            "mark_read / Read Receipts",
+            "Disconnect & Cleanup",
+            "http.createServer(app)",
+            "Why NOT app.listen()",
+            "Socket.io Init + CORS",
+            "One Server, Two Protocols"
+        ];
+        
+        scenes.sort((a, b) => {
+            const idxA = exactOrder.indexOf(a.title);
+            const idxB = exactOrder.indexOf(b.title);
+            return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+        });
+
+        function renderSceneState() {
+            if (masterTimeline) masterTimeline.kill();
+            UI.clear();
+            gsap.set([DOM.dom, DOM.svg], { opacity: 0 });
+            
+            const scene = scenes[currentSceneIndex];
+            DOM.module.innerText = scene.mod;
+            
+            if (subState === 0) {
+                DOM.title.innerText = "INTRODUCTION";
+            } else {
+                DOM.title.innerText = scene.title;
+            }
+            
+            DOM.counter.innerText = `${String(currentSceneIndex + 1).padStart(2, '0')} / ${String(scenes.length).padStart(2, '0')}`;
+            
+            const progressPct = ((currentSceneIndex + (subState === 1 ? 1 : 0.5)) / scenes.length) * 100;
+            DOM.progress.style.width = `${progressPct}%`;
+
+            if (subState === 0) {
+                // Intro Card State
+                DOM.pauseBtn.style.display = 'none';
+                DOM.replayBtn.style.display = 'none';
+                
+                const uc = USECASES[scene.title] || { what: (DESCRIPTIONS[scene.title] || "Core concept for building the chat system."), use: "" };
+                const nStr = String(currentSceneIndex + 1).padStart(2, '0');
+                const card = UI.create('div', 'intro-card v2', DOM.dom);
+                
+                card.innerHTML = `
+                    <div class="ic-badge">${scene.mod}</div>
+                    <div class="ic-num">${nStr}</div>
+                    <div class="intro-title">${scene.title}</div>
+                    <div class="ic-tag">${scene.sub}</div>
+                    <div class="ic-what">${uc.what}</div>
+                    ${uc.use ? `<div class="ic-use"><div class="ic-use-label">◆ In the Becha-Kena chat build</div><div class="ic-use-text">${uc.use}</div></div>` : ``}
+                    <div class="pulse-text">Press <b>→</b> / Space to play the animation</div>
+                `;
+                
+                gsap.from(card, { opacity: 0, y: 24, duration: 0.6, ease: "power2.out" });
+                gsap.from(card.querySelectorAll('.ic-badge, .ic-num, .intro-title, .ic-tag, .ic-what, .ic-use, .pulse-text'),
+                          { opacity: 0, y: 16, stagger: 0.07, duration: 0.5, ease: "power2.out", delay: 0.12 });
+                
+            } else {
+                // Animation State
+                DOM.pauseBtn.style.display = 'flex';
+                DOM.pauseBtn.innerHTML = '⏸ Pause <kbd>P</kbd>';
+                DOM.replayBtn.style.display = 'flex';
+
+                masterTimeline = gsap.timeline({ defaults: { ease: "power2.out" } });
+                scene.build(masterTimeline);
+                masterTimeline.timeScale(animSpeed);
+            }
+
+            gsap.to([DOM.dom, DOM.svg], { opacity: 1, duration: 0.3, ease: "power2.out" });
+        }
+
+        function togglePause() {
+            if (subState !== 1 || !masterTimeline) return;
+            
+            if (masterTimeline.paused()) {
+                masterTimeline.play();
+                DOM.pauseBtn.innerHTML = '⏸ Pause <kbd>P</kbd>';
+            } else {
+                masterTimeline.pause();
+                DOM.pauseBtn.innerHTML = '▶ Play <kbd>P</kbd>';
+            }
+        }
+
+        function nextAction() {
+            if (subState === 0) {
+                subState = 1;
+                renderSceneState();
+            } else {
+                if (currentSceneIndex < scenes.length - 1) {
+                    currentSceneIndex++;
+                    subState = 0;
+                    renderSceneState();
+                }
+            }
+        }
+
+        function prevAction() {
+            if (subState === 1) {
+                subState = 0;
+                renderSceneState();
+            } else {
+                if (currentSceneIndex > 0) {
+                    currentSceneIndex--;
+                    subState = 1;
+                    renderSceneState();
+                }
+            }
+        }
+
+        function replayAction() {
+            if (subState === 1) {
+                renderSceneState();
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('btn-next').addEventListener('click', nextAction);
+        document.getElementById('btn-prev').addEventListener('click', prevAction);
+        document.getElementById('btn-replay').addEventListener('click', replayAction);
+        document.getElementById('btn-pause').addEventListener('click', togglePause);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextAction();
+            } else if (e.key === 'ArrowLeft') {
+                prevAction();
+            } else if (e.key.toLowerCase() === 'r') {
+                replayAction();
+            } else if (e.key.toLowerCase() === 'p') {
+                togglePause();
+            }
+        });
+
+        // Animation speed control
+        let animSpeed = 1;
+        const SPEEDS = [1, 1.5, 2, 0.5];
+        let speedIdx = 0;
+        function cycleSpeed() {
+            speedIdx = (speedIdx + 1) % SPEEDS.length;
+            animSpeed = SPEEDS[speedIdx];
+            document.getElementById('btn-speed').innerHTML = `⚡ ${animSpeed}× <kbd>S</kbd>`;
+            if (masterTimeline && subState === 1) masterTimeline.timeScale(animSpeed);
+        }
+        document.getElementById('btn-speed').addEventListener('click', cycleSpeed);
+
+        // Scene overview / jump menu
+        const overlay = document.createElement('div');
+        overlay.id = 'scene-overlay';
+        overlay.innerHTML = `
+            <div class="overlay-inner">
+                <div class="overlay-head">
+                    <h2>All 62 Scenes · Jump to any topic</h2>
+                    <button id="ov-close">✕ Close <kbd>Esc</kbd></button>
+                </div>
+                <div class="overlay-grid" id="ov-grid"></div>
+            </div>`;
+        document.body.appendChild(overlay);
+
+        function buildOverview() {
+            const grid = document.getElementById('ov-grid');
+            grid.innerHTML = '';
+            let lastMod = null;
+            scenes.forEach((s, i) => {
+                if (s.mod !== lastMod) {
+                    const h = document.createElement('div');
+                    h.className = 'ov-modhead';
+                    h.textContent = s.mod;
+                    grid.appendChild(h);
+                    lastMod = s.mod;
+                }
+                const item = document.createElement('button');
+                item.className = 'ov-item' + (i === currentSceneIndex ? ' active' : '');
+                item.innerHTML = `<span class="ov-num">${String(i + 1).padStart(2, '0')}</span><span class="ov-title">${s.title}</span>`;
+                item.addEventListener('click', () => {
+                    currentSceneIndex = i;
+                    subState = 0;
+                    closeOverview();
+                    renderSceneState();
+                });
+                grid.appendChild(item);
+            });
+        }
+        function openOverview() { buildOverview(); overlay.classList.add('open'); }
+        function closeOverview() { overlay.classList.remove('open'); }
+        function toggleOverview() { overlay.classList.contains('open') ? closeOverview() : openOverview(); }
+        document.getElementById('btn-menu').addEventListener('click', toggleOverview);
+        document.getElementById('ov-close').addEventListener('click', closeOverview);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverview(); });
+
+        window.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
+            if (k === 'o') { toggleOverview(); }
+            else if (e.key === 'Escape') { closeOverview(); }
+            else if (k === 's') { cycleSpeed(); }
+        });
+
+        // Initialize first scene at State 0 (Intro Card)
+        renderSceneState();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            clearTimeout(window.resizeTimer);
+            window.resizeTimer = setTimeout(() => {
+                if(subState === 1) replayAction();
+            }, 200);
+        });
+
+    </script>
+</body>
+</html>
